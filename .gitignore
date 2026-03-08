@@ -1,0 +1,19 @@
+# .NET
+bin/
+obj/
+.vs/
+
+# editors
+.vscode/
+.idea/
+
+# node
+node_modules/
+
+# Move / Sui build
+target/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
