@@ -3,3 +3,11 @@ traces/*
 .trace
 .coverage*
 Pub.*.toml
+.env
+!.env.example
+blazor/Client/wwwroot/appsettings.json
+blazor/Client/wwwroot/appsettings.example.json
+bin/
+obj/
+*.user
+.vs/
