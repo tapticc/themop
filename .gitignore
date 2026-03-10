@@ -9,6 +9,7 @@ obj/
 
 # node
 node_modules/
+dist/
 
 # Move / Sui build
 target/
@@ -17,3 +18,26 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# gRPC generated
+**/obj/*/Grpc/
+
+# Environment secrets
+.env
+**/.env
+
+# Allow template/example env files
+!.env.example
+**/.env.example
+
+# ASP.NET configuration secrets
+blazor/**/appsettings.json
+
+# Allow example config files
+!blazor/**/appsettingsexample.json
