@@ -1,0 +1,11 @@
+{
+	"devDependencies": {
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"@mysten/wallet-adapter-base": "^0.9.0",
+		"@mysten/wallet-standard": "^0.20.1",
+		"@wallet-standard/core": "^1.1.1",
+		"@wallet-standard/features": "^1.1.0"
+	}
+}

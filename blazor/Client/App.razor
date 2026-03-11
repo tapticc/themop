@@ -1,6 +1,47 @@
-﻿<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-</Router>
+﻿@using Client.Models
+@using Client.Pages.Shared
+@inject AppState AppState
+@inject NavigationManager Nav
+
+<CascadingValue Value="this">
+	<Router AppAssembly="@typeof(App).Assembly">
+		<Found Context="routeData">
+			@if (IsLoginRoute(routeData))
+			{
+				<RouteView RouteData="@routeData"
+						   DefaultLayout="@typeof(LoginLayout)" />
+			}
+			else if (!IsPublic(routeData) && !AppState.IsConnected)
+			{
+				<RedirectToLogin />
+			}
+			else
+			{
+				<RouteView RouteData="@routeData"
+						   DefaultLayout="@typeof(MainLayout)" />
+			}
+		</Found>
+		<NotFound>
+			<LayoutView Layout="@typeof(MainLayout)">
+				<p>Sorry, there's nothing at this address.</p>
+			</LayoutView>
+		</NotFound>
+	</Router>
+</CascadingValue>
+
+@code {
+	private static readonly HashSet<Type> PublicPages =
+	[
+		typeof(Pages.Login)
+	];
+
+	private bool IsPublic(RouteData routeData)
+	{
+		return PublicPages.Contains(routeData.PageType);
+	}
+
+	private bool IsLoginRoute(RouteData routeData)
+	{
+		return routeData.PageType == typeof(Pages.Login);
+	}
+}

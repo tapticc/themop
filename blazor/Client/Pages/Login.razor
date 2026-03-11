@@ -1,0 +1,49 @@
+﻿@page "/login"
+@using Client.Models
+@using Client.Services
+@inject SuiLocalDevWalletService Wallet
+@inject NavigationManager Nav
+@inject AppState AppState
+
+<div class="mop-login-container">
+    <img src="images/TheMOPLogo.png" class="mop-login-logo" />
+    <div class="mop-login-panel">
+        <p class="mop-login-subtitle">
+            Please confirm your identity. Your compliance is being recorded...
+        </p>
+
+        <RadzenButton Text="Confirm" Click="@(() => Connect())" Disabled="@_connecting" />
+    </div>
+</div>
+
+@code {
+    bool _connecting;
+    string? _address;
+
+    async Task Connect()
+    {
+        try
+        {
+            _connecting = true;
+
+            _address = await Wallet.ConnectAsync(
+                // "http:127.0.0.1:9000"
+            );
+
+            AppState.SetWallet(WalletType.EveFrontier, _address);
+
+            await Task.Delay(500);
+
+            //Nav.NavigateTo("/directives");
+            Nav.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            _connecting = false;
+        }
+    }
+}

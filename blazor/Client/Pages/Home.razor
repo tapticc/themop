@@ -1,7 +1,11 @@
 ﻿@page "/"
+@using Client.Models
+@inject AppState AppState
 
-<PageTitle>Home</PageTitle>
+<PageTitle>The Ministry of Passage</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>The Ministry of Passage</h1>
 
-Welcome to your new app.
+<p class="eve-text-muted">
+	Connected to EVE Frontier with wallet address: <b>@AppState.WalletAddress</b>
+</p>

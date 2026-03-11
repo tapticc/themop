@@ -1,115 +1,284 @@
+:root {
+    --eve-bg: #0f1318;
+    --eve-text: #ffffff;
+    --eve-text-muted: #b3bcc9;
+    --eve-border: #2a2f36;
+    --eve-orange: #ff7700;
+    --eve-panel: #1c1f25;
+}
+
+/* =======================
+   Global Page Styling
+   ======================= */
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    height: 100%;
+    margin: 0;
+    background-color: var(--eve-bg) !important;
+    color: var(--eve-text) !important;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-h1:focus {
-    outline: none;
+/* =======================
+   Radzen Layout Overrides
+   ======================= */
+.eve-layout,
+.eve-body,
+.rz-layout,
+.rz-body {
+    background-color: var(--eve-bg) !important;
+    color: var(--eve-text) !important;
+    min-height: 100vh;
 }
 
-a, .btn-link {
-    color: #0071c1;
+/* =======================
+   Header
+   ======================= */
+.eve-header {
+    background-color: var(--eve-bg) !important;
+    border-bottom: 1px solid var(--eve-border);
+    color: var(--eve-text) !important;
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-.content {
-    padding-top: 1.1rem;
-}
-
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
-}
-
-.invalid {
-    outline: 1px solid red;
-}
-
-.validation-message {
-    color: red;
-}
-
-#blazor-error-ui {
-    color-scheme: light only;
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
-}
-
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
+    /* Remove RadzenHeader focus highlight */
+    .eve-header:focus,
+    .rz-header:focus {
+        outline: none !important;
+        box-shadow: none !important;
     }
 
+/* Logo */
+.eve-logo {
+    color: var(--eve-orange) !important;
+    font-weight: 700;
+}
+
+/* =======================
+   Radzen Menu (GLOBAL)
+   ======================= */
+
+/* Remove Radzen white defaults everywhere */
+.eve-menu,
+.eve-menu > ul,
+.eve-menu .rz-menu,
+.rz-menu,
+.rz-menu > ul {
+    /*    background-color: transparent !important;*/
+    border: none !important;
+}
+
+    /* Menu items */
+    .eve-menu .rz-menuitem a {
+        color: var(--eve-text) !important;
+        text-decoration: none;
+        outline: none !important;
+    }
+
+        .eve-menu .rz-menuitem a:hover {
+            color: var(--eve-orange) !important;
+            background: rgba(255, 119, 0, 0.1) !important;
+        }
+
+    /* Active menu item */
+    .eve-menu .rz-state-active > a {
+        color: var(--eve-orange) !important;
+    }
+
+    /* Remove tab focus visuals */
+    .eve-menu a:focus {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+/* =======================
+   Desktop Menu Layout
+   ======================= */
+@media (min-width: 768px) {
+    .rz-menu {
+        background: transparent !important;
+    }
+}
+
+
+/* =======================
+   Mobile Menu (FULL SCREEN OVERLAY)
+   ======================= */
+@media (max-width: 767.98px) {
+
+    /* Make menu behave like normal block flow */
+    ul.rz-menu {
+        position: static !important;
+        background: var(--eve-bg) !important;
+        width: 100%;
+    }
+
+        /* When opened, stay in document flow */
+        ul.rz-menu.rz-menu-open {
+            display: block;
+        }
+
+        /* Stack items vertically */
+        ul.rz-menu > li {
+            width: 100%;
+        }
+
+    /* Menu item styling */
+    .rz-navigation-item-wrapper {
+        padding: 0.75rem 1rem;
+        background: var(--eve-bg);
+    }
+}
+
+.rz-navigation-item.rz-state-active > .rz-navigation-item-wrapper {
+    color: var(--eve-orange) !important;
+}
+
+
+/* =======================
+   Cards
+   ======================= */
+.eve-card {
+    background-color: var(--eve-panel) !important;
+    border: 1px solid var(--eve-border);
+    color: var(--eve-text) !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+    /* Card headers */
+    .eve-card h3 {
+        color: var(--eve-orange) !important;
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    /* Card text */
+    .eve-card p {
+        color: var(--eve-text-muted);
+        margin: 0;
+    }
+
+/* =======================
+   Utilities
+   ======================= */
+.eve-text-muted {
+    color: var(--eve-text-muted) !important;
+}
+
+.eve-burger {
+    color: var(--eve-orange) !important;
+    border: none;
+}
+
+/* Validation */
+.validation-message {
+    color: #e50000 !important;
+}
+
+/* Blazor error boundary */
 .blazor-error-boundary {
     background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
     padding: 1rem 1rem 1rem 3.7rem;
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
 
-.loading-progress {
-    position: absolute;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    inset: 20vh 0 auto 0;
-    margin: 0 auto 0 auto;
+.rz-dropdown-item {
+    color: var(--rz-text-color) !important; /* Uses Radzen's primary text color variable */
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
+    .rz-dropdown-item:hover {
+        color: var(--rz-dropdown-item-hover-color) !important; /* Ensures hover remains themed */
     }
 
-        .loading-progress circle:last-child {
-            stroke: #1b6ec2;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
+.rz-state-highlight.rz-dropdown-item { /* Selected item */
+    color: var(--rz-dropdown-item-selected-color) !important;
+}
 
-.loading-progress-text {
-    position: absolute;
+/* Summary cards: left-to-right, wrap, consistent sizing */
+.eve-card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 1rem;
+}
+
+.eve-summary-card {
+    flex: 0 0 auto; /* do not grow or shrink */
+    width: fit-content; /* size to content */
+}
+
+
+.eve-card-active {
+    border-color: var(--eve-orange);
+    box-shadow: 0 0 0 1px var(--eve-orange);
+}
+
+.eve-summary-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* horizontal centering */
+    text-align: center; /* center text */
+    gap: 0.5rem;
+}
+
+
+.mop-login-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0px;
+    padding: 0px;]
+}
+
+.mop-login-logo {
+    width: 350px;
+}
+
+.mop-login-panel {
     text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
+.mop-login-title {
+    color: #e6edf3;
+    letter-spacing: 3px;
+    font-weight: 600;
+}
+
+.mop-login-subtitle {
+    color: #8b949e;
+    margin-bottom: 25px;
+}
+
+.mop-connect-button {
+    background: #1f6feb;
+    border: none;
+    padding: 14px 30px;
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: .15s;
+}
+
+    .mop-connect-button:hover {
+        background: #2f81f7;
     }
 
-code {
-    color: #c02d76;
+.mop-wallet-display {
+    margin-top: 20px;
+    font-size: 13px;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
-    text-align: end;
+.mop-approved {
+    color: #3fb950;
+    margin-bottom: 6px;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-    text-align: start;
+.mop-address {
+    color: #8b949e;
+    font-family: monospace;
 }

@@ -1,18 +1,43 @@
-﻿@inherits LayoutComponentBase
-<RadzenComponents @rendermode="RenderMode.InteractiveAuto" />
+﻿@using Client.Models
+@inherits LayoutComponentBase
+@inject AppState AppState
+@inject NavigationManager Nav
+@implements IDisposable
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<RadzenLayout class="eve-layout">
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+	<RadzenHeader class="eve-header">
+		<div class="d-flex align-items-center p-2">
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+			<!-- Logo -->
+			<div class="eve-logo fw-bold text-uppercase text-orange me-3">
+				THE MINISTRY OF PASSAGE
+			</div>
+
+			<!-- Combined Menu -->
+			<RadzenMenu class="eve-menu flex-grow-1" Style="height: 20px;">
+				<RadzenMenuItem Text="Dashboard" Path="/" Match="NavLinkMatch.All" />
+			</RadzenMenu>
+		</div>
+	</RadzenHeader>
+
+	<RadzenBody class="eve-body">
+		<div class="eve-content p-3">
+			@Body
+		</div>
+	</RadzenBody>
+
+</RadzenLayout>
+
+@code {
+	protected override void OnInitialized()
+	{
+		AppState.OnChange += StateHasChanged;
+	}
+
+	public void Dispose()
+	{
+		AppState.OnChange -= StateHasChanged;
+	}
+
+}
