@@ -2,31 +2,29 @@
 
 namespace Client.Services
 {
-    public sealed class SuiLocalDevWalletService : IWalletService
+    public class SuiWalletService(SuiInterop suiInterop) : IWalletService
     {
-        private readonly IJSRuntime _js;
+        private readonly SuiInterop _suiInterop = suiInterop;
 
         public WalletType WalletType => WalletType.SuiTestnet;
 
-        public SuiLocalDevWalletService(IJSRuntime js)
-        {
-            _js = js;
-        }
-
         public async Task<string> ConnectAsync()
         {
-            return await _js.InvokeAsync<string>("walletInterop.connectSuiLocalDev");
+            return await _suiInterop.ConnectSuiAsync();
         }
 
         public Task DisconnectAsync()
         {
-            return _js.InvokeVoidAsync("walletInterop.resetSuiLocalDev").AsTask();
+            // optional later if you add a reset/exported TS function
+            return Task.CompletedTask;
         }
 
+        /* **when finishing these, will need to use the same pattern as above to add them to the SuiInterop class 
+         * and call the appropriate JS functions, then uncomment these methods**
         public Task<object> CreateProjectAsync(string packageId, string name)
         {
             return _js.InvokeAsync<object>(
-                "walletInterop.createProjectSuiLocalDev",
+                "walletInterop.createProjectSui",
                 packageId,
                 name
             ).AsTask();
@@ -35,17 +33,18 @@ namespace Client.Services
         public Task<object> SetStatusAsync(string packageId, string projectId, string adminCapId, byte status)
         {
             return _js.InvokeAsync<object>(
-                "walletInterop.setStatusSuiLocalDev",
+                "walletInterop.setStatusSui",
                 packageId,
                 projectId,
                 adminCapId,
                 status
             ).AsTask();
         }
+        */
 
         public Task ResetAsync()
         {
-            return _js.InvokeVoidAsync("walletInterop.resetSuiLocalDev").AsTask();
+            return Task.CompletedTask;
         }
     }
 }

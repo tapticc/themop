@@ -11243,9 +11243,9 @@ var UnchangedConsensusObject = new UnchangedConsensusObject$Type();
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/grpc/core.mjs
 var GrpcCoreClient = class extends CoreClient {
   #client;
-  constructor({ client: client2, ...options }) {
+  constructor({ client, ...options }) {
     super(options);
-    this.#client = client2;
+    this.#client = client;
   }
   async getObjects(options) {
     const batches = chunk(options.objectIds, 50);
@@ -11656,7 +11656,7 @@ var GrpcCoreClient = class extends CoreClient {
     });
   }
   resolveTransactionPlugin() {
-    const client2 = this.#client;
+    const client = this.#client;
     return async function resolveTransactionData(transactionData, options, next) {
       const snapshot = transactionData.snapshot();
       if (!snapshot.sender)
@@ -11664,7 +11664,7 @@ var GrpcCoreClient = class extends CoreClient {
       const grpcTransaction = transactionDataToGrpcTransaction(snapshot);
       let response;
       try {
-        response = (await client2.transactionExecutionService.simulateTransaction({
+        response = (await client.transactionExecutionService.simulateTransaction({
           transaction: grpcTransaction,
           doGasSelection: !options.onlyTransactionKind && (snapshot.gasData.budget == null || snapshot.gasData.payment == null),
           readMask: { paths: [
@@ -17092,18 +17092,18 @@ var RpcSubscription = class {
     if (this.subscribed)
       this.input.onMessage(message);
   }
-  async unsubscribe(client2) {
+  async unsubscribe(client) {
     const { subscriptionId } = this;
     this.subscribed = false;
     if (subscriptionId == null)
       return false;
     this.subscriptionId = null;
-    return client2.makeRequest(this.input.unsubscribe, [subscriptionId]);
+    return client.makeRequest(this.input.unsubscribe, [subscriptionId]);
   }
-  async subscribe(client2) {
+  async subscribe(client) {
     this.subscriptionId = null;
     this.subscribed = true;
-    const newSubscriptionId = await client2.makeRequest(this.input.method, this.input.params, this.input.signal);
+    const newSubscriptionId = await client.makeRequest(this.input.method, this.input.params, this.input.signal);
     if (this.subscribed)
       this.subscriptionId = newSubscriptionId;
   }
@@ -17494,28 +17494,28 @@ function getClient(options) {
   return options.client;
 }
 async function coreClientResolveTransactionPlugin(transactionData, options, next) {
-  const client2 = getClient(options);
-  await normalizeInputs(transactionData, client2);
-  await resolveObjectReferences(transactionData, client2);
+  const client = getClient(options);
+  await normalizeInputs(transactionData, client);
+  await resolveObjectReferences(transactionData, client);
   if (!options.onlyTransactionKind)
-    await setGasData(transactionData, client2);
+    await setGasData(transactionData, client);
   return await next();
 }
-async function setGasData(transactionData, client2) {
+async function setGasData(transactionData, client) {
   let systemState = null;
   if (!transactionData.gasData.price) {
-    systemState = (await client2.core.getCurrentSystemState()).systemState;
+    systemState = (await client.core.getCurrentSystemState()).systemState;
     transactionData.gasData.price = systemState.referenceGasPrice;
   }
-  await setGasBudget(transactionData, client2);
-  await setGasPayment(transactionData, client2);
+  await setGasBudget(transactionData, client);
+  await setGasPayment(transactionData, client);
   if (!transactionData.expiration)
-    await setExpiration(transactionData, client2, systemState);
+    await setExpiration(transactionData, client, systemState);
 }
-async function setGasBudget(transactionData, client2) {
+async function setGasBudget(transactionData, client) {
   if (transactionData.gasData.budget)
     return;
-  const simulateResult = await client2.core.simulateTransaction({
+  const simulateResult = await client.core.simulateTransaction({
     transaction: transactionData.build({ overrides: { gasData: {
       budget: String(MAX_GAS),
       payment: []
@@ -17535,7 +17535,7 @@ async function setGasBudget(transactionData, client2) {
   const gasBudget = baseComputationCostWithOverhead + BigInt(gasUsed.storageCost) - BigInt(gasUsed.storageRebate);
   transactionData.gasData.budget = String(gasBudget > baseComputationCostWithOverhead ? gasBudget : baseComputationCostWithOverhead);
 }
-async function setGasPayment(transactionData, client2) {
+async function setGasPayment(transactionData, client) {
   if (!transactionData.gasData.payment) {
     const gasPayer = transactionData.gasData.owner ?? transactionData.sender;
     if (!gasPayer)
@@ -17558,7 +17558,7 @@ async function setGasPayment(transactionData, client2) {
       }
       return arg;
     });
-    const [suiBalance, coins] = await Promise.all([usesGasCoin ? null : client2.core.getBalance({ owner: gasPayer }), client2.core.listCoins({
+    const [suiBalance, coins] = await Promise.all([usesGasCoin ? null : client.core.getBalance({ owner: gasPayer }), client.core.listCoins({
       owner: gasPayer,
       coinType: SUI_TYPE_ARG
     })]);
@@ -17582,8 +17582,8 @@ async function setGasPayment(transactionData, client2) {
     transactionData.gasData.payment = paymentCoins;
   }
 }
-async function setExpiration(transactionData, client2, existingSystemState) {
-  const [systemState, { chainIdentifier }] = await Promise.all([existingSystemState ?? client2.core.getCurrentSystemState().then((r) => r.systemState), client2.core.getChainIdentifier()]);
+async function setExpiration(transactionData, client, existingSystemState) {
+  const [systemState, { chainIdentifier }] = await Promise.all([existingSystemState ?? client.core.getCurrentSystemState().then((r) => r.systemState), client.core.getChainIdentifier()]);
   const currentEpoch = BigInt(systemState.epoch);
   transactionData.expiration = {
     $kind: "ValidDuring",
@@ -17597,13 +17597,13 @@ async function setExpiration(transactionData, client2, existingSystemState) {
     }
   };
 }
-async function resolveObjectReferences(transactionData, client2) {
+async function resolveObjectReferences(transactionData, client) {
   const objectsToResolve = transactionData.inputs.filter((input) => {
     return input.UnresolvedObject && !(input.UnresolvedObject.version || input.UnresolvedObject?.initialSharedVersion);
   });
   const dedupedIds = [...new Set(objectsToResolve.map((input) => normalizeSuiObjectId(input.UnresolvedObject.objectId)))];
   const objectChunks = dedupedIds.length ? chunk(dedupedIds, MAX_OBJECTS_PER_FETCH) : [];
-  const resolved = (await Promise.all(objectChunks.map((chunkIds) => client2.core.getObjects({ objectIds: chunkIds })))).flatMap((result) => result.objects);
+  const resolved = (await Promise.all(objectChunks.map((chunkIds) => client.core.getObjects({ objectIds: chunkIds })))).flatMap((result) => result.objects);
   const responsesById = new Map(dedupedIds.map((id, index) => {
     return [id, resolved[index]];
   }));
@@ -17650,7 +17650,7 @@ async function resolveObjectReferences(transactionData, client2) {
     });
   }
 }
-async function normalizeInputs(transactionData, client2) {
+async function normalizeInputs(transactionData, client) {
   const { inputs, commands } = transactionData;
   const moveCallsToResolve = [];
   const moveFunctionsToResolve = /* @__PURE__ */ new Set();
@@ -17673,7 +17673,7 @@ async function normalizeInputs(transactionData, client2) {
   if (moveFunctionsToResolve.size > 0)
     await Promise.all([...moveFunctionsToResolve].map(async (functionName) => {
       const [packageId, moduleName, name] = functionName.split("::");
-      const { function: def } = await client2.core.getMoveFunction({
+      const { function: def } = await client.core.getMoveFunction({
         packageId,
         moduleName,
         name
@@ -17931,20 +17931,20 @@ async function resolveCoinBalance(transactionData, buildOptions, next) {
   }
   const coinsByType = /* @__PURE__ */ new Map();
   const addressBalanceByType = /* @__PURE__ */ new Map();
-  const client2 = buildOptions.client;
-  if (!client2)
+  const client = buildOptions.client;
+  if (!client)
     throw new Error("Client must be provided to build or serialize transactions with CoinWithBalance intents");
   await Promise.all([...[...coinTypes].map(async (coinType) => {
     const { coins, addressBalance } = await getCoinsAndBalanceOfType({
       coinType,
       balance: totalByType.get(coinType),
-      client: client2,
+      client,
       owner: transactionData.sender,
       usedIds
     });
     coinsByType.set(coinType, coins);
     addressBalanceByType.set(coinType, addressBalance);
-  }), totalByType.has("gas") ? await client2.core.getBalance({
+  }), totalByType.has("gas") ? await client.core.getBalance({
     owner: transactionData.sender,
     coinType: SUI_TYPE
   }).then(({ balance }) => {
@@ -18043,10 +18043,10 @@ async function resolveCoinBalance(transactionData, buildOptions, next) {
   }
   return next();
 }
-async function getCoinsAndBalanceOfType({ coinType, balance, client: client2, owner, usedIds }) {
+async function getCoinsAndBalanceOfType({ coinType, balance, client, owner, usedIds }) {
   let remainingBalance = balance;
   const coins = [];
-  const balanceRequest = client2.core.getBalance({
+  const balanceRequest = client.core.getBalance({
     owner,
     coinType
   }).then(({ balance: balance$1 }) => {
@@ -18063,7 +18063,7 @@ async function getCoinsAndBalanceOfType({ coinType, balance, client: client2, ow
     coinBalance: BigInt(balanceResponse.coinBalance)
   };
   async function loadMoreCoins(cursor = null) {
-    const { objects, hasNextPage, cursor: nextCursor } = await client2.core.listCoins({
+    const { objects, hasNextPage, cursor: nextCursor } = await client.core.listCoins({
       owner,
       coinType,
       cursor
@@ -20174,91 +20174,42 @@ var SuiJsonRpcClient = class extends BaseClient {
 };
 
 // src/suiInterop.ts
-var client = null;
-function init(network = "localnet") {
-  const baseUrl = network === "localnet" ? "http://127.0.0.1:9000" : `https://fullnode.${network}.sui.io:443`;
-  client = new SuiGrpcClient({
+var grpcClient = null;
+var currentNetwork = null;
+var currentRpcUrl = null;
+function init(network, rpcUrl) {
+  currentNetwork = network;
+  currentRpcUrl = rpcUrl;
+  grpcClient = new SuiGrpcClient({
     network,
-    baseUrl
+    baseUrl: rpcUrl
   });
+}
+function requireInit() {
+  if (!currentNetwork || !currentRpcUrl) {
+    throw new Error("suiInterop.init(network, rpcUrl) must be called before using Sui interop.");
+  }
+  return {
+    network: currentNetwork,
+    rpcUrl: currentRpcUrl
+  };
 }
 function c() {
-  if (!client)
-    init("localnet");
-  return client;
-}
-async function connectSuiLocalDev() {
-  const wallet = pickWallet();
-  const connectFeature = wallet.features[StandardConnect];
-  if (!connectFeature) {
-    throw new Error("Wallet does not support standard:connect");
+  if (!grpcClient) {
+    const { network, rpcUrl } = requireInit();
+    grpcClient = new SuiGrpcClient({
+      network,
+      baseUrl: rpcUrl
+    });
   }
-  const result = await connectFeature.connect();
-  const accounts = result.accounts;
-  if (!accounts?.length) {
-    throw new Error("No accounts returned from wallet.");
-  }
-  return accounts[0].address;
+  return grpcClient;
 }
-async function getSuiBalance(owner) {
-  const result = await c().getBalance({ owner, coinType: "0x2::sui::SUI" });
-  return result;
-}
-async function getOwnedObjects(owner) {
-  const result = await c().listOwnedObjects({ owner });
-  return result;
-}
-async function getObjectDump(objectId) {
-  const resp = await c().ledgerService.getObject({
-    objectId,
-    // note: your generated client might expect object_id; adapt naming
-    readMask: {
-      paths: [
-        "object_id",
-        "version",
-        "digest",
-        "owner",
-        "type",
-        "data",
-        "content",
-        "move_object",
-        "bcs"
-      ]
-    }
+function makeJsonRpcClient() {
+  const { network, rpcUrl } = requireInit();
+  return new SuiJsonRpcClient({
+    network,
+    url: rpcUrl
   });
-  const obj = resp.response;
-  if (!obj)
-    return { objectId, rows: [{ name: "(error)", value: "object not found" }] };
-  const moveJson = obj.content?.fields ?? obj.moveObject?.fields ?? obj.move_object?.fields ?? obj.data?.moveObject?.fields ?? obj.data?.move_object?.fields ?? null;
-  const rows = [];
-  rows.push({ name: "object_id", value: obj.objectId ?? obj.object_id ?? objectId });
-  if (obj.type)
-    rows.push({ name: "type", value: String(obj.type) });
-  if (obj.version != null)
-    rows.push({ name: "version", value: String(obj.version) });
-  if (obj.digest)
-    rows.push({ name: "digest", value: String(obj.digest) });
-  if (obj.owner)
-    rows.push({ name: "owner", value: pretty(obj.owner) });
-  if (moveJson && typeof moveJson === "object") {
-    for (const [k, v] of Object.entries(moveJson)) {
-      rows.push({ name: k, value: pretty(v) });
-    }
-  } else {
-    rows.push({ name: "(raw_object)", value: pretty(obj) });
-  }
-  return { objectId, rows };
-}
-function pretty(v) {
-  if (v == null)
-    return "null";
-  if (typeof v === "string")
-    return v;
-  try {
-    return JSON.stringify(v, null, 2);
-  } catch {
-    return String(v);
-  }
 }
 function pickWallet(preferredName = "Slush") {
   const wallets2 = getWallets().get();
@@ -20288,34 +20239,113 @@ function pickWallet(preferredName = "Slush") {
     `No compatible wallet found. Detected: ${names}. Need standard:connect + sui:signTransaction.`
   );
 }
+async function getConnectedAccounts(wallet) {
+  let accounts = wallet.accounts ?? [];
+  if (!accounts.length) {
+    const connectFeature = wallet.features[StandardConnect];
+    if (!connectFeature) {
+      throw new Error("Wallet does not support standard:connect");
+    }
+    const result = await connectFeature.connect();
+    accounts = result.accounts ?? [];
+  }
+  if (!accounts.length) {
+    throw new Error("No accounts returned from wallet.");
+  }
+  return accounts;
+}
+async function connectSui() {
+  const wallet = pickWallet();
+  const accounts = await getConnectedAccounts(wallet);
+  return accounts[0].address;
+}
 function debugWalletFeatures() {
   return getWallets().get().map((w) => ({
     name: w.name,
-    features: Object.keys(w.features)
+    features: Object.keys(w.features),
+    accounts: (w.accounts ?? []).map((a) => a.address)
   }));
 }
-function makeClient(network) {
-  return new SuiJsonRpcClient({
-    network,
-    url: `https://fullnode.${network}.sui.io:443`
-    //baseUrl: `https://fullnode.${network}.sui.io:443`,
+async function getSuiBalance(owner) {
+  const result = await c().getBalance({
+    owner,
+    coinType: "0x2::sui::SUI"
   });
+  return result;
+}
+async function getOwnedObjects(owner) {
+  const result = await c().listOwnedObjects({ owner });
+  return result;
+}
+async function getObjectDump(objectId) {
+  const resp = await c().ledgerService.getObject({
+    objectId,
+    readMask: {
+      paths: [
+        "object_id",
+        "version",
+        "digest",
+        "owner",
+        "type",
+        "data",
+        "content",
+        "move_object",
+        "bcs"
+      ]
+    }
+  });
+  const obj = resp.response;
+  if (!obj) {
+    return {
+      objectId,
+      rows: [{ name: "(error)", value: "object not found" }]
+    };
+  }
+  const moveJson = obj.content?.fields ?? obj.moveObject?.fields ?? obj.move_object?.fields ?? obj.data?.moveObject?.fields ?? obj.data?.move_object?.fields ?? null;
+  const rows = [];
+  rows.push({
+    name: "object_id",
+    value: obj.objectId ?? obj.object_id ?? objectId
+  });
+  if (obj.type) {
+    rows.push({ name: "type", value: String(obj.type) });
+  }
+  if (obj.version != null) {
+    rows.push({ name: "version", value: String(obj.version) });
+  }
+  if (obj.digest) {
+    rows.push({ name: "digest", value: String(obj.digest) });
+  }
+  if (obj.owner) {
+    rows.push({ name: "owner", value: pretty(obj.owner) });
+  }
+  if (moveJson && typeof moveJson === "object") {
+    for (const [k, v] of Object.entries(moveJson)) {
+      rows.push({ name: k, value: pretty(v) });
+    }
+  } else {
+    rows.push({ name: "(raw_object)", value: pretty(obj) });
+  }
+  return { objectId, rows };
+}
+function pretty(v) {
+  if (v == null)
+    return "null";
+  if (typeof v === "string")
+    return v;
+  try {
+    return JSON.stringify(v, null, 2);
+  } catch {
+    return String(v);
+  }
 }
 async function findOwnedObjectIdByType(args) {
   const wallet = pickWallet();
-  const connectFeature = wallet.features[StandardConnect];
-  if (!connectFeature) {
-    throw new Error("Wallet does not support standard:connect");
-  }
-  const result = await connectFeature.connect();
-  const accounts = result.accounts;
-  if (!accounts?.length)
-    throw new Error("No accounts returned from wallet.");
-  const account = accounts[0];
+  const accounts = await getConnectedAccounts(wallet);
   const owner = accounts[0].address;
-  const client2 = makeClient(args.network);
+  const client = makeJsonRpcClient();
   const typeString = `${args.packageId}::${args.module}::${args.objectName}`;
-  const resp = await client2.getOwnedObjects({
+  const resp = await client.getOwnedObjects({
     owner,
     filter: {
       StructType: typeString
@@ -20330,16 +20360,8 @@ async function findOwnedObjectIdByType(args) {
   }
   return obj.data.objectId;
 }
-window.walletInterop = {
-  connectSuiLocalDev,
-  findOwnedObjectIdByType,
-  getOwnedObjects,
-  getObjectDump,
-  getSuiBalance,
-  debugWalletFeatures
-};
 export {
-  connectSuiLocalDev,
+  connectSui,
   debugWalletFeatures,
   findOwnedObjectIdByType,
   getObjectDump,

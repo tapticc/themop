@@ -1,7 +1,10 @@
 ﻿@using Client.Models
+@using Client.Services
 @inherits LayoutComponentBase
 @inject AppState AppState
 @inject NavigationManager Nav
+@inject SuiInterop SuiInterop
+@inject SuiNetworkService Network
 @implements IDisposable
 
 <RadzenLayout class="eve-layout">
@@ -30,14 +33,30 @@
 </RadzenLayout>
 
 @code {
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		AppState.OnChange += StateHasChanged;
+		await SuiInterop.InitAsync(
+			Network.Current.Network.ToString().ToLowerInvariant(),
+			Network.Current.RpcUrl
+		);
+
+		Network.OnChanged += HandleNetworkChanged;
+	}
+
+	private async void HandleNetworkChanged()
+	{
+		await SuiInterop.InitAsync(
+			Network.Current.Network.ToString().ToLowerInvariant(),
+			Network.Current.RpcUrl
+		);
+
+		await InvokeAsync(StateHasChanged);
 	}
 
 	public void Dispose()
 	{
 		AppState.OnChange -= StateHasChanged;
+		Network.OnChanged -= HandleNetworkChanged;
 	}
-
 }

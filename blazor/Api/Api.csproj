@@ -22,6 +22,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Common\Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Protobuf Update="Protos\google\rpc\error_details.proto" GrpcServices="Client" />
       <Protobuf Update="Protos\google\rpc\status.proto" GrpcServices="Client" />
     </ItemGroup>

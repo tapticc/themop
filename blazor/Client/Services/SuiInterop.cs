@@ -1,40 +1,57 @@
 ﻿using Microsoft.JSInterop;
 
-namespace Client.Services
+namespace Client.Services;
+
+public class SuiInterop(IJSRuntime js) : IAsyncDisposable
 {
-    public class SuiInterop(IJSRuntime js) : IAsyncDisposable
+    private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
+        js.InvokeAsync<IJSObjectReference>("import", "./js/suiInterop.js").AsTask());
+
+    public async Task InitAsync(string network, string rpcUrl)
     {
-        private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() => js.InvokeAsync<IJSObjectReference>(
-                "import", "./js/suiInterop.js").AsTask());
+        var module = await _moduleTask.Value;
+        await module.InvokeVoidAsync("init", network, rpcUrl);
+    }
 
-        public async Task InitAsync(string network = "localnet")
-        {
-            var module = await _moduleTask.Value;
-            await module.InvokeVoidAsync("init", network);
-        }
+    public async Task<string> ConnectSuiAsync()
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<string>("connectSui");
+    }
 
-        public async Task<string> GetSuiBalanceJsonAsync(string owner)
-        {
-            var module = await _moduleTask.Value;
-            // returns whatever your JS returns; JSON string is easiest to start with
-            return await module.InvokeAsync<string>("getSuiBalance", owner);
-        }
-
-        public async Task<string> GetOwnedObjectsJsonAsync(string owner)
-        {
-            var module = await _moduleTask.Value;
-            return await module.InvokeAsync<string>("getOwnedObjects", owner);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            if (_moduleTask.IsValueCreated)
+    public async Task<string> FindOwnedObjectIdByTypeAsync(string packageId, string moduleName, string objectName)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<string>(
+            "findOwnedObjectIdByType",
+            new
             {
-                var module = await _moduleTask.Value;
-                await module.DisposeAsync();
-            }
+                packageId,
+                module = moduleName,
+                objectName
+            });
+    }
 
-            GC.SuppressFinalize(this);
+    public async Task<object> GetSuiBalanceAsync(string owner)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<object>("getSuiBalance", owner);
+    }
+
+    public async Task<object> GetOwnedObjectsAsync(string owner)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<object>("getOwnedObjects", owner);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_moduleTask.IsValueCreated)
+        {
+            var module = await _moduleTask.Value;
+            await module.DisposeAsync();
         }
+
+        GC.SuppressFinalize(this);
     }
 }

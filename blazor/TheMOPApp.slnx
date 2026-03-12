@@ -5,4 +5,5 @@
   </Folder>
   <Project Path="Api/Api.csproj" />
   <Project Path="Client/Client.csproj" />
+  <Project Path="Common/Common.csproj" Id="f6e0b59e-3b68-41e3-81c6-0929c4204dae" />
 </Solution>

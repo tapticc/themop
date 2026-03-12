@@ -1,5 +1,7 @@
 ﻿@page "/"
 @using Client.Models
+@using Common.Sui
+@inject Client.Services.SuiApiClient Api
 @inject AppState AppState
 
 <PageTitle>The Ministry of Passage</PageTitle>
@@ -9,3 +11,77 @@
 <p class="eve-text-muted">
 	Connected to EVE Frontier with wallet address: <b>@AppState.WalletAddress</b>
 </p>
+
+@if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="alert alert-danger mt-3">
+        @Error
+    </div>
+}
+
+@if (Character is not null)
+{
+    <div class="card mt-3">
+        <div class="card-header">Character Result</div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Player Profile ID</dt>
+                <dd class="col-sm-9">@Character.PlayerProfileId</dd>
+
+                <dt class="col-sm-3">Character ID</dt>
+                <dd class="col-sm-9">@Character.CharacterId</dd>
+
+                <dt class="col-sm-3">Character Name</dt>
+                <dd class="col-sm-9">@Character.CharacterName</dd>
+
+                <dt class="col-sm-3">Owner Cap ID</dt>
+                <dd class="col-sm-9">@Character.OwnerCapId</dd>
+            </dl>
+        </div>
+    </div>
+}
+
+@code {
+    // private string TBCPackageId { get; set; } = "0x40155395c8cbeb063b4e9e02ef054f0c5dcaa19a19fd719f7dc2ef274b7a939b";
+
+    private CharacterSummary? Character { get; set; }
+    private string? Error { get; set; }
+    private bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCharacterData();
+    }
+
+    private async Task LoadCharacterData()
+    {
+        Error = "";
+        Character = null;
+        IsLoading = true;
+
+        if (AppState.WalletAddress == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var data = await Api.GetCharacterFromWalletAsync(AppState.WalletAddress);
+
+            Character = data ?? new();
+        }
+        catch (Exception ex)
+        {
+            Error = $"Error loading character: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+
+        if (Character is null)
+        {
+            Error = "No PlayerProfile or Character object was found for that wallet.";
+        }
+    }
+}

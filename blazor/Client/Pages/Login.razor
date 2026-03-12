@@ -1,9 +1,12 @@
 ﻿@page "/login"
 @using Client.Models
 @using Client.Services
-@inject SuiLocalDevWalletService Wallet
+@inject SuiWalletService WalletService
 @inject NavigationManager Nav
 @inject AppState AppState
+@inject SuiInterop SuiInterop
+@inject SuiNetworkService Network
+@implements IDisposable
 
 <div class="mop-login-container">
     <img src="images/TheMOPLogo.png" class="mop-login-logo" />
@@ -12,23 +15,52 @@
             Please confirm your identity. Your compliance is being recorded...
         </p>
 
-        <RadzenButton Text="Confirm" Click="@(() => Connect())" Disabled="@_connecting" />
+        <RadzenButton Text="Confirm" Click="@(() => ConnectWallet())" Disabled="@_connecting" />
+
+        @if (!string.IsNullOrWhiteSpace(_error))
+        {
+            <p class="text-danger">@_error</p>
+        }
     </div>
 </div>
 
 @code {
     bool _connecting;
     string? _address;
+    private string? _error;
 
-    async Task Connect()
+    protected override async Task OnInitializedAsync()
+    {
+        await SuiInterop.InitAsync(
+            Network.Current.Network.ToString().ToLowerInvariant(),
+            Network.Current.RpcUrl
+        );
+
+        Network.OnChanged += HandleNetworkChanged;
+    }
+
+    private async void HandleNetworkChanged()
+    {
+        await SuiInterop.InitAsync(
+            Network.Current.Network.ToString().ToLowerInvariant(),
+            Network.Current.RpcUrl
+        );
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Network.OnChanged -= HandleNetworkChanged;
+    }
+
+    async Task ConnectWallet()
     {
         try
         {
             _connecting = true;
 
-            _address = await Wallet.ConnectAsync(
-                // "http:127.0.0.1:9000"
-            );
+            _address = await WalletService.ConnectAsync();
 
             AppState.SetWallet(WalletType.EveFrontier, _address);
 
@@ -39,7 +71,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            _error = ex.Message;
         }
         finally
         {
