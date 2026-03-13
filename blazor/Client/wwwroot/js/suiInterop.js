@@ -16934,246 +16934,6 @@ _AppReadyEvent_detail = /* @__PURE__ */ new WeakMap();
 // ../node_modules/.pnpm/@wallet-standard+features@1.1.0/node_modules/@wallet-standard/features/lib/esm/connect.js
 var StandardConnect = "standard:connect";
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/jsonRpc/errors.mjs
-var CODE_TO_ERROR_TYPE = {
-  "-32700": "ParseError",
-  "-32701": "OversizedRequest",
-  "-32702": "OversizedResponse",
-  "-32600": "InvalidRequest",
-  "-32601": "MethodNotFound",
-  "-32602": "InvalidParams",
-  "-32603": "InternalError",
-  "-32604": "ServerBusy",
-  "-32000": "CallExecutionFailed",
-  "-32001": "UnknownError",
-  "-32003": "SubscriptionClosed",
-  "-32004": "SubscriptionClosedWithError",
-  "-32005": "BatchesNotSupported",
-  "-32006": "TooManySubscriptions",
-  "-32050": "TransientError",
-  "-32002": "TransactionExecutionClientError"
-};
-var SuiHTTPTransportError = class extends Error {
-};
-var JsonRpcError = class extends SuiHTTPTransportError {
-  constructor(message, code) {
-    super(message);
-    this.code = code;
-    this.type = CODE_TO_ERROR_TYPE[code] ?? "ServerError";
-  }
-};
-var SuiHTTPStatusError = class extends SuiHTTPTransportError {
-  constructor(message, status, statusText) {
-    super(message);
-    this.status = status;
-    this.statusText = statusText;
-  }
-};
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/jsonRpc/rpc-websocket-client.mjs
-function getWebsocketUrl(httpUrl) {
-  const url = new URL(httpUrl);
-  url.protocol = url.protocol.replace("http", "ws");
-  return url.toString();
-}
-var DEFAULT_CLIENT_OPTIONS = {
-  WebSocketConstructor: typeof WebSocket !== "undefined" ? WebSocket : void 0,
-  callTimeout: 3e4,
-  reconnectTimeout: 3e3,
-  maxReconnects: 5
-};
-var WebsocketClient = class {
-  #requestId = 0;
-  #disconnects = 0;
-  #webSocket = null;
-  #connectionPromise = null;
-  #subscriptions = /* @__PURE__ */ new Set();
-  #pendingRequests = /* @__PURE__ */ new Map();
-  constructor(endpoint, options = {}) {
-    this.endpoint = endpoint;
-    this.options = {
-      ...DEFAULT_CLIENT_OPTIONS,
-      ...options
-    };
-    if (!this.options.WebSocketConstructor)
-      throw new Error("Missing WebSocket constructor");
-    if (this.endpoint.startsWith("http"))
-      this.endpoint = getWebsocketUrl(this.endpoint);
-  }
-  async makeRequest(method, params, signal) {
-    const webSocket = await this.#setupWebSocket();
-    return new Promise((resolve, reject) => {
-      this.#requestId += 1;
-      this.#pendingRequests.set(this.#requestId, {
-        resolve,
-        reject,
-        timeout: setTimeout(() => {
-          this.#pendingRequests.delete(this.#requestId);
-          reject(/* @__PURE__ */ new Error(`Request timeout: ${method}`));
-        }, this.options.callTimeout)
-      });
-      signal?.addEventListener("abort", () => {
-        this.#pendingRequests.delete(this.#requestId);
-        reject(signal.reason);
-      });
-      webSocket.send(JSON.stringify({
-        jsonrpc: "2.0",
-        id: this.#requestId,
-        method,
-        params
-      }));
-    }).then(({ error, result }) => {
-      if (error)
-        throw new JsonRpcError(error.message, error.code);
-      return result;
-    });
-  }
-  #setupWebSocket() {
-    if (this.#connectionPromise)
-      return this.#connectionPromise;
-    this.#connectionPromise = new Promise((resolve) => {
-      this.#webSocket?.close();
-      this.#webSocket = new this.options.WebSocketConstructor(this.endpoint);
-      this.#webSocket.addEventListener("open", () => {
-        this.#disconnects = 0;
-        resolve(this.#webSocket);
-      });
-      this.#webSocket.addEventListener("close", () => {
-        this.#disconnects++;
-        if (this.#disconnects <= this.options.maxReconnects)
-          setTimeout(() => {
-            this.#reconnect();
-          }, this.options.reconnectTimeout);
-      });
-      this.#webSocket.addEventListener("message", ({ data }) => {
-        let json;
-        try {
-          json = JSON.parse(data);
-        } catch (error) {
-          console.error(new Error(`Failed to parse RPC message: ${data}`, { cause: error }));
-          return;
-        }
-        if ("id" in json && json.id != null && this.#pendingRequests.has(json.id)) {
-          const { resolve: resolve$1, timeout } = this.#pendingRequests.get(json.id);
-          clearTimeout(timeout);
-          resolve$1(json);
-        } else if ("params" in json) {
-          const { params } = json;
-          this.#subscriptions.forEach((subscription) => {
-            if (subscription.subscriptionId === params.subscription) {
-              if (params.subscription === subscription.subscriptionId)
-                subscription.onMessage(params.result);
-            }
-          });
-        }
-      });
-    });
-    return this.#connectionPromise;
-  }
-  async #reconnect() {
-    this.#webSocket?.close();
-    this.#connectionPromise = null;
-    return Promise.allSettled([...this.#subscriptions].map((subscription) => subscription.subscribe(this)));
-  }
-  async subscribe(input) {
-    const subscription = new RpcSubscription(input);
-    this.#subscriptions.add(subscription);
-    await subscription.subscribe(this);
-    return () => subscription.unsubscribe(this);
-  }
-};
-var RpcSubscription = class {
-  constructor(input) {
-    this.subscriptionId = null;
-    this.subscribed = false;
-    this.input = input;
-  }
-  onMessage(message) {
-    if (this.subscribed)
-      this.input.onMessage(message);
-  }
-  async unsubscribe(client) {
-    const { subscriptionId } = this;
-    this.subscribed = false;
-    if (subscriptionId == null)
-      return false;
-    this.subscriptionId = null;
-    return client.makeRequest(this.input.unsubscribe, [subscriptionId]);
-  }
-  async subscribe(client) {
-    this.subscriptionId = null;
-    this.subscribed = true;
-    const newSubscriptionId = await client.makeRequest(this.input.method, this.input.params, this.input.signal);
-    if (this.subscribed)
-      this.subscriptionId = newSubscriptionId;
-  }
-};
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/jsonRpc/http-transport.mjs
-var JsonRpcHTTPTransport = class {
-  #requestId = 0;
-  #options;
-  #websocketClient;
-  constructor(options) {
-    this.#options = options;
-  }
-  fetch(input, init2) {
-    const fetchFn = this.#options.fetch ?? fetch;
-    if (!fetchFn)
-      throw new Error("The current environment does not support fetch, you can provide a fetch implementation in the options for SuiHTTPTransport.");
-    return fetchFn(input, init2);
-  }
-  #getWebsocketClient() {
-    if (!this.#websocketClient) {
-      const WebSocketConstructor = this.#options.WebSocketConstructor ?? WebSocket;
-      if (!WebSocketConstructor)
-        throw new Error("The current environment does not support WebSocket, you can provide a WebSocketConstructor in the options for SuiHTTPTransport.");
-      this.#websocketClient = new WebsocketClient(this.#options.websocket?.url ?? this.#options.url, {
-        WebSocketConstructor,
-        ...this.#options.websocket
-      });
-    }
-    return this.#websocketClient;
-  }
-  async request(input) {
-    this.#requestId += 1;
-    const res = await this.fetch(this.#options.rpc?.url ?? this.#options.url, {
-      method: "POST",
-      signal: input.signal,
-      headers: {
-        "Content-Type": "application/json",
-        "Client-Sdk-Type": "typescript",
-        "Client-Sdk-Version": PACKAGE_VERSION,
-        "Client-Target-Api-Version": TARGETED_RPC_VERSION,
-        "Client-Request-Method": input.method,
-        ...this.#options.rpc?.headers
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: this.#requestId,
-        method: input.method,
-        params: input.params
-      })
-    });
-    if (!res.ok)
-      throw new SuiHTTPStatusError(`Unexpected status code: ${res.status}`, res.status, res.statusText);
-    const data = await res.json();
-    if ("error" in data && data.error != null)
-      throw new JsonRpcError(data.error.message, data.error.code);
-    return data.result;
-  }
-  async subscribe(input) {
-    const unsubscribe = await this.#getWebsocketClient().subscribe(input);
-    if (input.signal) {
-      input.signal.throwIfAborted();
-      input.signal.addEventListener("abort", () => {
-        unsubscribe();
-      });
-    }
-    return async () => !!await unsubscribe();
-  }
-};
-
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Commands.mjs
 var TransactionCommands = {
   MoveCall(input) {
@@ -17260,100 +17020,6 @@ var TransactionCommands = {
     };
   }
 };
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/v2.mjs
-function enumUnion(options) {
-  return union(Object.entries(options).map(([key, value]) => object({ [key]: value })));
-}
-var Argument3 = enumUnion({
-  GasCoin: literal(true),
-  Input: pipe(number(), integer()),
-  Result: pipe(number(), integer()),
-  NestedResult: tuple([pipe(number(), integer()), pipe(number(), integer())])
-});
-var GasData2 = object({
-  budget: nullable(JsonU64),
-  price: nullable(JsonU64),
-  owner: nullable(SuiAddress),
-  payment: nullable(array(ObjectRefSchema))
-});
-var ProgrammableMoveCall2 = object({
-  package: ObjectID,
-  module: string(),
-  function: string(),
-  typeArguments: array(string()),
-  arguments: array(Argument3)
-});
-var $Intent2 = object({
-  name: string(),
-  inputs: record(string(), union([Argument3, array(Argument3)])),
-  data: record(string(), unknown())
-});
-var Command3 = enumUnion({
-  MoveCall: ProgrammableMoveCall2,
-  TransferObjects: object({
-    objects: array(Argument3),
-    address: Argument3
-  }),
-  SplitCoins: object({
-    coin: Argument3,
-    amounts: array(Argument3)
-  }),
-  MergeCoins: object({
-    destination: Argument3,
-    sources: array(Argument3)
-  }),
-  Publish: object({
-    modules: array(BCSBytes),
-    dependencies: array(ObjectID)
-  }),
-  MakeMoveVec: object({
-    type: nullable(string()),
-    elements: array(Argument3)
-  }),
-  Upgrade: object({
-    modules: array(BCSBytes),
-    dependencies: array(ObjectID),
-    package: ObjectID,
-    ticket: Argument3
-  }),
-  $Intent: $Intent2
-});
-var CallArg2 = enumUnion({
-  Object: enumUnion({
-    ImmOrOwnedObject: ObjectRefSchema,
-    SharedObject: object({
-      objectId: ObjectID,
-      initialSharedVersion: JsonU64,
-      mutable: boolean()
-    }),
-    Receiving: ObjectRefSchema
-  }),
-  Pure: object({ bytes: BCSBytes }),
-  UnresolvedPure: object({ value: unknown() }),
-  UnresolvedObject: object({
-    objectId: ObjectID,
-    version: optional(nullable(JsonU64)),
-    digest: optional(nullable(string())),
-    initialSharedVersion: optional(nullable(JsonU64)),
-    mutable: optional(nullable(boolean()))
-  }),
-  FundsWithdrawal: FundsWithdrawalArgSchema
-});
-var TransactionExpiration5 = enumUnion({
-  None: literal(true),
-  Epoch: JsonU64,
-  ValidDuring: ValidDuringSchema
-});
-var SerializedTransactionDataV2Schema = object({
-  version: literal(2),
-  sender: nullish(SuiAddress),
-  expiration: nullish(TransactionExpiration5),
-  gasData: GasData2,
-  inputs: array(CallArg2),
-  commands: array(Command3),
-  digest: optional(nullable(string()))
-});
 
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Inputs.mjs
 function Pure(data) {
@@ -17483,6 +17149,283 @@ function getPureBcsSchema(typeSignature) {
       return null;
   }
 }
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/intents/CoinWithBalance.mjs
+var COIN_WITH_BALANCE = "CoinWithBalance";
+var SUI_TYPE = normalizeStructTag("0x2::sui::SUI");
+var CoinWithBalanceData = object({
+  type: string(),
+  balance: bigint()
+});
+async function resolveCoinBalance(transactionData, buildOptions, next) {
+  const coinTypes = /* @__PURE__ */ new Set();
+  const totalByType = /* @__PURE__ */ new Map();
+  if (!transactionData.sender)
+    throw new Error("Sender must be set to resolve CoinWithBalance");
+  for (const command of transactionData.commands)
+    if (command.$kind === "$Intent" && command.$Intent.name === COIN_WITH_BALANCE) {
+      const { type, balance } = parse(CoinWithBalanceData, command.$Intent.data);
+      if (type !== "gas" && balance > 0n)
+        coinTypes.add(type);
+      totalByType.set(type, (totalByType.get(type) ?? 0n) + balance);
+    }
+  const usedIds = /* @__PURE__ */ new Set();
+  for (const input of transactionData.inputs) {
+    if (input.Object?.ImmOrOwnedObject)
+      usedIds.add(input.Object.ImmOrOwnedObject.objectId);
+    if (input.UnresolvedObject?.objectId)
+      usedIds.add(input.UnresolvedObject.objectId);
+  }
+  const coinsByType = /* @__PURE__ */ new Map();
+  const addressBalanceByType = /* @__PURE__ */ new Map();
+  const client = buildOptions.client;
+  if (!client)
+    throw new Error("Client must be provided to build or serialize transactions with CoinWithBalance intents");
+  await Promise.all([...[...coinTypes].map(async (coinType) => {
+    const { coins, addressBalance } = await getCoinsAndBalanceOfType({
+      coinType,
+      balance: totalByType.get(coinType),
+      client,
+      owner: transactionData.sender,
+      usedIds
+    });
+    coinsByType.set(coinType, coins);
+    addressBalanceByType.set(coinType, addressBalance);
+  }), totalByType.has("gas") ? await client.core.getBalance({
+    owner: transactionData.sender,
+    coinType: SUI_TYPE
+  }).then(({ balance }) => {
+    addressBalanceByType.set("gas", BigInt(balance.addressBalance));
+  }) : null]);
+  const mergedCoins = /* @__PURE__ */ new Map();
+  for (const [index, transaction] of transactionData.commands.entries()) {
+    if (transaction.$kind !== "$Intent" || transaction.$Intent.name !== COIN_WITH_BALANCE)
+      continue;
+    const { type, balance } = transaction.$Intent.data;
+    if (balance === 0n) {
+      transactionData.replaceCommand(index, TransactionCommands.MoveCall({
+        target: "0x2::coin::zero",
+        typeArguments: [type === "gas" ? SUI_TYPE : type]
+      }));
+      continue;
+    }
+    const commands = [];
+    if (addressBalanceByType.get(type) >= totalByType.get(type))
+      commands.push(TransactionCommands.MoveCall({
+        target: "0x2::coin::redeem_funds",
+        typeArguments: [type === "gas" ? SUI_TYPE : type],
+        arguments: [transactionData.addInput("withdrawal", Inputs.FundsWithdrawal({
+          reservation: {
+            $kind: "MaxAmountU64",
+            MaxAmountU64: String(balance)
+          },
+          typeArg: {
+            $kind: "Balance",
+            Balance: type === "gas" ? SUI_TYPE : type
+          },
+          withdrawFrom: {
+            $kind: "Sender",
+            Sender: true
+          }
+        }))]
+      }));
+    else {
+      if (!mergedCoins.has(type)) {
+        const addressBalance = addressBalanceByType.get(type) ?? 0n;
+        const coinType = type === "gas" ? SUI_TYPE : type;
+        let baseCoin;
+        let restCoins;
+        if (type === "gas") {
+          baseCoin = {
+            $kind: "GasCoin",
+            GasCoin: true
+          };
+          restCoins = [];
+        } else
+          [baseCoin, ...restCoins] = coinsByType.get(type).map((coin) => transactionData.addInput("object", Inputs.ObjectRef({
+            objectId: coin.objectId,
+            digest: coin.digest,
+            version: coin.version
+          })));
+        if (addressBalance > 0n) {
+          commands.push(TransactionCommands.MoveCall({
+            target: "0x2::coin::redeem_funds",
+            typeArguments: [coinType],
+            arguments: [transactionData.addInput("withdrawal", Inputs.FundsWithdrawal({
+              reservation: {
+                $kind: "MaxAmountU64",
+                MaxAmountU64: String(addressBalance)
+              },
+              typeArg: {
+                $kind: "Balance",
+                Balance: coinType
+              },
+              withdrawFrom: {
+                $kind: "Sender",
+                Sender: true
+              }
+            }))]
+          }));
+          commands.push(TransactionCommands.MergeCoins(baseCoin, [{
+            $kind: "Result",
+            Result: index + commands.length - 1
+          }, ...restCoins]));
+        } else if (restCoins.length > 0)
+          commands.push(TransactionCommands.MergeCoins(baseCoin, restCoins));
+        mergedCoins.set(type, baseCoin);
+      }
+      commands.push(TransactionCommands.SplitCoins(mergedCoins.get(type), [transactionData.addInput("pure", Inputs.Pure(suiBcs.u64().serialize(balance)))]));
+    }
+    transactionData.replaceCommand(index, commands);
+    transactionData.mapArguments((arg, _command, commandIndex) => {
+      if (commandIndex >= index && commandIndex < index + commands.length)
+        return arg;
+      if (arg.$kind === "Result" && arg.Result === index)
+        return {
+          $kind: "NestedResult",
+          NestedResult: [index + commands.length - 1, 0]
+        };
+      return arg;
+    });
+  }
+  return next();
+}
+async function getCoinsAndBalanceOfType({ coinType, balance, client, owner, usedIds }) {
+  let remainingBalance = balance;
+  const coins = [];
+  const balanceRequest = client.core.getBalance({
+    owner,
+    coinType
+  }).then(({ balance: balance$1 }) => {
+    remainingBalance -= BigInt(balance$1.addressBalance);
+    return balance$1;
+  });
+  const [allCoins, balanceResponse] = await Promise.all([loadMoreCoins(), balanceRequest]);
+  if (BigInt(balanceResponse.balance) < balance)
+    throw new Error(`Insufficient balance of ${coinType} for owner ${owner}. Required: ${balance}, Available: ${balance - remainingBalance}`);
+  return {
+    coins: allCoins,
+    balance: BigInt(balanceResponse.coinBalance),
+    addressBalance: BigInt(balanceResponse.addressBalance),
+    coinBalance: BigInt(balanceResponse.coinBalance)
+  };
+  async function loadMoreCoins(cursor = null) {
+    const { objects, hasNextPage, cursor: nextCursor } = await client.core.listCoins({
+      owner,
+      coinType,
+      cursor
+    });
+    await balanceRequest;
+    if (remainingBalance > 0n) {
+      for (const coin of objects) {
+        if (usedIds.has(coin.objectId))
+          continue;
+        const coinBalance = BigInt(coin.balance);
+        coins.push(coin);
+        remainingBalance -= coinBalance;
+        if (remainingBalance <= 0)
+          break;
+      }
+      if (hasNextPage)
+        return loadMoreCoins(nextCursor);
+    }
+    return coins;
+  }
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/v2.mjs
+function enumUnion(options) {
+  return union(Object.entries(options).map(([key, value]) => object({ [key]: value })));
+}
+var Argument3 = enumUnion({
+  GasCoin: literal(true),
+  Input: pipe(number(), integer()),
+  Result: pipe(number(), integer()),
+  NestedResult: tuple([pipe(number(), integer()), pipe(number(), integer())])
+});
+var GasData2 = object({
+  budget: nullable(JsonU64),
+  price: nullable(JsonU64),
+  owner: nullable(SuiAddress),
+  payment: nullable(array(ObjectRefSchema))
+});
+var ProgrammableMoveCall2 = object({
+  package: ObjectID,
+  module: string(),
+  function: string(),
+  typeArguments: array(string()),
+  arguments: array(Argument3)
+});
+var $Intent2 = object({
+  name: string(),
+  inputs: record(string(), union([Argument3, array(Argument3)])),
+  data: record(string(), unknown())
+});
+var Command3 = enumUnion({
+  MoveCall: ProgrammableMoveCall2,
+  TransferObjects: object({
+    objects: array(Argument3),
+    address: Argument3
+  }),
+  SplitCoins: object({
+    coin: Argument3,
+    amounts: array(Argument3)
+  }),
+  MergeCoins: object({
+    destination: Argument3,
+    sources: array(Argument3)
+  }),
+  Publish: object({
+    modules: array(BCSBytes),
+    dependencies: array(ObjectID)
+  }),
+  MakeMoveVec: object({
+    type: nullable(string()),
+    elements: array(Argument3)
+  }),
+  Upgrade: object({
+    modules: array(BCSBytes),
+    dependencies: array(ObjectID),
+    package: ObjectID,
+    ticket: Argument3
+  }),
+  $Intent: $Intent2
+});
+var CallArg2 = enumUnion({
+  Object: enumUnion({
+    ImmOrOwnedObject: ObjectRefSchema,
+    SharedObject: object({
+      objectId: ObjectID,
+      initialSharedVersion: JsonU64,
+      mutable: boolean()
+    }),
+    Receiving: ObjectRefSchema
+  }),
+  Pure: object({ bytes: BCSBytes }),
+  UnresolvedPure: object({ value: unknown() }),
+  UnresolvedObject: object({
+    objectId: ObjectID,
+    version: optional(nullable(JsonU64)),
+    digest: optional(nullable(string())),
+    initialSharedVersion: optional(nullable(JsonU64)),
+    mutable: optional(nullable(boolean()))
+  }),
+  FundsWithdrawal: FundsWithdrawalArgSchema
+});
+var TransactionExpiration5 = enumUnion({
+  None: literal(true),
+  Epoch: JsonU64,
+  ValidDuring: ValidDuringSchema
+});
+var SerializedTransactionDataV2Schema = object({
+  version: literal(2),
+  sender: nullish(SuiAddress),
+  expiration: nullish(TransactionExpiration5),
+  gasData: GasData2,
+  inputs: array(CallArg2),
+  commands: array(Command3),
+  digest: optional(nullable(string()))
+});
 
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/core-resolver.mjs
 var MAX_OBJECTS_PER_FETCH = 50;
@@ -17901,189 +17844,6 @@ function namedPackagesPlugin() {
     }));
     await next();
   };
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/intents/CoinWithBalance.mjs
-var COIN_WITH_BALANCE = "CoinWithBalance";
-var SUI_TYPE = normalizeStructTag("0x2::sui::SUI");
-var CoinWithBalanceData = object({
-  type: string(),
-  balance: bigint()
-});
-async function resolveCoinBalance(transactionData, buildOptions, next) {
-  const coinTypes = /* @__PURE__ */ new Set();
-  const totalByType = /* @__PURE__ */ new Map();
-  if (!transactionData.sender)
-    throw new Error("Sender must be set to resolve CoinWithBalance");
-  for (const command of transactionData.commands)
-    if (command.$kind === "$Intent" && command.$Intent.name === COIN_WITH_BALANCE) {
-      const { type, balance } = parse(CoinWithBalanceData, command.$Intent.data);
-      if (type !== "gas" && balance > 0n)
-        coinTypes.add(type);
-      totalByType.set(type, (totalByType.get(type) ?? 0n) + balance);
-    }
-  const usedIds = /* @__PURE__ */ new Set();
-  for (const input of transactionData.inputs) {
-    if (input.Object?.ImmOrOwnedObject)
-      usedIds.add(input.Object.ImmOrOwnedObject.objectId);
-    if (input.UnresolvedObject?.objectId)
-      usedIds.add(input.UnresolvedObject.objectId);
-  }
-  const coinsByType = /* @__PURE__ */ new Map();
-  const addressBalanceByType = /* @__PURE__ */ new Map();
-  const client = buildOptions.client;
-  if (!client)
-    throw new Error("Client must be provided to build or serialize transactions with CoinWithBalance intents");
-  await Promise.all([...[...coinTypes].map(async (coinType) => {
-    const { coins, addressBalance } = await getCoinsAndBalanceOfType({
-      coinType,
-      balance: totalByType.get(coinType),
-      client,
-      owner: transactionData.sender,
-      usedIds
-    });
-    coinsByType.set(coinType, coins);
-    addressBalanceByType.set(coinType, addressBalance);
-  }), totalByType.has("gas") ? await client.core.getBalance({
-    owner: transactionData.sender,
-    coinType: SUI_TYPE
-  }).then(({ balance }) => {
-    addressBalanceByType.set("gas", BigInt(balance.addressBalance));
-  }) : null]);
-  const mergedCoins = /* @__PURE__ */ new Map();
-  for (const [index, transaction] of transactionData.commands.entries()) {
-    if (transaction.$kind !== "$Intent" || transaction.$Intent.name !== COIN_WITH_BALANCE)
-      continue;
-    const { type, balance } = transaction.$Intent.data;
-    if (balance === 0n) {
-      transactionData.replaceCommand(index, TransactionCommands.MoveCall({
-        target: "0x2::coin::zero",
-        typeArguments: [type === "gas" ? SUI_TYPE : type]
-      }));
-      continue;
-    }
-    const commands = [];
-    if (addressBalanceByType.get(type) >= totalByType.get(type))
-      commands.push(TransactionCommands.MoveCall({
-        target: "0x2::coin::redeem_funds",
-        typeArguments: [type === "gas" ? SUI_TYPE : type],
-        arguments: [transactionData.addInput("withdrawal", Inputs.FundsWithdrawal({
-          reservation: {
-            $kind: "MaxAmountU64",
-            MaxAmountU64: String(balance)
-          },
-          typeArg: {
-            $kind: "Balance",
-            Balance: type === "gas" ? SUI_TYPE : type
-          },
-          withdrawFrom: {
-            $kind: "Sender",
-            Sender: true
-          }
-        }))]
-      }));
-    else {
-      if (!mergedCoins.has(type)) {
-        const addressBalance = addressBalanceByType.get(type) ?? 0n;
-        const coinType = type === "gas" ? SUI_TYPE : type;
-        let baseCoin;
-        let restCoins;
-        if (type === "gas") {
-          baseCoin = {
-            $kind: "GasCoin",
-            GasCoin: true
-          };
-          restCoins = [];
-        } else
-          [baseCoin, ...restCoins] = coinsByType.get(type).map((coin) => transactionData.addInput("object", Inputs.ObjectRef({
-            objectId: coin.objectId,
-            digest: coin.digest,
-            version: coin.version
-          })));
-        if (addressBalance > 0n) {
-          commands.push(TransactionCommands.MoveCall({
-            target: "0x2::coin::redeem_funds",
-            typeArguments: [coinType],
-            arguments: [transactionData.addInput("withdrawal", Inputs.FundsWithdrawal({
-              reservation: {
-                $kind: "MaxAmountU64",
-                MaxAmountU64: String(addressBalance)
-              },
-              typeArg: {
-                $kind: "Balance",
-                Balance: coinType
-              },
-              withdrawFrom: {
-                $kind: "Sender",
-                Sender: true
-              }
-            }))]
-          }));
-          commands.push(TransactionCommands.MergeCoins(baseCoin, [{
-            $kind: "Result",
-            Result: index + commands.length - 1
-          }, ...restCoins]));
-        } else if (restCoins.length > 0)
-          commands.push(TransactionCommands.MergeCoins(baseCoin, restCoins));
-        mergedCoins.set(type, baseCoin);
-      }
-      commands.push(TransactionCommands.SplitCoins(mergedCoins.get(type), [transactionData.addInput("pure", Inputs.Pure(suiBcs.u64().serialize(balance)))]));
-    }
-    transactionData.replaceCommand(index, commands);
-    transactionData.mapArguments((arg, _command, commandIndex) => {
-      if (commandIndex >= index && commandIndex < index + commands.length)
-        return arg;
-      if (arg.$kind === "Result" && arg.Result === index)
-        return {
-          $kind: "NestedResult",
-          NestedResult: [index + commands.length - 1, 0]
-        };
-      return arg;
-    });
-  }
-  return next();
-}
-async function getCoinsAndBalanceOfType({ coinType, balance, client, owner, usedIds }) {
-  let remainingBalance = balance;
-  const coins = [];
-  const balanceRequest = client.core.getBalance({
-    owner,
-    coinType
-  }).then(({ balance: balance$1 }) => {
-    remainingBalance -= BigInt(balance$1.addressBalance);
-    return balance$1;
-  });
-  const [allCoins, balanceResponse] = await Promise.all([loadMoreCoins(), balanceRequest]);
-  if (BigInt(balanceResponse.balance) < balance)
-    throw new Error(`Insufficient balance of ${coinType} for owner ${owner}. Required: ${balance}, Available: ${balance - remainingBalance}`);
-  return {
-    coins: allCoins,
-    balance: BigInt(balanceResponse.coinBalance),
-    addressBalance: BigInt(balanceResponse.addressBalance),
-    coinBalance: BigInt(balanceResponse.coinBalance)
-  };
-  async function loadMoreCoins(cursor = null) {
-    const { objects, hasNextPage, cursor: nextCursor } = await client.core.listCoins({
-      owner,
-      coinType,
-      cursor
-    });
-    await balanceRequest;
-    if (remainingBalance > 0n) {
-      for (const coin of objects) {
-        if (usedIds.has(coin.objectId))
-          continue;
-        const coinBalance = BigInt(coin.balance);
-        coins.push(coin);
-        remainingBalance -= coinBalance;
-        if (remainingBalance <= 0)
-          break;
-      }
-      if (hasNextPage)
-        return loadMoreCoins(nextCursor);
-    }
-    return coins;
-  }
 }
 
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Transaction.mjs
@@ -18627,6 +18387,246 @@ var Transaction2 = class Transaction3 {
     }
     steps.push(namedPackagesPlugin());
     await this.#runPlugins(steps, options);
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/jsonRpc/errors.mjs
+var CODE_TO_ERROR_TYPE = {
+  "-32700": "ParseError",
+  "-32701": "OversizedRequest",
+  "-32702": "OversizedResponse",
+  "-32600": "InvalidRequest",
+  "-32601": "MethodNotFound",
+  "-32602": "InvalidParams",
+  "-32603": "InternalError",
+  "-32604": "ServerBusy",
+  "-32000": "CallExecutionFailed",
+  "-32001": "UnknownError",
+  "-32003": "SubscriptionClosed",
+  "-32004": "SubscriptionClosedWithError",
+  "-32005": "BatchesNotSupported",
+  "-32006": "TooManySubscriptions",
+  "-32050": "TransientError",
+  "-32002": "TransactionExecutionClientError"
+};
+var SuiHTTPTransportError = class extends Error {
+};
+var JsonRpcError = class extends SuiHTTPTransportError {
+  constructor(message, code) {
+    super(message);
+    this.code = code;
+    this.type = CODE_TO_ERROR_TYPE[code] ?? "ServerError";
+  }
+};
+var SuiHTTPStatusError = class extends SuiHTTPTransportError {
+  constructor(message, status, statusText) {
+    super(message);
+    this.status = status;
+    this.statusText = statusText;
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/jsonRpc/rpc-websocket-client.mjs
+function getWebsocketUrl(httpUrl) {
+  const url = new URL(httpUrl);
+  url.protocol = url.protocol.replace("http", "ws");
+  return url.toString();
+}
+var DEFAULT_CLIENT_OPTIONS = {
+  WebSocketConstructor: typeof WebSocket !== "undefined" ? WebSocket : void 0,
+  callTimeout: 3e4,
+  reconnectTimeout: 3e3,
+  maxReconnects: 5
+};
+var WebsocketClient = class {
+  #requestId = 0;
+  #disconnects = 0;
+  #webSocket = null;
+  #connectionPromise = null;
+  #subscriptions = /* @__PURE__ */ new Set();
+  #pendingRequests = /* @__PURE__ */ new Map();
+  constructor(endpoint, options = {}) {
+    this.endpoint = endpoint;
+    this.options = {
+      ...DEFAULT_CLIENT_OPTIONS,
+      ...options
+    };
+    if (!this.options.WebSocketConstructor)
+      throw new Error("Missing WebSocket constructor");
+    if (this.endpoint.startsWith("http"))
+      this.endpoint = getWebsocketUrl(this.endpoint);
+  }
+  async makeRequest(method, params, signal) {
+    const webSocket = await this.#setupWebSocket();
+    return new Promise((resolve, reject) => {
+      this.#requestId += 1;
+      this.#pendingRequests.set(this.#requestId, {
+        resolve,
+        reject,
+        timeout: setTimeout(() => {
+          this.#pendingRequests.delete(this.#requestId);
+          reject(/* @__PURE__ */ new Error(`Request timeout: ${method}`));
+        }, this.options.callTimeout)
+      });
+      signal?.addEventListener("abort", () => {
+        this.#pendingRequests.delete(this.#requestId);
+        reject(signal.reason);
+      });
+      webSocket.send(JSON.stringify({
+        jsonrpc: "2.0",
+        id: this.#requestId,
+        method,
+        params
+      }));
+    }).then(({ error, result }) => {
+      if (error)
+        throw new JsonRpcError(error.message, error.code);
+      return result;
+    });
+  }
+  #setupWebSocket() {
+    if (this.#connectionPromise)
+      return this.#connectionPromise;
+    this.#connectionPromise = new Promise((resolve) => {
+      this.#webSocket?.close();
+      this.#webSocket = new this.options.WebSocketConstructor(this.endpoint);
+      this.#webSocket.addEventListener("open", () => {
+        this.#disconnects = 0;
+        resolve(this.#webSocket);
+      });
+      this.#webSocket.addEventListener("close", () => {
+        this.#disconnects++;
+        if (this.#disconnects <= this.options.maxReconnects)
+          setTimeout(() => {
+            this.#reconnect();
+          }, this.options.reconnectTimeout);
+      });
+      this.#webSocket.addEventListener("message", ({ data }) => {
+        let json;
+        try {
+          json = JSON.parse(data);
+        } catch (error) {
+          console.error(new Error(`Failed to parse RPC message: ${data}`, { cause: error }));
+          return;
+        }
+        if ("id" in json && json.id != null && this.#pendingRequests.has(json.id)) {
+          const { resolve: resolve$1, timeout } = this.#pendingRequests.get(json.id);
+          clearTimeout(timeout);
+          resolve$1(json);
+        } else if ("params" in json) {
+          const { params } = json;
+          this.#subscriptions.forEach((subscription) => {
+            if (subscription.subscriptionId === params.subscription) {
+              if (params.subscription === subscription.subscriptionId)
+                subscription.onMessage(params.result);
+            }
+          });
+        }
+      });
+    });
+    return this.#connectionPromise;
+  }
+  async #reconnect() {
+    this.#webSocket?.close();
+    this.#connectionPromise = null;
+    return Promise.allSettled([...this.#subscriptions].map((subscription) => subscription.subscribe(this)));
+  }
+  async subscribe(input) {
+    const subscription = new RpcSubscription(input);
+    this.#subscriptions.add(subscription);
+    await subscription.subscribe(this);
+    return () => subscription.unsubscribe(this);
+  }
+};
+var RpcSubscription = class {
+  constructor(input) {
+    this.subscriptionId = null;
+    this.subscribed = false;
+    this.input = input;
+  }
+  onMessage(message) {
+    if (this.subscribed)
+      this.input.onMessage(message);
+  }
+  async unsubscribe(client) {
+    const { subscriptionId } = this;
+    this.subscribed = false;
+    if (subscriptionId == null)
+      return false;
+    this.subscriptionId = null;
+    return client.makeRequest(this.input.unsubscribe, [subscriptionId]);
+  }
+  async subscribe(client) {
+    this.subscriptionId = null;
+    this.subscribed = true;
+    const newSubscriptionId = await client.makeRequest(this.input.method, this.input.params, this.input.signal);
+    if (this.subscribed)
+      this.subscriptionId = newSubscriptionId;
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/jsonRpc/http-transport.mjs
+var JsonRpcHTTPTransport = class {
+  #requestId = 0;
+  #options;
+  #websocketClient;
+  constructor(options) {
+    this.#options = options;
+  }
+  fetch(input, init2) {
+    const fetchFn = this.#options.fetch ?? fetch;
+    if (!fetchFn)
+      throw new Error("The current environment does not support fetch, you can provide a fetch implementation in the options for SuiHTTPTransport.");
+    return fetchFn(input, init2);
+  }
+  #getWebsocketClient() {
+    if (!this.#websocketClient) {
+      const WebSocketConstructor = this.#options.WebSocketConstructor ?? WebSocket;
+      if (!WebSocketConstructor)
+        throw new Error("The current environment does not support WebSocket, you can provide a WebSocketConstructor in the options for SuiHTTPTransport.");
+      this.#websocketClient = new WebsocketClient(this.#options.websocket?.url ?? this.#options.url, {
+        WebSocketConstructor,
+        ...this.#options.websocket
+      });
+    }
+    return this.#websocketClient;
+  }
+  async request(input) {
+    this.#requestId += 1;
+    const res = await this.fetch(this.#options.rpc?.url ?? this.#options.url, {
+      method: "POST",
+      signal: input.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "Client-Sdk-Type": "typescript",
+        "Client-Sdk-Version": PACKAGE_VERSION,
+        "Client-Target-Api-Version": TARGETED_RPC_VERSION,
+        "Client-Request-Method": input.method,
+        ...this.#options.rpc?.headers
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: this.#requestId,
+        method: input.method,
+        params: input.params
+      })
+    });
+    if (!res.ok)
+      throw new SuiHTTPStatusError(`Unexpected status code: ${res.status}`, res.status, res.statusText);
+    const data = await res.json();
+    if ("error" in data && data.error != null)
+      throw new JsonRpcError(data.error.message, data.error.code);
+    return data.result;
+  }
+  async subscribe(input) {
+    const unsubscribe = await this.#getWebsocketClient().subscribe(input);
+    if (input.signal) {
+      input.signal.throwIfAborted();
+      input.signal.addEventListener("abort", () => {
+        unsubscribe();
+      });
+    }
+    return async () => !!await unsubscribe();
   }
 };
 
@@ -20362,6 +20362,109 @@ async function findOwnedObjectIdByType(args) {
   }
   return obj.data.objectId;
 }
+async function signAndExecuteViaApi(network, tx) {
+  const wallet = pickWallet();
+  const accounts = await getConnectedAccounts(wallet);
+  const account = accounts[0];
+  const signFeature = wallet.features[SuiSignTransaction];
+  if (!signFeature) {
+    throw new Error("Wallet does not support sui:signTransaction");
+  }
+  const signed = await signFeature.signTransaction({
+    account,
+    chain: `sui:${network}`,
+    transaction: tx
+  });
+  const response = await fetch("/api/sui/execute", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      network,
+      txBytesBase64: signed.bytes,
+      signaturesBase64: [signed.signature]
+    })
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    console.error(body);
+    throw new Error(`Execute failed: ${response.status} ${body}`);
+  }
+  return await response.json();
+}
+async function setResourceConfig(args) {
+  const { network } = requireInit();
+  const tx = new Transaction2();
+  tx.moveCall({
+    target: `${args.packageId}::resources::set_resource_config`,
+    arguments: [
+      tx.object(args.extensionConfigId),
+      tx.object(args.adminCapId),
+      tx.pure.u64(args.typeId),
+      tx.pure.u64(args.itemId),
+      tx.pure.string(args.label),
+      tx.pure.bool(args.enabled)
+    ]
+  });
+  return await signAndExecuteViaApi(network, tx);
+}
+async function setComplianceConfig(args) {
+  const { network } = requireInit();
+  const tx = new Transaction2();
+  tx.moveCall({
+    target: `${args.packageId}::compliance::set_compliance_config`,
+    arguments: [
+      tx.object(args.extensionConfigId),
+      tx.object(args.adminCapId),
+      tx.pure.u64(args.typeId),
+      tx.pure.u64(args.cpAwarded),
+      tx.pure.u64(args.essentialMultiplier)
+    ]
+  });
+  return await signAndExecuteViaApi(network, tx);
+}
+async function setGateCostConfig(args) {
+  const { network } = requireInit();
+  const tx = new Transaction2();
+  tx.moveCall({
+    target: `${args.packageId}::gate_costs::set_gate_cost_config`,
+    arguments: [
+      tx.object(args.extensionConfigId),
+      tx.object(args.adminCapId),
+      tx.pure.u64(args.localJumpCp),
+      tx.pure.u64(args.regionalJumpCp),
+      tx.pure.u64(args.longRangeJumpCp)
+    ]
+  });
+  return await signAndExecuteViaApi(network, tx);
+}
+async function setFullItemConfig(args) {
+  const { network } = requireInit();
+  const tx = new Transaction2();
+  tx.moveCall({
+    target: `${args.packageId}::resources::set_resource_config`,
+    arguments: [
+      tx.object(args.extensionConfigId),
+      tx.object(args.adminCapId),
+      tx.pure.u64(args.typeId),
+      tx.pure.u64(args.itemId),
+      tx.pure.string(args.label),
+      tx.pure.bool(args.enabled)
+    ]
+  });
+  tx.moveCall({
+    target: `${args.packageId}::compliance::set_compliance_config`,
+    arguments: [
+      tx.object(args.extensionConfigId),
+      tx.object(args.adminCapId),
+      tx.pure.u64(args.typeId),
+      tx.pure.u64(args.cpAwarded),
+      tx.pure.u64(args.essentialMultiplier)
+    ]
+  });
+  return await signAndExecuteViaApi(network, tx);
+}
 export {
   connectSui,
   debugWalletFeatures,
@@ -20370,7 +20473,11 @@ export {
   getOwnedObjects,
   getSuiBalance,
   init,
-  pickWallet
+  pickWallet,
+  setComplianceConfig,
+  setFullItemConfig,
+  setGateCostConfig,
+  setResourceConfig
 };
 /*! Bundled license information:
 

@@ -1,5 +1,6 @@
 import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { getWallets, SuiSignTransaction, } from "@mysten/wallet-standard";
+import { Transaction } from "@mysten/sui/transactions";
 import { StandardConnect, } from "@wallet-standard/features";
 import { SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
 // -------------------- Shared runtime state --------------------
@@ -44,9 +45,6 @@ function makeJsonRpcClient() {
     });
 }
 // -------------------- Wallet helpers --------------------
-function hasModernFeatures(wallet) {
-    return !!wallet.features[StandardConnect] && !!wallet.features[SuiSignTransaction];
-}
 //preferredWalletName comes from appsettings.json for localnet, testnet etc.
 export function pickWallet(preferredName = preferredWalletName) {
     const wallets = getWallets().get();
@@ -178,6 +176,73 @@ function pretty(v) {
         return String(v);
     }
 }
+// -------------------- ROLES --------------------
+export async function findOwnedRoleCaps(args) {
+    const wallet = pickWallet();
+    const accounts = await getConnectedAccounts(wallet);
+    const owner = accounts[0].address;
+    const client = makeJsonRpcClient();
+    const typeString = `${args.packageId}::roles::RoleCap`;
+    const resp = await client.getOwnedObjects({
+        owner,
+        filter: {
+            StructType: typeString,
+        },
+        options: {
+            showType: true,
+            showContent: true,
+        },
+    });
+    return resp.data ?? [];
+}
+export async function grantRole(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.moveCall({
+        target: `${args.packageId}::roles::grant_role`,
+        arguments: [
+            tx.object(args.roleRegistryId),
+            tx.object(args.roleAdminCapId),
+            tx.pure.u8(args.roleId),
+            tx.pure.address(args.grantee),
+        ],
+    });
+    return await signAndExecuteViaApi(network, tx);
+}
+export async function revokeRole(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.moveCall({
+        target: `${args.packageId}::roles::revoke_role`,
+        arguments: [
+            tx.object(args.roleRegistryId),
+            tx.object(args.roleAdminCapId),
+            tx.object(args.roleCapId),
+        ],
+    });
+    return await signAndExecuteViaApi(network, tx);
+}
+export async function getRoleCapId(args) {
+    throw new Error("getRoleCapId requires a dev-inspect helper or service-layer query. " +
+        "For now, query roles via API/GraphQL or track the role cap from the grant transaction result.");
+}
+export async function hasRole(args) {
+    throw new Error("hasRole requires a Move read helper via dev-inspect or a service-layer GraphQL query.");
+}
+export function extractCreatedRoleCapId(txResult) {
+    const changes = txResult?.objectChanges;
+    if (!Array.isArray(changes))
+        return null;
+    for (const change of changes) {
+        if (change?.type === "created" &&
+            typeof change?.objectType === "string" &&
+            change.objectType.endsWith("::roles::RoleCap") &&
+            typeof change?.objectId === "string") {
+            return change.objectId;
+        }
+    }
+    return null;
+}
 // -------------------- JSON-RPC lookup helpers --------------------
 export async function findOwnedObjectIdByType(args) {
     const wallet = pickWallet();
@@ -199,4 +264,110 @@ export async function findOwnedObjectIdByType(args) {
         throw new Error(`No owned object of type ${typeString} found.`);
     }
     return obj.data.objectId;
+}
+// -------------------- sign transaction --------------------
+async function signAndExecuteViaApi(network, tx) {
+    const wallet = pickWallet();
+    const accounts = await getConnectedAccounts(wallet);
+    const account = accounts[0];
+    const signFeature = wallet.features[SuiSignTransaction];
+    if (!signFeature) {
+        throw new Error("Wallet does not support sui:signTransaction");
+    }
+    const signed = await signFeature.signTransaction({
+        account,
+        chain: `sui:${network}`,
+        transaction: tx,
+    });
+    // Adjust this URL if your API base differs
+    const response = await fetch("/api/sui/execute", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            network,
+            txBytesBase64: signed.bytes,
+            signaturesBase64: [signed.signature],
+        }),
+    });
+    if (!response.ok) {
+        const body = await response.text();
+        console.error(body);
+        throw new Error(`Execute failed: ${response.status} ${body}`);
+    }
+    return await response.json();
+}
+// -------------------- Move method calls --------------------
+export async function setResourceConfig(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.moveCall({
+        target: `${args.packageId}::resources::set_resource_config`,
+        arguments: [
+            tx.object(args.extensionConfigId),
+            tx.object(args.adminCapId),
+            tx.pure.u64(args.typeId),
+            tx.pure.u64(args.itemId),
+            tx.pure.string(args.label),
+            tx.pure.bool(args.enabled),
+        ],
+    });
+    return await signAndExecuteViaApi(network, tx);
+}
+export async function setComplianceConfig(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.moveCall({
+        target: `${args.packageId}::compliance::set_compliance_config`,
+        arguments: [
+            tx.object(args.extensionConfigId),
+            tx.object(args.adminCapId),
+            tx.pure.u64(args.typeId),
+            tx.pure.u64(args.cpAwarded),
+            tx.pure.u64(args.essentialMultiplier),
+        ],
+    });
+    return await signAndExecuteViaApi(network, tx);
+}
+export async function setGateCostConfig(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.moveCall({
+        target: `${args.packageId}::gate_costs::set_gate_cost_config`,
+        arguments: [
+            tx.object(args.extensionConfigId),
+            tx.object(args.adminCapId),
+            tx.pure.u64(args.localJumpCp),
+            tx.pure.u64(args.regionalJumpCp),
+            tx.pure.u64(args.longRangeJumpCp),
+        ],
+    });
+    return await signAndExecuteViaApi(network, tx);
+}
+export async function setFullItemConfig(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.moveCall({
+        target: `${args.packageId}::resources::set_resource_config`,
+        arguments: [
+            tx.object(args.extensionConfigId),
+            tx.object(args.adminCapId),
+            tx.pure.u64(args.typeId),
+            tx.pure.u64(args.itemId),
+            tx.pure.string(args.label),
+            tx.pure.bool(args.enabled),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.packageId}::compliance::set_compliance_config`,
+        arguments: [
+            tx.object(args.extensionConfigId),
+            tx.object(args.adminCapId),
+            tx.pure.u64(args.typeId),
+            tx.pure.u64(args.cpAwarded),
+            tx.pure.u64(args.essentialMultiplier),
+        ],
+    });
+    return await signAndExecuteViaApi(network, tx);
 }

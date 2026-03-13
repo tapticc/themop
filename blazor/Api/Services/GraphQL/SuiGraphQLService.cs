@@ -1,5 +1,5 @@
 ﻿using Api.Services.Models;
-using Api.Services.Sui;
+using Common.Roles;
 using Common.Sui;
 using System.Text.Json;
 
@@ -89,6 +89,176 @@ namespace Api.Services.GraphQL
                 OwnerCapId = character.OwnerCapId
             };
         }
+
+        public async Task<WalletRoleContext?> GetWalletRoleContextAsync(
+            string walletAddress,
+            string packageId,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(walletAddress))
+                return null;
+
+            if (string.IsNullOrWhiteSpace(packageId))
+                return null;
+
+            var roles = await GetOwnedRoleCapsForWalletAsync(
+                walletAddress,
+                packageId,
+                cancellationToken);
+
+            var roleIds = roles
+                .Select(r => r.RoleId)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            var permissions = new WalletPermissions
+            {
+                IsHighExecutor = RolePermissions.IsHighExecutor(roleIds),
+                CanAssignRoles = RolePermissions.CanAssignRoles(roleIds),
+                CanRevokeRoles = RolePermissions.CanRevokeRoles(roleIds),
+                CanManageTreasury = RolePermissions.CanManageTreasury(roleIds),
+                CanManageLogistics = RolePermissions.CanManageLogistics(roleIds),
+                CanRecon = RolePermissions.CanRecon(roleIds),
+                CanManageCompliance = RolePermissions.CanManageCompliance(roleIds),
+                IsRegisteredCitizen = RolePermissions.IsRegisteredCitizen(roleIds),
+                CanDeposit = RolePermissions.CanDeposit(roleIds),
+                CanUseGates = RolePermissions.CanUseGates(roleIds),
+                CanWithdrawFromStorage = RolePermissions.CanWithdrawFromStorage(roleIds),
+                CanAuthorizeExtensions = RolePermissions.CanAuthorizeExtensions(roleIds),
+                CanConfigureEconomy = RolePermissions.CanConfigureEconomy(roleIds),
+                CanManageDirectives = RolePermissions.CanManageDirectives(roleIds),
+                ShowAdminPanel = RolePermissions.ShowAdminPanel(roleIds),
+                ShowTreasuryPanel = RolePermissions.ShowTreasuryPanel(roleIds),
+                ShowLogisticsPanel = RolePermissions.ShowLogisticsPanel(roleIds),
+                ShowReconPanel = RolePermissions.ShowReconPanel(roleIds),
+                ShowCompliancePanel = RolePermissions.ShowCompliancePanel(roleIds),
+            };
+
+            return new WalletRoleContext
+            {
+                WalletAddress = walletAddress,
+                Roles = roles,
+                RoleIds = roleIds,
+                Permissions = permissions
+            };
+        }
+
+        public async Task<List<WalletRoleCapSummary>> GetOwnedRoleCapsForWalletAsync(
+            string walletAddress,
+            string packageId,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _graphql.SendAsync<OwnedObjectsQueryResponse>(
+                SuiQueries.GetOwnedObjectsWithType,
+                new
+                {
+                    owner = walletAddress
+                },
+                cancellationToken);
+
+            var roleCapType = $"{packageId}::roles::RoleCap";
+
+            var nodes = result.Address?.Objects?.Nodes?
+                .Where(x =>
+                    string.Equals(
+                        x.Contents?.Type?.Repr,
+                        roleCapType,
+                        StringComparison.Ordinal))
+                .ToList();
+
+            if (nodes is null || nodes.Count == 0)
+                return [];
+
+            var roles = new List<WalletRoleCapSummary>();
+
+            foreach (var node in nodes)
+            {
+                if (node.Contents?.Json is null)
+                    continue;
+
+                var roleCap = Deserialize<RoleCapData>(node.Contents.Json.Value);
+                if (roleCap is null)
+                    continue;
+
+                roles.Add(new WalletRoleCapSummary
+                {
+                    RoleCapId = node.Address,
+                    RoleId = roleCap.RoleId,
+                    GrantedBy = roleCap.GrantedBy,
+                    RoleName = RoleIds.GetName(roleCap.RoleId)
+                });
+            }
+
+            return roles;
+        }
+
+        public async Task<List<OwnedObjectNode>> GetOwnedRoleCapNodesForWalletAsync(
+            string walletAddress,
+            string packageId,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _graphql.SendAsync<OwnedObjectsQueryResponse>(
+                SuiQueries.GetOwnedObjectsWithType,
+                new
+                {
+                    owner = walletAddress
+                },
+                cancellationToken);
+
+            var roleCapType = $"{packageId}::roles::RoleCap";
+
+            return result.Address?.Objects?.Nodes?
+                .Where(x =>
+                    string.Equals(
+                        x.Contents?.Type?.Repr,
+                        roleCapType,
+                        StringComparison.Ordinal))
+                .ToList()
+                ?? new List<OwnedObjectNode>();
+        }
+
+        public async Task<bool> WalletHasRoleAsync(
+            string walletAddress,
+            string packageId,
+            byte roleId,
+            CancellationToken cancellationToken = default)
+        {
+            var roles = await GetOwnedRoleCapsForWalletAsync(
+                walletAddress,
+                packageId,
+                cancellationToken);
+
+            return roles.Any(x => x.RoleId == roleId);
+        }
+
+        public async Task<string?> GetRoleCapIdForWalletAsync(
+            string walletAddress,
+            string packageId,
+            byte roleId,
+            CancellationToken cancellationToken = default)
+        {
+            var roles = await GetOwnedRoleCapsForWalletAsync(
+                walletAddress,
+                packageId,
+                cancellationToken);
+
+            return roles.FirstOrDefault(x => x.RoleId == roleId)?.RoleCapId;
+        }
+
+        public async Task<List<byte>> GetOwnedRoleIdsForWalletAsync(
+            string walletAddress,
+            string packageId,
+            CancellationToken cancellationToken = default)
+        {
+            var roles = await GetOwnedRoleCapsForWalletAsync(
+                walletAddress,
+                packageId,
+                cancellationToken);
+
+            return roles.Select(x => x.RoleId).ToList();
+        }
+
 
         public static string? TryGetPackageIdFromType(string? fullType)
         {

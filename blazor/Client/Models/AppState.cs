@@ -1,4 +1,5 @@
 ﻿using Client.Services;
+using Common.Roles;
 
 namespace Client.Models
 {
@@ -8,6 +9,7 @@ namespace Client.Models
         public string? WalletAddress { get; private set; }
         public string? CharacterName { get; private set; }
         public bool IsConnected => ConnectedWallet != null;
+        public WalletRoleContext? RoleContext { get; private set; }
 
         public event Action? OnChange;
 
@@ -30,6 +32,11 @@ namespace Client.Models
             WalletAddress = null;
             CharacterName = null;
             Notify();
+        }
+
+        public void SetRoleContext(WalletRoleContext context)
+        {
+            RoleContext = context;
         }
 
         private void Notify() => OnChange?.Invoke();

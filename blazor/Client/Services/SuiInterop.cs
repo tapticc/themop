@@ -54,4 +54,31 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
 
         GC.SuppressFinalize(this);
     }
+
+
+    // -------------------- Move method calls (via API) --------------------
+
+    public async Task<object> SetResourceConfigAsync(object args)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<object>("setResourceConfig", args);
+    }
+
+    public async Task<object> SetComplianceConfigAsync(object args)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<object>("setComplianceConfig", args);
+    }
+
+    public async Task<object> SetGateCostConfigAsync(object args)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<object>("setGateCostConfig", args);
+    }
+
+    public async Task<object> SetFullItemConfigAsync(object args)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<object>("setFullItemConfig", args);
+    }
 }

@@ -12,6 +12,7 @@ builder.Services.Configure<SuiOptions>(builder.Configuration.GetSection("Sui"));
 builder.Services.AddSingleton<SuiGrpcGateway>();
 builder.Services.AddHttpClient<GraphQLClient>();
 builder.Services.AddScoped<SuiGraphQLService>();
+builder.Services.AddScoped<RoleService>();
 
 builder.Services.AddCors(o =>
 {
