@@ -9,8 +9,15 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient {
-    BaseAddress = new Uri("https://localhost:7150/")
+builder.Services.AddScoped(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var baseUrl = config["ApiSettings:BaseUrl"];
+
+    return new HttpClient
+    {
+        BaseAddress = new Uri(baseUrl ?? "https://localhost:7150/")
+    };
 });
 
 builder.Services.AddSingleton<AppState>();

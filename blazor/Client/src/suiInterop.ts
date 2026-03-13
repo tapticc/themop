@@ -30,12 +30,14 @@ type CompatibleWallet = Wallet & {
 let grpcClient: SuiGrpcClient | null = null;
 let currentNetwork: Network | null = null;
 let currentRpcUrl: string | null = null;
+let preferredWalletName: string | null = null;
 
 // -------------------- Init / client access --------------------
 
-export function init(network: Network, rpcUrl: string) {
+export function init(network: Network, rpcUrl: string, preferredWallet: string) {
 	currentNetwork = network;
 	currentRpcUrl = rpcUrl;
+	preferredWalletName = preferredWallet;
 
 	grpcClient = new SuiGrpcClient({
 		network,
@@ -82,9 +84,8 @@ function hasModernFeatures(wallet: Wallet): wallet is CompatibleWallet {
 	return !!wallet.features[StandardConnect] && !!wallet.features[SuiSignTransaction];
 }
 
-// Eve Vault
-// Slush for localnet
-export function pickWallet(preferredName = "Slush"): Wallet {
+//preferredWalletName comes from appsettings.json for localnet, testnet etc.
+export function pickWallet(preferredName = preferredWalletName): Wallet {
 	const wallets = getWallets().get();
 
 	if (!wallets.length) {

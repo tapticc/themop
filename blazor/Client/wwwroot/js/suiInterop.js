@@ -20177,9 +20177,11 @@ var SuiJsonRpcClient = class extends BaseClient {
 var grpcClient = null;
 var currentNetwork = null;
 var currentRpcUrl = null;
-function init(network, rpcUrl) {
+var preferredWalletName = null;
+function init(network, rpcUrl, preferredWallet) {
   currentNetwork = network;
   currentRpcUrl = rpcUrl;
+  preferredWalletName = preferredWallet;
   grpcClient = new SuiGrpcClient({
     network,
     baseUrl: rpcUrl
@@ -20211,7 +20213,7 @@ function makeJsonRpcClient() {
     url: rpcUrl
   });
 }
-function pickWallet(preferredName = "Slush") {
+function pickWallet(preferredName = preferredWalletName) {
   const wallets2 = getWallets().get();
   if (!wallets2.length) {
     throw new Error("No Sui wallets found.");

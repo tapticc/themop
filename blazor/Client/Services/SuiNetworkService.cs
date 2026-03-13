@@ -7,6 +7,7 @@ namespace Client.Services
         public string Network { get; set; } = "";
         public string RpcUrl { get; set; } = "";
         public string GraphQLEndpoint { get; set; } = "";
+        public string PreferredWallet { get; set; } = "";
     }
 
     public record SuiNetworkConfig(SuiNetwork Network, string RpcUrl);
@@ -31,7 +32,8 @@ namespace Client.Services
             {
                 Network = network,
                 RpcUrl = _options.RpcUrls[network],
-                GraphQLEndpoint = _options.GraphQLEndpoints[network]
+                GraphQLEndpoint = _options.GraphQLEndpoints[network],
+                PreferredWallet = _options.PreferredWallets[network]
             };
 
             OnChanged?.Invoke();

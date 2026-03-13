@@ -6,10 +6,12 @@ import { SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
 let grpcClient = null;
 let currentNetwork = null;
 let currentRpcUrl = null;
+let preferredWalletName = null;
 // -------------------- Init / client access --------------------
-export function init(network, rpcUrl) {
+export function init(network, rpcUrl, preferredWallet) {
     currentNetwork = network;
     currentRpcUrl = rpcUrl;
+    preferredWalletName = preferredWallet;
     grpcClient = new SuiGrpcClient({
         network,
         baseUrl: rpcUrl,
@@ -45,9 +47,8 @@ function makeJsonRpcClient() {
 function hasModernFeatures(wallet) {
     return !!wallet.features[StandardConnect] && !!wallet.features[SuiSignTransaction];
 }
-// Eve Vault
-// Slush for localnet
-export function pickWallet(preferredName = "Slush") {
+//preferredWalletName comes from appsettings.json for localnet, testnet etc.
+export function pickWallet(preferredName = preferredWalletName) {
     const wallets = getWallets().get();
     if (!wallets.length) {
         throw new Error("No Sui wallets found.");

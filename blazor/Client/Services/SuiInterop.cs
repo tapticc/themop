@@ -7,10 +7,10 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
         js.InvokeAsync<IJSObjectReference>("import", "./js/suiInterop.js").AsTask());
 
-    public async Task InitAsync(string network, string rpcUrl)
+    public async Task InitAsync(string network, string rpcUrl, string preferredWallet)
     {
         var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("init", network, rpcUrl);
+        await module.InvokeVoidAsync("init", network, rpcUrl, preferredWallet);
     }
 
     public async Task<string> ConnectSuiAsync()

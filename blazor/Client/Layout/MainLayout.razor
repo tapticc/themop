@@ -38,7 +38,8 @@
 		AppState.OnChange += StateHasChanged;
 		await SuiInterop.InitAsync(
 			Network.Current.Network.ToString().ToLowerInvariant(),
-			Network.Current.RpcUrl
+			Network.Current.RpcUrl,
+			Network.Current.PreferredWallet
 		);
 
 		Network.OnChanged += HandleNetworkChanged;
@@ -48,7 +49,8 @@
 	{
 		await SuiInterop.InitAsync(
 			Network.Current.Network.ToString().ToLowerInvariant(),
-			Network.Current.RpcUrl
+			Network.Current.RpcUrl,
+			Network.Current.PreferredWallet
 		);
 
 		await InvokeAsync(StateHasChanged);
