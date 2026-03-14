@@ -1,10 +1,25 @@
 :root {
-    --eve-bg: #0f1318;
+    /* Core theme */
+    --eve-bg: #0a0f17; /* deeper navy black */
+    --eve-panel: #121826; /* dark navy panel */
+    --eve-border: #263041; /* steel navy border */
+    /* Text */
     --eve-text: #ffffff;
-    --eve-text-muted: #b3bcc9;
-    --eve-border: #2a2f36;
-    --eve-orange: #ff7700;
-    --eve-panel: #1c1f25;
+    --eve-text-muted: #9aa7b8;
+    /* Ministry colors */
+    --mop-gold: #d4af37;
+    --mop-gold-soft: #c6a64a;
+    --mop-gold-dark: #9f7f2a;
+    --mop-navy: #0b1a2b;
+    --mop-navy-light: #16253a;
+    /* Accent */
+    --mop-blue: #1fa6ff;
+    --mop-blue-soft: #3bb4ff;
+    /* UI */
+    --mop-highlight: #f5d87a;
+    --rz-primary: #d4af37;
+    --rz-primary-dark: #9f7f2a;
+    --rz-primary-light: #f0cc66;
 }
 
 /* =======================
@@ -16,6 +31,12 @@ html, body {
     background-color: var(--eve-bg) !important;
     color: var(--eve-text) !important;
     font-family: 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+}
+
+/* subtle navy gradient instead of flat black */
+body {
+    background: radial-gradient(circle at top, #0f1a2a 0%, #0a0f17 70%);
 }
 
 /* =======================
@@ -27,7 +48,35 @@ html, body {
 .rz-body {
     background-color: var(--eve-bg) !important;
     color: var(--eve-text) !important;
-    min-height: 100vh;
+/*    min-height: 100vh;*/
+    position: relative;
+    overflow-x: hidden;
+}
+
+    .eve-body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        background: radial-gradient(circle at 15% 20%, rgba(31,166,255,.04), transparent 25%), radial-gradient(circle at 85% 10%, rgba(212,175,55,.035), transparent 24%), radial-gradient(circle at 70% 80%, rgba(31,166,255,.03), transparent 22%);
+        filter: blur(40px);
+        animation: none !important;
+        overflow: hidden;
+    }
+
+/* Make sure page content sits above */
+.eve-content,
+.mop-page {
+    position: relative;
+    z-index: 1;
+}
+
+.mop-page {
+    padding-bottom: 50px;
 }
 
 /* =======================
@@ -35,7 +84,8 @@ html, body {
    ======================= */
 .eve-header {
     background-color: var(--eve-bg) !important;
-    border-bottom: 1px solid var(--eve-border);
+    /*    border-bottom: 1px solid var(--eve-border);*/
+    border-bottom: none;
     color: var(--eve-text) !important;
 }
 
@@ -48,90 +98,16 @@ html, body {
 
 /* Logo */
 .eve-logo {
-    color: var(--eve-orange) !important;
+    color: var(--mop-gold) !important;
     font-weight: 700;
 }
 
-/* =======================
-   Radzen Menu (GLOBAL)
-   ======================= */
 
-/* Remove Radzen white defaults everywhere */
-.eve-menu,
-.eve-menu > ul,
-.eve-menu .rz-menu,
-.rz-menu,
-.rz-menu > ul {
-    /*    background-color: transparent !important;*/
-    border: none !important;
+h1, h2, h3 {
+    color: var(--mop-gold);
+    letter-spacing: 1px;
+    font-weight: 600;
 }
-
-    /* Menu items */
-    .eve-menu .rz-menuitem a {
-        color: var(--eve-text) !important;
-        text-decoration: none;
-        outline: none !important;
-    }
-
-        .eve-menu .rz-menuitem a:hover {
-            color: var(--eve-orange) !important;
-            background: rgba(255, 119, 0, 0.1) !important;
-        }
-
-    /* Active menu item */
-    .eve-menu .rz-state-active > a {
-        color: var(--eve-orange) !important;
-    }
-
-    /* Remove tab focus visuals */
-    .eve-menu a:focus {
-        outline: none !important;
-        box-shadow: none !important;
-    }
-
-/* =======================
-   Desktop Menu Layout
-   ======================= */
-@media (min-width: 768px) {
-    .rz-menu {
-        background: transparent !important;
-    }
-}
-
-
-/* =======================
-   Mobile Menu (FULL SCREEN OVERLAY)
-   ======================= */
-@media (max-width: 767.98px) {
-
-    /* Make menu behave like normal block flow */
-    ul.rz-menu {
-        position: static !important;
-        background: var(--eve-bg) !important;
-        width: 100%;
-    }
-
-        /* When opened, stay in document flow */
-        ul.rz-menu.rz-menu-open {
-            display: block;
-        }
-
-        /* Stack items vertically */
-        ul.rz-menu > li {
-            width: 100%;
-        }
-
-    /* Menu item styling */
-    .rz-navigation-item-wrapper {
-        padding: 0.75rem 1rem;
-        background: var(--eve-bg);
-    }
-}
-
-.rz-navigation-item.rz-state-active > .rz-navigation-item-wrapper {
-    color: var(--eve-orange) !important;
-}
-
 
 /* =======================
    Cards
@@ -143,20 +119,22 @@ html, body {
     border-radius: 0.5rem;
     padding: 1rem;
     margin-bottom: 1rem;
+    box-shadow: 0 0 0 1px rgba(212,175,55,.15), 0 8px 25px rgba(0,0,0,.6);
 }
 
     /* Card headers */
     .eve-card h3 {
-        color: var(--eve-orange) !important;
-        margin-top: 0;
-        margin-bottom: 0.5rem;
+        background: linear-gradient( 90deg, var(--mop-navy), var(--mop-navy-light) );
+        border-bottom: 1px solid var(--mop-gold-dark);
         font-weight: 600;
+        letter-spacing: .5px;
     }
 
     /* Card text */
     .eve-card p {
         color: var(--eve-text-muted);
         margin: 0;
+        opacity: .85;
     }
 
 /* =======================
@@ -223,23 +201,15 @@ html, body {
     gap: 0.5rem;
 }
 
-
-.mop-login-container {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 0px;
-    padding: 0px;]
-}
-
 .mop-login-logo {
     width: 350px;
+    filter: drop-shadow(0 0 25px rgba(212,175,55,.15));
+    margin-bottom: 30px;
 }
 
 .mop-login-panel {
     text-align: center;
+    min-height: 300px;
 }
 
 .mop-login-title {
@@ -281,4 +251,1009 @@ html, body {
 .mop-address {
     color: #8b949e;
     font-family: monospace;
+}
+
+
+.btn-primary,
+.rz-button {
+    background: linear-gradient( 180deg, #16253a, #0b1626 ) !important;
+    border: 1px solid #2c3b52 !important;
+    color: var(--mop-gold) !important;
+}
+
+    .btn-primary:hover,
+    .rz-button:hover {
+        border-color: var(--mop-gold-dark) !important;
+        box-shadow: 0 0 10px rgba(212,175,55,.25) !important;
+    }
+
+.role-yes {
+    color: var(--mop-gold);
+    font-weight: 600;
+}
+
+.role-no {
+    color: #6b7685;
+}
+
+.mop-glow {
+    text-shadow: 0 0 8px rgba(31,166,255,.5);
+}
+
+
+/* =======================
+   Radzen Button Override
+   ======================= */
+
+.rz-button,
+.rz-button-primary {
+    background: linear-gradient( 180deg, var(--mop-gold), var(--mop-gold-dark) ) !important;
+    border: none !important;
+    color: #0b0f16 !important;
+    transition: all .15s ease;
+}
+
+    .rz-button:hover,
+    .rz-button-primary:hover {
+        background: linear-gradient( 180deg, #f0cc66, var(--mop-gold) ) !important;
+        box-shadow: 0 0 10px rgba(212,175,55,.45) !important;
+        transform: translateY(-1px);
+    }
+
+    /* Fix Radzen focus + active states */
+    .rz-button:focus,
+    .rz-button-primary:focus,
+    .rz-button:active,
+    .rz-button-primary:active {
+        background: linear-gradient( 180deg, var(--mop-gold-dark), #8c6e22 ) !important;
+        box-shadow: 0 0 6px rgba(212,175,55,.35) !important;
+    }
+
+    /* Remove orange ripple */
+    .rz-button .rz-ripple {
+        background: rgba(212,175,55,.25) !important;
+    }
+
+.d-flex {
+    display: flex;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.gap-2 {
+    gap: .5rem;
+}
+
+.gap-3 {
+    gap: 1rem;
+}
+
+.mt-3 {
+    margin-top: 1rem;
+}
+
+/* =======================
+   Ministry Control Buttons
+   ======================= */
+.mop-button {
+    background: linear-gradient( 180deg, #16253a, #0b1626 );
+    border: 1px solid #2c3b52;
+    border-bottom: 1px solid #0a121d;
+    color: var(--mop-gold);
+    font-weight: 600;
+    letter-spacing: .6px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    transition: all .15s ease;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 2px 8px rgba(0,0,0,.6);
+}
+
+    /* Gold authority hover */
+    .mop-button:hover {
+        background: linear-gradient( 180deg, #1c2f4a, #132338 );
+        border-color: var(--mop-gold-dark);
+        color: var(--mop-highlight);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 0 12px rgba(212,175,55,.25), 0 4px 12px rgba(0,0,0,.7);
+        transform: translateY(-1px);
+    }
+
+    /* Click */
+    .mop-button:active {
+        background: linear-gradient( 180deg, #0f1c2d, #0a1523 );
+        box-shadow: inset 0 2px 6px rgba(0,0,0,.6);
+        transform: translateY(1px);
+    }
+
+/* Tech glow variant */
+.mop-button-tech:hover {
+    box-shadow: 0 0 8px rgba(31,166,255,.35), 0 0 20px rgba(31,166,255,.15);
+}
+
+.mop-button-authority {
+    background: linear-gradient( 180deg, var(--mop-gold), var(--mop-gold-dark) );
+    border: none;
+    color: #0a0f17;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.6);
+}
+
+    .mop-button-authority:hover {
+        background: linear-gradient( 180deg, #f5d87a, var(--mop-gold) );
+        box-shadow: 0 0 14px rgba(212,175,55,.5), 0 6px 18px rgba(0,0,0,.7);
+    }
+
+.mop-button-authority {
+    background: linear-gradient( 180deg, var(--mop-gold), var(--mop-gold-dark) );
+    border: none;
+    color: #0a0f17;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.6);
+}
+
+    .mop-button-authority:hover {
+        background: linear-gradient( 180deg, #f5d87a, var(--mop-gold) );
+        box-shadow: 0 0 14px rgba(212,175,55,.5), 0 6px 18px rgba(0,0,0,.7);
+    }
+
+.mop-button::before {
+    content: "";
+    position: relative;
+    overflow: hidden;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient( 90deg, transparent, rgba(212,175,55,.4), transparent );
+}
+
+/* =======================
+   Ministry Directive Cards
+   ======================= */
+
+.mop-directive-card {
+    background: linear-gradient( 180deg, rgba(18, 24, 38, 0.98), rgba(10, 15, 23, 0.98) );
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-left: 4px solid var(--mop-gold);
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 8px 24px rgba(0,0,0,.45);
+    position: relative;
+    overflow: hidden;
+}
+
+    .mop-directive-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient( 90deg, transparent, rgba(212,175,55,.45), transparent );
+    }
+
+    .mop-directive-card:hover {
+        border-color: rgba(212, 175, 55, 0.35);
+        box-shadow: 0 0 12px rgba(212,175,55,.10), 0 10px 28px rgba(0,0,0,.55);
+    }
+
+.mop-directive-title {
+    margin: 0 0 6px 0;
+    color: var(--mop-gold);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+}
+
+.mop-directive-subtitle {
+    color: var(--eve-text-muted);
+    font-size: .95rem;
+    margin-bottom: 14px;
+}
+
+/* =======================
+   Ministry Labels
+   ======================= */
+
+.mop-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+.mop-label-classified {
+    background: rgba(212,175,55,.10);
+    color: var(--mop-gold);
+    border-color: rgba(212,175,55,.25);
+}
+
+.mop-label-clearance {
+    background: rgba(31,166,255,.10);
+    color: var(--mop-blue-soft);
+    border-color: rgba(31,166,255,.25);
+}
+
+.mop-label-warning {
+    background: rgba(255,80,80,.10);
+    color: #ff9a9a;
+    border-color: rgba(255,80,80,.25);
+}
+
+.mop-label-success {
+    background: rgba(110, 200, 120, .10);
+    color: #92d79c;
+    border-color: rgba(110, 200, 120, .25);
+}
+
+/* =======================
+   Ministry Progress
+   ======================= */
+
+.mop-progress-shell {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 999px;
+    height: 14px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.45);
+}
+
+.mop-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient( 90deg, var(--mop-gold-dark), var(--mop-gold), var(--mop-highlight) );
+    box-shadow: 0 0 10px rgba(212,175,55,.35);
+}
+
+.mop-progress-fill-tech {
+    background: linear-gradient( 90deg, #115b94, var(--mop-blue), #85d5ff );
+    box-shadow: 0 0 10px rgba(31,166,255,.35);
+}
+
+/* =======================
+   Citizen Dossier
+   ======================= */
+
+.mop-dossier {
+    background: linear-gradient( 180deg, rgba(13, 21, 33, .98), rgba(9, 14, 22, .98) );
+    border: 1px solid rgba(38,48,65,.95);
+    border-radius: 10px;
+    padding: 18px;
+}
+
+.mop-dossier-title {
+    color: var(--mop-gold);
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 12px;
+}
+
+.mop-dossier-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+}
+
+    .mop-dossier-row:last-child {
+        border-bottom: none;
+    }
+
+.mop-dossier-key {
+    color: var(--eve-text-muted);
+    font-size: .92rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.mop-dossier-value {
+    color: var(--eve-text);
+    font-family: Consolas, "Courier New", monospace;
+    word-break: break-word;
+}
+
+/* =======================
+   Ministry Stamps
+   ======================= */
+
+.mop-stamp {
+    display: inline-block;
+    padding: 6px 12px;
+    border: 1px solid rgba(212,175,55,.35);
+    color: var(--mop-gold);
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    transform: rotate(-2deg);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+}
+
+.mop-stamp-approved {
+    color: #9fe0a7;
+    border-color: rgba(159,224,167,.35);
+}
+
+.mop-stamp-restricted {
+    color: #ffb6a0;
+    border-color: rgba(255,120,80,.35);
+}
+
+.mop-stamp-review {
+    color: var(--mop-blue-soft);
+    border-color: rgba(31,166,255,.35);
+}
+
+/* =======================
+   Directive Grid
+   ======================= */
+
+.mop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+/* =======================
+   Ministry Tables
+   ======================= */
+
+.mop-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(18,24,38,.88);
+    border: 1px solid rgba(38,48,65,.95);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .mop-table th {
+        background: rgba(11,26,43,.98);
+        color: var(--mop-gold);
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        font-size: .8rem;
+        text-align: left;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(212,175,55,.18);
+    }
+
+    .mop-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(255,255,255,.04);
+        color: var(--eve-text);
+    }
+
+    .mop-table tr:hover td {
+        background: rgba(255,255,255,.02);
+    }
+
+/* =======================
+   Section Framing
+   ======================= */
+
+.mop-section {
+    margin-top: 24px;
+}
+
+.mop-section-title {
+    color: var(--mop-gold);
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.mop-section-rule {
+    height: 1px;
+    background: linear-gradient( 90deg, rgba(212,175,55,.35), rgba(212,175,55,.05), transparent );
+    margin-bottom: 16px;
+}
+
+
+/* =======================
+   Ministry Header
+   ======================= */
+
+.mop-header {
+    background: linear-gradient( 180deg, rgba(14, 22, 34, 0.98), rgba(10, 15, 23, 0.98) ) !important;
+    /*    border-bottom: 1px solid rgba(212,175,55,.16);*/
+    border-bottom: none;
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,.02), 0 6px 18px rgba(0,0,0,.30);
+    color: var(--eve-text) !important;
+    min-height: 72px;
+}
+
+    .mop-header:focus,
+    .rz-header:focus {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+.mop-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 72px;
+    padding: 10px 18px;
+}
+
+/* =======================
+   Ministry Header Logo
+   ======================= */
+
+.mop-header-logo {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding-right: 18px;
+}
+
+.mop-header-logo-img {
+    height: 100px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(31,166,255,.25));
+}
+
+/* Remove Radzen header vertical offset */
+.eve-header .rz-header {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Improve header vertical alignment */
+
+.eve-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+    .eve-header .d-flex {
+        align-items: center !important;
+        height: 100%;
+    }
+
+/* =======================
+   Ministry Menu
+   ======================= */
+
+.mop-menu,
+.mop-menu > ul,
+.mop-menu .rz-menu,
+.mop-menu .rz-menu > ul {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+    .mop-menu .rz-menuitem {
+        margin-left: 4px;
+    }
+
+        .mop-menu .rz-menuitem a {
+            color: var(--eve-text) !important;
+            text-decoration: none;
+            padding: 8px 14px !important;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            font-weight: 600;
+            letter-spacing: .4px;
+            transition: all .15s ease;
+            outline: none !important;
+        }
+
+            /* Hover */
+            .mop-menu .rz-menuitem a:hover {
+                color: var(--mop-gold) !important;
+                background: rgba(212,175,55,.08) !important;
+                border-color: rgba(212,175,55,.16);
+            }
+
+    /* Active */
+    .mop-menu .rz-state-active > a,
+    .mop-menu .rz-menuitem-active > a {
+        color: var(--mop-gold) !important;
+        background: linear-gradient( 180deg, rgba(212,175,55,.10), rgba(212,175,55,.04) ) !important;
+        border-color: rgba(212,175,55,.22);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 0 10px rgba(212,175,55,.08);
+    }
+
+    /* Focus cleanup */
+    .mop-menu a:focus,
+    .mop-menu a:active {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+/* =======================
+   Remove old orange nav coloring
+   ======================= */
+
+.rz-navigation-item.rz-state-active > .rz-navigation-item-wrapper {
+    color: var(--mop-gold) !important;
+}
+
+
+/* =======================
+   Ministry Logo Styling
+   ======================= */
+
+.mop-login-logo {
+    width: 320px;
+    max-width: 85%;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 0 30px rgba(212,175,55,.15)) drop-shadow(0 8px 40px rgba(0,0,0,.6));
+    transition: all .25s ease;
+}
+
+    .mop-login-logo:hover {
+        filter: drop-shadow(0 0 40px rgba(212,175,55,.25)) drop-shadow(0 10px 50px rgba(0,0,0,.7));
+        transform: translateY(-2px);
+    }
+
+/* =======================
+   Ministry Logo Styling
+   ======================= */
+
+.mop-login-logo {
+    width: 320px;
+    max-width: 85%;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 0 30px rgba(212,175,55,.15)) drop-shadow(0 8px 40px rgba(0,0,0,.6));
+    transition: all .25s ease;
+}
+
+    .mop-login-logo:hover {
+        filter: drop-shadow(0 0 40px rgba(212,175,55,.25)) drop-shadow(0 10px 50px rgba(0,0,0,.7));
+        transform: translateY(-2px);
+    }
+
+.mop-login-panel {
+    background: linear-gradient( 180deg, rgba(18,24,38,.96), rgba(10,15,23,.96) );
+    border: 1px solid rgba(212,175,55,.15);
+    border-radius: 12px;
+    padding: 30px 34px;
+    width: 420px;
+    max-width: 90%;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 15px 40px rgba(0,0,0,.65);
+    position: relative;
+}
+
+    /* gold top line */
+    .mop-login-panel::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient( 90deg, transparent, rgba(212,175,55,.5), transparent );
+    }
+
+.mop-login-panel {
+    background: linear-gradient( 180deg, rgba(18,24,38,.96), rgba(10,15,23,.96) );
+    border: 1px solid rgba(212,175,55,.15);
+    border-radius: 12px;
+    padding: 30px 34px;
+    width: 420px;
+    max-width: 90%;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 15px 40px rgba(0,0,0,.65);
+    position: relative;
+}
+
+    /* gold top line */
+    .mop-login-panel::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient( 90deg, transparent, rgba(212,175,55,.5), transparent );
+    }
+
+    .mop-login-panel p {
+        margin-bottom: 22px;
+        font-size: .95rem;
+        line-height: 1.5;
+        letter-spacing: .3px;
+    }
+
+    .mop-login-panel .mop-button-authority {
+        width: 220px;
+        margin-top: 10px;
+        padding: 12px 20px;
+        font-size: .95rem;
+    }
+
+.mop-login-title {
+    color: var(--mop-gold);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.mop-login-subtitle {
+    color: var(--eve-text-muted);
+    font-size: .75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 25px;
+}
+
+/* =======================
+   Ministry Scan Lines
+   ======================= */
+
+/* horizontal scan texture */
+.mop-login-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient( to bottom, rgba(255,255,255,.015), rgba(255,255,255,.015) 1px, transparent 1px, transparent 3px );
+    opacity: .25;
+}
+
+.mop-scan-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient( 180deg, transparent, rgba(31,166,255,.05), rgba(212,175,55,.06), transparent );
+    animation: mopScan 7s linear infinite;
+    opacity: .35;
+}
+
+@keyframes mopScan {
+
+    0% {
+        transform: translateY(-100%);
+    }
+
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+.mop-login-panel {
+    animation: mopPanelPulse 6s ease-in-out infinite;
+}
+
+@keyframes mopPanelPulse {
+
+    0% {
+        box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 15px 40px rgba(0,0,0,.65);
+    }
+
+    50% {
+        box-shadow: 0 0 12px rgba(212,175,55,.10), 0 15px 40px rgba(0,0,0,.65);
+    }
+
+    100% {
+        box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 15px 40px rgba(0,0,0,.65);
+    }
+}
+
+.mop-login-logo {
+    position: relative;
+    width: 340px;
+    margin-bottom: 40px;
+}
+
+    /* moving scan across logo */
+
+    .mop-login-logo::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient( 90deg, transparent, rgba(31,166,255,.25), transparent );
+        animation: mopLogoScan 5s ease-in-out infinite;
+        opacity: .25;
+    }
+
+@keyframes mopLogoScan {
+
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* =======================
+   Boot panel inside login card
+   ======================= */
+
+.mop-boot-panel {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.mop-boot-line {
+    color: var(--mop-gold);
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.92rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    opacity: 0;
+    text-shadow: 0 0 8px rgba(212,175,55,.15);
+    animation: mopBootLineIn .45s ease forwards;
+}
+
+    .mop-boot-line:nth-child(3) {
+        animation-delay: 0.15s;
+    }
+
+    .mop-boot-line:nth-child(4) {
+        animation-delay: 0.45s;
+    }
+
+    .mop-boot-line:nth-child(5) {
+        animation-delay: 0.75s;
+    }
+
+    .mop-boot-line:nth-child(6) {
+        animation-delay: 1.05s;
+    }
+
+    .mop-boot-line:last-child {
+        animation-delay: 1.35s;
+    }
+
+@keyframes mopBootLineIn {
+
+    0% {
+        opacity: 0;
+        transform: translateY(6px);
+        filter: blur(2px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+.mop-boot-line:last-child {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid var(--mop-gold);
+    animation: mopBootLineIn .45s ease forwards, mopType 1s steps(20,end) 1.35s forwards;
+}
+
+@keyframes mopType {
+
+    from {
+        width: 0
+    }
+
+    to {
+        width: 100%
+    }
+}
+
+/* =======================
+   Login content reveal
+   ======================= */
+
+.mop-login-reveal {
+    animation: mopLoginReveal .45s ease forwards;
+}
+
+@keyframes mopLoginReveal {
+
+    0% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =======================
+   Terminal Cursor
+   ======================= */
+
+.mop-cursor {
+    display: inline-block;
+    color: var(--mop-gold);
+    font-family: Consolas, monospace;
+    font-weight: bold;
+    margin-left: 4px;
+    animation: mopCursorBlink 1s steps(2) infinite;
+}
+
+    .mop-cursor::after {
+        content: "_";
+    }
+
+@keyframes mopCursorBlink {
+
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* =======================
+   Terminal flicker effect
+   ======================= */
+
+.mop-final-line {
+    animation: mopBootLineIn .45s ease forwards, mopType 1s steps(20,end) 1.35s forwards, mopSystemReadyFlash .35s 2.3s ease forwards;
+}
+
+@keyframes mopSystemReadyFlash {
+
+    0% {
+        filter: brightness(1);
+    }
+
+    15% {
+        filter: brightness(1.6);
+    }
+
+    30% {
+        filter: brightness(.6);
+    }
+
+    45% {
+        filter: brightness(1.4);
+    }
+
+    60% {
+        filter: brightness(.75);
+    }
+
+    75% {
+        filter: brightness(1.2);
+    }
+
+    100% {
+        filter: brightness(1);
+    }
+}
+
+.mop-terminal-ready {
+    animation: mopPanelReady .35s ease;
+}
+
+@keyframes mopPanelReady {
+
+    0% {
+        filter: brightness(1);
+    }
+
+    40% {
+        filter: brightness(1.15);
+    }
+
+    70% {
+        filter: brightness(.9);
+    }
+
+    100% {
+        filter: brightness(1);
+    }
+}
+
+.mop-final-line::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient( 180deg, transparent, rgba(31,166,255,.15), transparent );
+    opacity: 0;
+    animation: mopScanPulse .35s 2.3s ease;
+}
+
+@keyframes mopScanPulse {
+
+    0% {
+        opacity: 0;
+    }
+
+    40% {
+        opacity: .7;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* =======================
+   Ministry Ambient Background
+   ======================= */
+
+.mop-login-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+    .mop-login-container::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        background: radial-gradient(circle at 20% 30%, rgba(31,166,255,.08), transparent 28%), radial-gradient(circle at 75% 25%, rgba(212,175,55,.07), transparent 30%), radial-gradient(circle at 60% 75%, rgba(31,166,255,.05), transparent 26%), radial-gradient(circle at 35% 80%, rgba(212,175,55,.05), transparent 24%);
+        filter: blur(30px);
+        animation: none !important;
+        overflow: hidden;
+    }
+
+.eve-body::before,
+.mop-login-container::after {
+    contain: paint;
+}
+
+/* Keep actual content above ambient layers */
+.mop-login-logo,
+.mop-login-panel,
+.mop-scan-overlay,
+.mop-boot-panel {
+    position: relative;
+    z-index: 1;
+    max-width: 420px;
+}
+
+
+.mop-role-status {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 26px;
+    text-align: center;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: .6px;
+    font-family: Consolas, monospace;
 }

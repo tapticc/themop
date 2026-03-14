@@ -1,0 +1,8 @@
+﻿To assign the High Executor role id 1 to a target address, you can use the following command:
+
+sui client call \
+  --package <PACKAGE_ID> \
+  --module roles \
+  --function grant_role \
+  --args <ROLE_REGISTRY_ID> <ROLE_ADMIN_CAP_ID> 1 <TARGET_ADDRESS> \
+  --gas-budget 50000000

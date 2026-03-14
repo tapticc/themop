@@ -1,4 +1,5 @@
-﻿using Common.Sui;
+﻿using Common.Roles;
+using Common.Sui;
 using System.Net.Http.Json;
 
 namespace Client.Services
@@ -60,6 +61,16 @@ namespace Client.Services
         {
             return await _http.GetFromJsonAsync<CharacterSummary>(
                 $"api/sui/character-from-wallet?walletAddress={Uri.EscapeDataString(walletAddress)}");
+        }
+
+        public async Task<WalletRoleContext?> GetWalletRoleContextAsync(string walletAddress, string packageId)
+        {
+            var url =
+                $"api/sui/wallet-role-context" +
+                $"?walletAddress={Uri.EscapeDataString(walletAddress)}" +
+                $"&packageId={Uri.EscapeDataString(packageId)}";
+
+            return await _http.GetFromJsonAsync<WalletRoleContext>(url);
         }
     }
 }

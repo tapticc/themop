@@ -1,13 +1,17 @@
 ﻿using Api.Services.Models;
+using Api.Services.Sui;
 using Common.Roles;
 using Common.Sui;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace Api.Services.GraphQL
 {
-    public class SuiGraphQLService(GraphQLClient graphql)
+    public class SuiGraphQLService(GraphQLClient graphql, IOptions<SuiOptions> options)
     {
         private readonly GraphQLClient _graphql = graphql;
+        private readonly SuiOptions _options = options.Value;
+
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNameCaseInsensitive = true
@@ -86,24 +90,26 @@ namespace Api.Services.GraphQL
                 PlayerProfileId = profileNode.Address,
                 CharacterId = characterNode.Address,
                 CharacterName = character.Metadata?.Name,
-                OwnerCapId = character.OwnerCapId
+                OwnerCapId = character.OwnerCapId,
+                PackageId = packageId
             };
         }
 
         public async Task<WalletRoleContext?> GetWalletRoleContextAsync(
             string walletAddress,
-            string packageId,
             CancellationToken cancellationToken = default)
         {
+            var mopPackageId = _options.Packages.TheMop;
+
             if (string.IsNullOrWhiteSpace(walletAddress))
                 return null;
 
-            if (string.IsNullOrWhiteSpace(packageId))
+            if (string.IsNullOrWhiteSpace(mopPackageId))
                 return null;
 
             var roles = await GetOwnedRoleCapsForWalletAsync(
                 walletAddress,
-                packageId,
+                mopPackageId,
                 cancellationToken);
 
             var roleIds = roles
@@ -215,7 +221,7 @@ namespace Api.Services.GraphQL
                         roleCapType,
                         StringComparison.Ordinal))
                 .ToList()
-                ?? new List<OwnedObjectNode>();
+                ?? [];
         }
 
         public async Task<bool> WalletHasRoleAsync(
@@ -256,7 +262,7 @@ namespace Api.Services.GraphQL
                 packageId,
                 cancellationToken);
 
-            return roles.Select(x => x.RoleId).ToList();
+            return [.. roles.Select(x => x.RoleId)];
         }
 
 

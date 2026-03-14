@@ -2,7 +2,8 @@
     "name": "blazor-client-js",
     "type": "module",
     "scripts": {
-        "build": "esbuild src/suiInterop.ts --bundle --format=esm --platform=browser --tsconfig=tsconfig.json --outfile=wwwroot/js/suiInterop.js"
+        "build": "esbuild src/suiInterop.ts --bundle --format=esm --platform=browser --tsconfig=tsconfig.json --outfile=wwwroot/js/suiInterop.js",
+        "bootstrap:roles": "tsx scripts/bootstrap-roles.ts"
     },
     "dependencies": {
         "@mysten/sui": "^2.5.0"

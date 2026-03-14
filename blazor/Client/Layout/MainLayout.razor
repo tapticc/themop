@@ -8,28 +8,27 @@
 @implements IDisposable
 
 <RadzenLayout class="eve-layout">
-
-	<RadzenHeader class="eve-header">
-		<div class="d-flex align-items-center p-2">
-
-			<!-- Logo -->
-			<div class="eve-logo fw-bold text-uppercase text-orange me-3">
-				THE MINISTRY OF PASSAGE
+	<RadzenHeader class="mop-header">
+		<div class="mop-header-inner">
+			<div class="mop-header-logo">
+				<img src="images/TheMOPLogo.png" class="mop-header-logo-img" />
 			</div>
 
-			<!-- Combined Menu -->
-			<RadzenMenu class="eve-menu flex-grow-1" Style="height: 20px;">
+			<RadzenMenu class="mop-menu">
 				<RadzenMenuItem Text="Dashboard" Path="/" Match="NavLinkMatch.All" />
+				<RadzenMenuItem Text="Styles Demo" Path="/styles-demo" />
 			</RadzenMenu>
+
 		</div>
 	</RadzenHeader>
 
 	<RadzenBody class="eve-body">
 		<div class="eve-content p-3">
-			@Body
+			<div class="mop-page">
+				@Body
+			</div>
 		</div>
 	</RadzenBody>
-
 </RadzenLayout>
 
 @code {

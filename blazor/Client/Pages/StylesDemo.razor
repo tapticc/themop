@@ -1,0 +1,145 @@
+﻿@page "/styles-demo"
+
+<PageTitle>Ministry Styles Demo</PageTitle>
+
+<div class="mop-section">
+	<h1 class="mop-directive-title">Ministry Styles Demo</h1>
+	<div class="mop-section-rule"></div>
+	<p class="eve-text-muted">
+		Internal visual reference for Ministry of Passage UI components.
+	</p>
+</div>
+
+<div class="mop-section">
+	<div class="mop-section-title">Labels</div>
+	<div class="mop-section-rule"></div>
+
+	<div class="d-flex flex-wrap gap-2">
+		<span class="mop-label mop-label-classified">Directive</span>
+		<span class="mop-label mop-label-clearance">Clearance</span>
+		<span class="mop-label mop-label-success">Approved</span>
+		<span class="mop-label mop-label-warning">Restricted</span>
+	</div>
+</div>
+
+<div class="mop-section">
+	<div class="mop-section-title">Stamps</div>
+	<div class="mop-section-rule"></div>
+
+	<div class="d-flex flex-wrap gap-3">
+		<span class="mop-stamp">Authorized</span>
+		<span class="mop-stamp mop-stamp-approved">Approved</span>
+		<span class="mop-stamp mop-stamp-review">Under Review</span>
+		<span class="mop-stamp mop-stamp-restricted">Restricted</span>
+	</div>
+</div>
+
+<div class="mop-section">
+	<div class="mop-section-title">Buttons</div>
+	<div class="mop-section-rule"></div>
+
+	<div class="d-flex flex-wrap gap-3">
+		<button class="mop-button">Standard Control</button>
+		<button class="mop-button mop-button-tech">Tech Control</button>
+		<button class="mop-button mop-button-authority">Authorize Transfer</button>
+		<button class="mop-button mop-button-warning">Revoke Access</button>
+	</div>
+</div>
+
+<div class="mop-section">
+	<div class="mop-section-title">Directive Cards</div>
+	<div class="mop-section-rule"></div>
+
+	<div class="mop-grid">
+		<div class="mop-directive-card">
+			<div class="mop-label mop-label-classified">Directive</div>
+			<h3 class="mop-directive-title">Secure Regional Passage</h3>
+			<div class="mop-directive-subtitle">
+				Maintain steady compliance contributions for gate access.
+			</div>
+
+			<div class="mop-progress-shell mt-3">
+				<div class="mop-progress-fill" style="width: 62%;"></div>
+			</div>
+		</div>
+
+		<div class="mop-directive-card">
+			<div class="mop-label mop-label-clearance">Priority</div>
+			<h3 class="mop-directive-title">Strategic Resource Handling</h3>
+			<div class="mop-directive-subtitle">
+				High-value materials routed to secure Ministry storage.
+			</div>
+
+			<div class="mop-progress-shell mt-3">
+				<div class="mop-progress-fill-tech" style="width: 48%; height: 100%;"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="mop-section">
+	<div class="mop-section-title">Citizen Dossier</div>
+	<div class="mop-section-rule"></div>
+
+	<div class="mop-dossier">
+		<div class="mop-dossier-title">Citizen Record</div>
+
+		<div class="mop-dossier-row">
+			<div class="mop-dossier-key">Character Name</div>
+			<div class="mop-dossier-value">NPC Carpark</div>
+		</div>
+
+		<div class="mop-dossier-row">
+			<div class="mop-dossier-key">Citizen ID</div>
+			<div class="mop-dossier-value">0xcdbb3431543fe7a5bf5981aef0e8b65deb59812d03966c214bd067dd2af1d9ca</div>
+		</div>
+
+		<div class="mop-dossier-row">
+			<div class="mop-dossier-key">Owner Cap ID</div>
+			<div class="mop-dossier-value">0x9fb0b8ee3f77b8aa3bcb4d8280fd3e30b35f0d79a4764deab5d6dcb1998c9b01</div>
+		</div>
+
+		<div class="mop-dossier-row">
+			<div class="mop-dossier-key">Status</div>
+			<div class="mop-dossier-value">
+				<span class="mop-label mop-label-success">Registered Citizen</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="mop-section">
+	<div class="mop-section-title">Ministry Table</div>
+	<div class="mop-section-rule"></div>
+
+	<table class="mop-table">
+		<thead>
+			<tr>
+				<th>Role</th>
+				<th>Status</th>
+				<th>Assigned By</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>High Executor</td>
+				<td><span class="mop-label mop-label-success">Active</span></td>
+				<td>0xaaa111</td>
+			</tr>
+			<tr>
+				<td>Treasury Officer</td>
+				<td><span class="mop-label mop-label-warning">Inactive</span></td>
+				<td>0xbbb222</td>
+			</tr>
+			<tr>
+				<td>Registered Citizen</td>
+				<td><span class="mop-label mop-label-success">Active</span></td>
+				<td>0xccc333</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+@code {
+
+}

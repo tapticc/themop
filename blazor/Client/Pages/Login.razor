@@ -6,78 +6,185 @@
 @inject AppState AppState
 @inject SuiInterop SuiInterop
 @inject SuiNetworkService Network
+@inject SuiApiClient Api
 @implements IDisposable
 
 <div class="mop-login-container">
-    <img src="images/TheMOPLogo.png" class="mop-login-logo" />
-    <div class="mop-login-panel">
-        <p class="mop-login-subtitle">
-            Please confirm your identity. Your compliance is being recorded...
-        </p>
 
-        <RadzenButton Text="Confirm" Click="@(() => ConnectWallet())" Disabled="@_connecting" />
+	<div class="mop-scan-overlay"></div>
 
-        @if (!string.IsNullOrWhiteSpace(_error))
-        {
-            <p class="text-danger">@_error</p>
-        }
-    </div>
+	<img src="images/TheMOPLogo.png"
+		 class="mop-login-logo" />
+
+	<div class="mop-login-panel @( _showBootSequence ? "" : "mop-login-reveal mop-terminal-ready")">
+
+		@if (_showBootSequence)
+		{
+			<div class="mop-boot-panel">
+				<div class="mop-login-title">
+					Ministry Authentication
+				</div>
+
+				<div class="mop-login-subtitle">
+					Directive Access Terminal
+				</div>
+
+				<div class="mop-boot-line">MINISTRY OF PASSAGE // AUTH TERMINAL</div>
+				<div class="mop-boot-line">SECURE LINK ESTABLISHED</div>
+				<div class="mop-boot-line">LOADING CITIZEN REGISTRY...</div>
+				<div class="mop-boot-line">VERIFYING CLEARANCE...</div>
+				<div class="mop-boot-line mop-final-line">
+					SYSTEM ONLINE
+					<span class="mop-cursor"></span>
+				</div>
+			</div>
+		}
+		else
+		{
+			<div class="mop-login-reveal">
+				<div class="mop-login-title">
+					Ministry Authentication
+				</div>
+
+				<div class="mop-login-subtitle">
+					Directive Access Terminal
+				</div>
+
+				<p class="eve-text-muted">
+					Identity verification mandatory. 
+				</p>
+
+				<p class="eve-text-muted">
+					Unauthorized access will be recorded.
+				</p>
+
+				<RadzenButton Text="Confirm Identity"
+							  Click="@ConnectWallet"
+							  Disabled="@_connecting"
+							  class="mop-button-authority" />
+
+				@if (_connecting)
+				{
+					<div class="mop-login-loading">
+						Establishing secure connection...
+					</div>
+				}
+
+				@if (!string.IsNullOrWhiteSpace(_error))
+				{
+					<p class="text-danger mt-2">@_error</p>
+				}
+			</div>
+		}
+	</div>
 </div>
 
 @code {
-    bool _connecting;
-    string? _address;
-    private string? _error;
+	bool _connecting;
+	string? _address;
+	private string? _error;
+	private bool _showBootSequence = true;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await SuiInterop.InitAsync(
-            Network.Current.Network.ToString().ToLowerInvariant(),
-            Network.Current.RpcUrl,
-            Network.Current.PreferredWallet
-        );
+	protected override async Task OnInitializedAsync()
+	{
+		await SuiInterop.InitAsync(
+			Network.Current.Network.ToString().ToLowerInvariant(),
+			Network.Current.RpcUrl,
+			Network.Current.PreferredWallet
+		);
 
-        Network.OnChanged += HandleNetworkChanged;
-    }
+		Network.OnChanged += HandleNetworkChanged;
 
-    private async void HandleNetworkChanged()
-    {
-        await SuiInterop.InitAsync(
-            Network.Current.Network.ToString().ToLowerInvariant(),
-            Network.Current.RpcUrl,
-            Network.Current.PreferredWallet
-        );
+		await Task.Delay(2200);
+		_showBootSequence = false;
+		StateHasChanged();
+	}
 
-        await InvokeAsync(StateHasChanged);
-    }
+	private async void HandleNetworkChanged()
+	{
+		await SuiInterop.InitAsync(
+			Network.Current.Network.ToString().ToLowerInvariant(),
+			Network.Current.RpcUrl,
+			Network.Current.PreferredWallet
+		);
 
-    public void Dispose()
-    {
-        Network.OnChanged -= HandleNetworkChanged;
-    }
+		await InvokeAsync(StateHasChanged);
+	}
 
-    async Task ConnectWallet()
-    {
-        try
-        {
-            _connecting = true;
+	public void Dispose()
+	{
+		Network.OnChanged -= HandleNetworkChanged;
+	}
 
-            _address = await WalletService.ConnectAsync();
+	async Task ConnectWalletOLD()
+	{
+		try
+		{
+			_connecting = true;
 
-            AppState.SetWallet(WalletType.EveFrontier, _address);
+			_address = await WalletService.ConnectAsync();
 
-            await Task.Delay(500);
+			AppState.SetWallet(WalletType.EveFrontier, _address);
 
-            //Nav.NavigateTo("/directives");
-            Nav.NavigateTo("/");
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
-        finally
-        {
-            _connecting = false;
-        }
-    }
+			await Task.Delay(500);
+
+			//Nav.NavigateTo("/directives");
+			Nav.NavigateTo("/");
+		}
+		catch (Exception ex)
+		{
+			_error = ex.Message;
+		}
+		finally
+		{
+			_connecting = false;
+		}
+	}
+
+	async Task ConnectWallet()
+	{
+		try
+		{
+			_connecting = true;
+			_error = null;
+
+			_address = await WalletService.ConnectAsync();
+
+			AppState.SetWallet(WalletType.EveFrontier, _address);
+
+			var character = await Api.GetCharacterFromWalletAsync(_address);
+			AppState.SetCharacterSummary(character);
+
+			if (character is not null)
+			{
+				var packageId = character.PackageId;
+
+				if (!string.IsNullOrWhiteSpace(packageId))
+				{
+					var roleContext = await Api.GetWalletRoleContextAsync(_address, packageId);
+					AppState.SetRoleContext(roleContext);
+				}
+				else
+				{
+					AppState.SetRoleContext(null);
+				}
+			}
+			else
+			{
+				AppState.SetRoleContext(null);
+			}
+
+			await Task.Delay(500);
+			Nav.NavigateTo("/");
+		}
+		catch (Exception ex)
+		{
+			_error = ex.Message;
+			AppState.Clear();
+		}
+		finally
+		{
+			_connecting = false;
+		}
+	}
 }

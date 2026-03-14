@@ -16817,7 +16817,7 @@ var SuiGrpcClient = class extends BaseClient {
   }
 };
 
-// ../node_modules/.pnpm/@mysten+wallet-standard@0.20.1_@mysten+sui@2.6.0_typescript@5.9.3_/node_modules/@mysten/wallet-standard/dist/features/suiSignTransaction.mjs
+// ../node_modules/.pnpm/@mysten+wallet-standard@0.20.1_@mysten+sui@2.8.0_typescript@5.9.3_/node_modules/@mysten/wallet-standard/dist/features/suiSignTransaction.mjs
 var SuiSignTransaction = "sui:signTransaction";
 
 // ../node_modules/.pnpm/@wallet-standard+app@1.1.0/node_modules/@wallet-standard/app/lib/esm/wallets.js
@@ -20341,6 +20341,72 @@ function pretty(v) {
     return String(v);
   }
 }
+async function findOwnedRoleCaps(args) {
+  const wallet = pickWallet();
+  const accounts = await getConnectedAccounts(wallet);
+  const owner = accounts[0].address;
+  const client = makeJsonRpcClient();
+  const typeString = `${args.packageId}::roles::RoleCap`;
+  const resp = await client.getOwnedObjects({
+    owner,
+    filter: {
+      StructType: typeString
+    },
+    options: {
+      showType: true,
+      showContent: true
+    }
+  });
+  return resp.data ?? [];
+}
+async function grantRole(args) {
+  const { network } = requireInit();
+  const tx = new Transaction2();
+  tx.moveCall({
+    target: `${args.packageId}::roles::grant_role`,
+    arguments: [
+      tx.object(args.roleRegistryId),
+      tx.object(args.roleAdminCapId),
+      tx.pure.u8(args.roleId),
+      tx.pure.address(args.grantee)
+    ]
+  });
+  return await signAndExecuteViaApi(network, tx);
+}
+async function revokeRole(args) {
+  const { network } = requireInit();
+  const tx = new Transaction2();
+  tx.moveCall({
+    target: `${args.packageId}::roles::revoke_role`,
+    arguments: [
+      tx.object(args.roleRegistryId),
+      tx.object(args.roleAdminCapId),
+      tx.object(args.roleCapId)
+    ]
+  });
+  return await signAndExecuteViaApi(network, tx);
+}
+async function getRoleCapId(args) {
+  throw new Error(
+    "getRoleCapId requires a dev-inspect helper or service-layer query. For now, query roles via API/GraphQL or track the role cap from the grant transaction result."
+  );
+}
+async function hasRole(args) {
+  throw new Error(
+    "hasRole requires a Move read helper via dev-inspect or a service-layer GraphQL query."
+  );
+}
+function extractCreatedRoleCapId(txResult) {
+  const changes = txResult?.objectChanges;
+  if (!Array.isArray(changes))
+    return null;
+  for (const change of changes) {
+    if (change?.type === "created" && typeof change?.objectType === "string" && change.objectType.endsWith("::roles::RoleCap") && typeof change?.objectId === "string") {
+      return change.objectId;
+    }
+  }
+  return null;
+}
 async function findOwnedObjectIdByType(args) {
   const wallet = pickWallet();
   const accounts = await getConnectedAccounts(wallet);
@@ -20468,12 +20534,18 @@ async function setFullItemConfig(args) {
 export {
   connectSui,
   debugWalletFeatures,
+  extractCreatedRoleCapId,
   findOwnedObjectIdByType,
+  findOwnedRoleCaps,
   getObjectDump,
   getOwnedObjects,
+  getRoleCapId,
   getSuiBalance,
+  grantRole,
+  hasRole,
   init,
   pickWallet,
+  revokeRole,
   setComplianceConfig,
   setFullItemConfig,
   setGateCostConfig,
