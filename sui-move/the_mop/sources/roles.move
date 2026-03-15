@@ -9,7 +9,6 @@ public struct RoleRegistry has key {
 }
 
 /// Root authority for assigning and revoking roles.
-/// This is distinct from config::AdminCap.
 public struct RoleAdminCap has key, store {
     id: UID,
 }
@@ -50,7 +49,6 @@ public struct RoleRevokedEvent has copy, drop {
 }
 
 // === Role IDs ===
-// These should mirror the role IDs defined in the Blazor ts code (e.g. in constants.ts)
 const ROLE_HIGH_EXECUTOR: u8 = 1;
 const ROLE_COMPLIANCE_OFFICER: u8 = 2;
 const ROLE_LOGISTICS_OPERATIVE: u8 = 3;
@@ -59,11 +57,12 @@ const ROLE_TREASURY_OFFICER: u8 = 5;
 const ROLE_REGISTERED_CITIZEN: u8 = 6;
 
 // === Errors ===
-
 const ERoleAlreadyAssigned: u64 = 0;
 const ERoleAssignmentNotFound: u64 = 1;
 const EInvalidRoleId: u64 = 2;
 const ERoleCapMismatch: u64 = 3;
+const ENotHighExecutor: u64 = 4;
+const ERoleNotManageableByHighExecutor: u64 = 5;
 
 // === Init ===
 
@@ -94,14 +93,23 @@ fun assignment_key(grantee: address, role_id: u8): RoleAssignmentKey {
     RoleAssignmentKey { grantee, role_id }
 }
 
-// === Public role management ===
+fun is_high_executor_role(role_id: u8): bool {
+    role_id == ROLE_HIGH_EXECUTOR
+}
 
-/// Grant a role to an address. Root authority only for now.
-public fun grant_role(
+fun can_high_executor_manage(role_id: u8): bool {
+    role_id == ROLE_COMPLIANCE_OFFICER ||
+    role_id == ROLE_LOGISTICS_OPERATIVE ||
+    role_id == ROLE_RECON_OPERATIVE ||
+    role_id == ROLE_TREASURY_OFFICER ||
+    role_id == ROLE_REGISTERED_CITIZEN
+}
+
+fun grant_role_internal(
     registry: &mut RoleRegistry,
-    _: &RoleAdminCap,
     role_id: u8,
     grantee: address,
+    granted_by: address,
     ctx: &mut TxContext,
 ) {
     assert!(is_valid_role(role_id), EInvalidRoleId);
@@ -113,7 +121,7 @@ public fun grant_role(
         id: object::new(ctx),
         role_id,
         grantee,
-        granted_by: ctx.sender(),
+        granted_by,
     };
 
     let role_cap_id = object::id(&role_cap);
@@ -121,28 +129,23 @@ public fun grant_role(
     df::add(
         &mut registry.id,
         key,
-        RoleAssignment {
-            role_cap_id,
-        }
+        RoleAssignment { role_cap_id }
     );
 
     event::emit(RoleGrantedEvent {
         role_cap_id,
         role_id,
         grantee,
-        granted_by: ctx.sender(),
+        granted_by,
     });
 
     transfer::transfer(role_cap, grantee);
 }
 
-/// Revoke a role by consuming the role cap and removing its uniqueness marker.
-/// Root authority only for now.
-public fun revoke_role(
+fun revoke_role_internal(
     registry: &mut RoleRegistry,
-    _: &RoleAdminCap,
     role_cap: RoleCap,
-    ctx: &TxContext,
+    revoked_by: address,
 ) {
     let RoleCap {
         id,
@@ -165,10 +168,80 @@ public fun revoke_role(
         role_cap_id,
         role_id,
         grantee,
-        revoked_by: ctx.sender(),
+        revoked_by,
     });
 
     id.delete();
+}
+
+// === Public role management ===
+
+/// Root authority can grant any role, including High Executor.
+public fun grant_role_as_admin(
+    registry: &mut RoleRegistry,
+    _: &RoleAdminCap,
+    role_id: u8,
+    grantee: address,
+    ctx: &mut TxContext,
+) {
+    grant_role_internal(
+        registry,
+        role_id,
+        grantee,
+        ctx.sender(),
+        ctx,
+    );
+}
+
+/// High Executors can grant lower roles only.
+public fun grant_role_as_high_executor(
+    registry: &mut RoleRegistry,
+    high_executor_cap: &RoleCap,
+    role_id: u8,
+    grantee: address,
+    ctx: &mut TxContext,
+) {
+    assert!(is_high_executor_role(high_executor_cap.role_id), ENotHighExecutor);
+    assert!(can_high_executor_manage(role_id), ERoleNotManageableByHighExecutor);
+
+    grant_role_internal(
+        registry,
+        role_id,
+        grantee,
+        ctx.sender(),
+        ctx,
+    );
+}
+
+/// Root authority can revoke any role, including High Executor.
+public fun revoke_role_as_admin(
+    registry: &mut RoleRegistry,
+    _: &RoleAdminCap,
+    role_cap: RoleCap,
+    ctx: &TxContext,
+) {
+    revoke_role_internal(
+        registry,
+        role_cap,
+        ctx.sender(),
+    );
+}
+
+/// High Executors can revoke lower roles only.
+public fun revoke_role_as_high_executor(
+    registry: &mut RoleRegistry,
+    high_executor_cap: &RoleCap,
+    role_cap: RoleCap,
+    ctx: &TxContext,
+) {
+    assert!(is_high_executor_role(high_executor_cap.role_id), ENotHighExecutor);
+    assert!(can_high_executor_manage(role_cap.role_id), ERoleNotManageableByHighExecutor);
+
+    revoke_role_internal(
+        registry,
+        role_cap,
+        ctx.sender(),
+    );
 }
 
 // === Read helpers ===
@@ -240,7 +313,7 @@ public fun role_registered_citizen(): u8 {
 // === Convenience checks ===
 
 public fun is_high_executor(role_cap: &RoleCap): bool {
-    role_cap.role_id == ROLE_HIGH_EXECUTOR
+    is_high_executor_role(role_cap.role_id)
 }
 
 public fun is_compliance_officer(role_cap: &RoleCap): bool {
