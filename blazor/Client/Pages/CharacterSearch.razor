@@ -1,0 +1,155 @@
+﻿@page "/character-search"
+@using Common.Sui
+@inject Client.Services.SuiApiClient Api
+@inject NavigationManager Nav
+
+<PageTitle>Character Search</PageTitle>
+
+<div class="mop-section">
+    <h1 class="mop-directive-title">Known Characters</h1>
+    <div class="mop-section-rule"></div>
+
+    <p class="eve-text-muted">
+        Browse known PlayerProfile records and select a wallet for role administration.
+    </p>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+    <div class="alert alert-danger mt-3">
+        @_error
+    </div>
+}
+
+@if (_page is not null)
+{
+    <table class="mop-table">
+        <thead>
+            <tr>
+                <th>Character</th>
+                <th>Wallet</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in _page.Items)
+            {
+                <tr>
+                    <td>@item.CharacterName</td>
+                    <td class="mop-dossier-value">@item.CharacterAddress</td>
+                    <td>
+                        <RadzenButton Text="View Roles"
+                                      Click="@(() => ViewRoles(item.CharacterAddress))"
+                                      class="mop-button-authority" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="mt-3 d-flex gap-2">
+        <RadzenButton Text="Refresh"
+                      Click="@LoadPage"
+                      class="mop-button" />
+
+        <RadzenButton Text="Previous Page"
+                      Disabled="@(_previousCursors.Count == 0 || _loading)"
+                      Click="@LoadPreviousPage"
+                      class="mop-button" />
+
+        <RadzenButton Text="Next Page"
+                      Disabled="@(_page?.HasNextPage != true || _loading)"
+                      Click="@LoadNextPage"
+                      class="mop-button-authority" />
+    </div>
+}
+
+@code {
+    private PagedKnownCharactersResponse? _page;
+    private string? _error;
+    private bool _loading;
+    private readonly Stack<string?> _previousCursors = new();
+    private string? _currentCursor;
+    private int pageSize = 20;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPage();
+    }
+
+    private async Task LoadPage()
+    {
+        try
+        {
+            _loading = true;
+            _error = null;
+
+            _currentCursor = null;
+            _previousCursors.Clear();
+
+            _page = await Api.GetKnownCharactersPageAsync(pageSize, null);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadNextPage()
+    {
+        if (_page?.HasNextPage != true || string.IsNullOrWhiteSpace(_page.EndCursor))
+            return;
+
+        try
+        {
+            _loading = true;
+            _error = null;
+
+            _previousCursors.Push(_currentCursor);
+            _currentCursor = _page.EndCursor;
+
+            _page = await Api.GetKnownCharactersPageAsync(pageSize, _currentCursor);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadPreviousPage()
+    {
+        if (_previousCursors.Count == 0)
+            return;
+
+        try
+        {
+            _loading = true;
+            _error = null;
+
+            _currentCursor = _previousCursors.Pop();
+
+            _page = await Api.GetKnownCharactersPageAsync(pageSize, _currentCursor);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ViewRoles(string walletAddress)
+    {
+        Nav.NavigateTo($"/admin-roles?walletAddress={Uri.EscapeDataString(walletAddress)}");
+    }
+}

@@ -1,0 +1,305 @@
+﻿@page "/admin-roles"
+@using Client.Models
+@using Client.Services
+@using Common.Roles
+@using Microsoft.Extensions.Options
+@inject AppState AppState
+@inject SuiApiClient Api
+@inject RoleTxService RoleTxService
+@inject NavigationManager Nav
+@inject SuiNetworkService NetworkService
+
+<PageTitle>Ministry Role Administration</PageTitle>
+
+@if (!IsAuthorized)
+{
+    Nav.NavigateTo("/unauthorised-access", true);
+}
+
+<div class="mop-section">
+    <h1 class="mop-directive-title">Ministry Role Administration</h1>
+    <div class="mop-section-rule"></div>
+
+    <p class="eve-text-muted">
+        Assign and revoke Ministry clearance roles.
+    </p>
+</div>
+
+@if (IsLocalnet)
+{
+    <div class="mop-dossier mt-3">
+        <div class="mop-dossier-title">Localnet Notice</div>
+        <p class="eve-text-muted mb-0">
+            Grant and revoke actions are disabled in the web UI on localnet.
+            Use <code>sui client call</code> for local role administration.
+        </p>
+    </div>
+}
+
+<div class="mop-section">
+    <div class="mop-dossier">
+        <div class="mop-dossier-title">Target Citizen Lookup</div>
+
+        <div class="mop-dossier-row">
+            <div class="mop-dossier-key">Wallet Address</div>
+            <div>
+                <input class="form-control"
+                       @bind="_targetWallet"
+                       placeholder="0x..." />
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_message))
+        {
+            <p class="eve-text-muted mt-3">@_message</p>
+        }
+
+        <div class="mt-3 d-flex gap-2 flex-wrap">
+            <RadzenButton Text="Load Roles"
+                          Click="@LoadTargetRoles"
+                          Disabled="@_busy"
+                          class="mop-button-authority" />
+
+            <RadzenButton Text="Use My Wallet"
+                          Click="@UseMyWallet"
+                          Disabled="@_busy"
+                          class="mop-button" />
+        </div>
+    </div>
+</div>
+
+@if (_targetRoleContext is not null)
+{
+    <div class="mop-section">
+        <div class="mop-section-title">Citizen Role Matrix</div>
+        <div class="mop-section-rule"></div>
+
+        <div class="mop-dossier">
+            <div class="mop-dossier-title">Target Record</div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Wallet</div>
+                <div class="mop-dossier-value">@_targetRoleContext.WalletAddress</div>
+            </div>
+        </div>
+
+        <table class="mop-table mt-3">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var role in _allRoles)
+                {
+                    var active = HasTargetRole(role.Id);
+                    var activeRole = GetTargetRole(role.Id);
+
+                    <tr>
+                        <td>@role.Name</td>
+                        <td>
+                            <span class="mop-role-status mop-label @(active ? "mop-label-success" : "mop-label-warning")">
+                                @(active ? "ACTIVE" : "NONE")
+                            </span>
+                        </td>
+                        <td>
+                            @if (active && activeRole is not null)
+                            {
+                                <RadzenButton Text="Revoke"
+                                              Click="@(async () => await RevokeRole(activeRole.RoleCapId))"
+                                              Disabled="@(!CanManageRoles || _busy)"
+                                              Style="width: 80px;"
+                                              class="mop-button mop-button-warning" />
+                            }
+                            else
+                            {
+                                <RadzenButton Text="Grant"
+                                              Click="@(async () => await GrantRole(role.Id))"
+                                              Disabled="@(!CanManageRoles || _busy)"
+                                              Style="width: 80px;"
+                                              class="mop-button-authority" />
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private string? _targetWallet;
+    private string? _message;
+    private bool _busy;
+    private WalletRoleContext? _targetRoleContext;
+
+    private readonly List<RoleRow> _allRoles =
+    [
+        new(RoleIds.HighExecutor, "High Executor"),
+        new(RoleIds.ComplianceOfficer, "Compliance Officer"),
+        new(RoleIds.LogisticsOperative, "Logistics Operative"),
+        new(RoleIds.ReconOperative, "Recon Operative"),
+        new(RoleIds.TreasuryOfficer, "Treasury Officer"),
+        new(RoleIds.RegisteredCitizen, "Registered Citizen")
+    ];
+
+    bool IsAuthorized => HasHighExecutor;
+
+    private bool IsLocalnet => string.Equals(
+        NetworkService.Current.Network,
+        "localnet",
+        StringComparison.OrdinalIgnoreCase);
+
+    private bool HasHighExecutor => AppState.RoleContext?.RoleIds?.Contains(RoleIds.HighExecutor) == true;
+
+    private bool CanManageRoles => !IsLocalnet && HasHighExecutor;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!IsAuthorized)
+            return;
+
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        _targetWallet = query["walletAddress"];
+
+        if (_targetWallet != null)
+        {
+            await LoadTargetRoles();
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(AppState.WalletAddress))
+        {
+            _targetWallet = AppState.WalletAddress;
+            await LoadTargetRoles();
+        }
+    }
+
+    private async Task UseMyWallet()
+    {
+        _targetWallet = AppState.WalletAddress;
+        await LoadTargetRoles();
+    }
+
+    private async Task LoadTargetRoles()
+    {
+        if (string.IsNullOrWhiteSpace(_targetWallet))
+        {
+            _message = "Wallet required.";
+            return;
+        }
+
+        try
+        {
+            _busy = true;
+            _message = null;
+
+            // If your client method still takes packageId, pass the configured the_mop package there instead.
+            _targetRoleContext = await Api.GetWalletRoleContextAsync(_targetWallet);
+
+            _message = _targetRoleContext is null
+                ? "No role context found."
+                : "Role context loaded.";
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+            _targetRoleContext = null;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task GrantRole(byte roleId)
+    {
+        if (!CanManageRoles)
+        {
+            _message = IsLocalnet
+                ? "Role management is disabled in the web UI on localnet."
+                : "High Executor role required.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (AppState == null || AppState.WalletAddress == null || _targetWallet == null)
+            return;
+
+        try
+        {
+            _busy = true;
+            _message = null;
+            await InvokeAsync(StateHasChanged);
+
+            var result = await RoleTxService.GrantRoleAsync(AppState.WalletAddress, _targetWallet, roleId);
+
+            if (!result.Success)
+            {
+                _message = result.Error ?? "Role grant failed.";
+                _busy = false;
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            await LoadTargetRoles();
+            _message = "Role granted.";
+        }
+        finally
+        {
+            _busy = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task RevokeRole(string roleCapId)
+    {
+        if (!CanManageRoles)
+        {
+            _message = IsLocalnet
+                ? "Role management is disabled in the web UI on localnet."
+                : "High Executor role required.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (AppState == null || AppState.WalletAddress == null)
+            return;
+
+        try
+        {
+            _busy = true;
+            _message = null;
+            await InvokeAsync(StateHasChanged);
+
+            var result = await RoleTxService.RevokeRoleAsync(AppState.WalletAddress, roleCapId);
+
+            if (!result.Success)
+            {
+                _message = result.Error ?? "Role revoke failed.";
+                _busy = false;
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            await LoadTargetRoles();
+            _message = "Role revoked.";
+        }
+        finally
+        {
+            _busy = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private bool HasTargetRole(byte roleId) =>
+        _targetRoleContext?.Roles?.Any(x => x.RoleId == roleId) == true;
+
+    private WalletRoleCapSummary? GetTargetRole(byte roleId) =>
+        _targetRoleContext?.Roles?.FirstOrDefault(x => x.RoleId == roleId);
+
+    private sealed record RoleRow(byte Id, string Name);
+}

@@ -8,11 +8,13 @@ let grpcClient = null;
 let currentNetwork = null;
 let currentRpcUrl = null;
 let preferredWalletName = null;
+let currentApiBaseUrl = null;
 // -------------------- Init / client access --------------------
-export function init(network, rpcUrl, preferredWallet) {
+export function init(network, rpcUrl, preferredWallet, apiBaseUrl) {
     currentNetwork = network;
     currentRpcUrl = rpcUrl;
     preferredWalletName = preferredWallet;
+    currentApiBaseUrl = apiBaseUrl;
     grpcClient = new SuiGrpcClient({
         network,
         baseUrl: rpcUrl,
@@ -43,6 +45,14 @@ function makeJsonRpcClient() {
         network,
         url: rpcUrl,
     });
+}
+function requireApiBaseUrl() {
+    if (!currentApiBaseUrl) {
+        throw new Error("walletInterop.init(network, rpcUrl, preferredWallet, apiBaseUrl) must be called before API calls.");
+    }
+    return currentApiBaseUrl.endsWith("/")
+        ? currentApiBaseUrl
+        : `${currentApiBaseUrl}/`;
 }
 // -------------------- Wallet helpers --------------------
 //preferredWalletName comes from appsettings.json for localnet, testnet etc.
@@ -196,31 +206,47 @@ export async function findOwnedRoleCaps(args) {
     return resp.data ?? [];
 }
 export async function grantRole(args) {
-    const { network } = requireInit();
-    const tx = new Transaction();
-    tx.moveCall({
-        target: `${args.packageId}::roles::grant_role`,
-        arguments: [
-            tx.object(args.roleRegistryId),
-            tx.object(args.roleAdminCapId),
-            tx.pure.u8(args.roleId),
-            tx.pure.address(args.grantee),
-        ],
-    });
-    return await signAndExecuteViaApi(network, tx);
+    try {
+        console.log("grantRole args", args);
+        const { network } = requireInit();
+        console.log("grantRole network", network);
+        const tx = new Transaction();
+        tx.moveCall({
+            target: `${args.packageId}::roles::grant_role_as_high_executor`,
+            arguments: [
+                tx.object(args.roleRegistryId),
+                tx.object(args.highExecutorRoleCapId),
+                tx.pure.u8(args.roleId),
+                tx.pure.address(args.grantee),
+            ],
+        });
+        return await signAndExecuteViaApi(network, tx);
+    }
+    catch (err) {
+        console.error("grantRole failed", err);
+        throw err;
+    }
 }
 export async function revokeRole(args) {
-    const { network } = requireInit();
-    const tx = new Transaction();
-    tx.moveCall({
-        target: `${args.packageId}::roles::revoke_role`,
-        arguments: [
-            tx.object(args.roleRegistryId),
-            tx.object(args.roleAdminCapId),
-            tx.object(args.roleCapId),
-        ],
-    });
-    return await signAndExecuteViaApi(network, tx);
+    try {
+        console.log("revokeRole args", args);
+        const { network } = requireInit();
+        console.log("revokeRole network", network);
+        const tx = new Transaction();
+        tx.moveCall({
+            target: `${args.packageId}::roles::revoke_role_as_high_executor`,
+            arguments: [
+                tx.object(args.roleRegistryId),
+                tx.object(args.highExecutorRoleCapId),
+                tx.object(args.roleCapId),
+            ],
+        });
+        return await signAndExecuteViaApi(network, tx);
+    }
+    catch (err) {
+        console.error("revokeRole failed", err);
+        throw err;
+    }
 }
 export async function getRoleCapId(args) {
     throw new Error("getRoleCapId requires a dev-inspect helper or service-layer query. " +
@@ -267,36 +293,54 @@ export async function findOwnedObjectIdByType(args) {
 }
 // -------------------- sign transaction --------------------
 async function signAndExecuteViaApi(network, tx) {
-    const wallet = pickWallet();
-    const accounts = await getConnectedAccounts(wallet);
-    const account = accounts[0];
-    const signFeature = wallet.features[SuiSignTransaction];
-    if (!signFeature) {
-        throw new Error("Wallet does not support sui:signTransaction");
+    try {
+        const wallet = pickWallet();
+        const accounts = await getConnectedAccounts(wallet);
+        const account = accounts[0];
+        const signFeature = wallet.features[SuiSignTransaction];
+        if (!signFeature) {
+            return { success: false, error: "Wallet does not support sui:signTransaction" };
+        }
+        const signed = await signFeature.signTransaction({
+            account,
+            chain: `sui:${network}`,
+            transaction: tx,
+        });
+        const apiBaseUrl = requireApiBaseUrl();
+        const response = await fetch(`${apiBaseUrl}api/sui/execute`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                network,
+                txBytesBase64: signed.bytes,
+                signaturesBase64: [signed.signature],
+            }),
+        });
+        const text = await response.text();
+        if (!response.ok) {
+            let message = text;
+            try {
+                const problem = JSON.parse(text);
+                message = problem.detail ?? problem.title ?? text;
+            }
+            catch {
+                // keep raw text
+            }
+            return { success: false, error: message };
+        }
+        return {
+            success: true,
+            data: JSON.parse(text)
+        };
     }
-    const signed = await signFeature.signTransaction({
-        account,
-        chain: `sui:${network}`,
-        transaction: tx,
-    });
-    // Adjust this URL if your API base differs
-    const response = await fetch("/api/sui/execute", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            network,
-            txBytesBase64: signed.bytes,
-            signaturesBase64: [signed.signature],
-        }),
-    });
-    if (!response.ok) {
-        const body = await response.text();
-        console.error(body);
-        throw new Error(`Execute failed: ${response.status} ${body}`);
+    catch (err) {
+        return {
+            success: false,
+            error: err instanceof Error ? err.message : String(err)
+        };
     }
-    return await response.json();
 }
 // -------------------- Move method calls --------------------
 export async function setResourceConfig(args) {

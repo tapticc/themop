@@ -7,6 +7,7 @@
 @inject SuiInterop SuiInterop
 @inject SuiNetworkService Network
 @inject SuiApiClient Api
+@inject IConfiguration Config
 @implements IDisposable
 
 <div class="mop-login-container">
@@ -87,10 +88,18 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+		var apiBaseUrl = Config["ApiSettings:BaseUrl"]
+			?? throw new Exception("ApiSettings:BaseUrl missing");
+
+		if (!apiBaseUrl.EndsWith("/"))
+			apiBaseUrl += "/";
+
 		await SuiInterop.InitAsync(
 			Network.Current.Network.ToString().ToLowerInvariant(),
 			Network.Current.RpcUrl,
-			Network.Current.PreferredWallet
+			Network.Current.PreferredWallet,
+			apiBaseUrl
+
 		);
 
 		Network.OnChanged += HandleNetworkChanged;
@@ -102,10 +111,18 @@
 
 	private async void HandleNetworkChanged()
 	{
+		var apiBaseUrl = Config["ApiSettings:BaseUrl"]
+			?? throw new Exception("ApiSettings:BaseUrl missing");
+
+		if (!apiBaseUrl.EndsWith("/"))
+			apiBaseUrl += "/";
+
 		await SuiInterop.InitAsync(
 			Network.Current.Network.ToString().ToLowerInvariant(),
 			Network.Current.RpcUrl,
-			Network.Current.PreferredWallet
+			Network.Current.PreferredWallet,
+			apiBaseUrl
+
 		);
 
 		await InvokeAsync(StateHasChanged);

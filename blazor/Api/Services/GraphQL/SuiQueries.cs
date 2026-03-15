@@ -55,5 +55,24 @@
         }
         """;
 
+        public const string GetKnownCharactersPage = """
+        query GetKnownCharactersPage($type: String!, $first: Int!, $after: String) {
+          objects(first: $first, after: $after, filter: { type: $type }) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            nodes {
+              address
+              asMoveObject {
+                contents {
+                  json
+                }
+              }
+            }
+          }
+        }
+        """;
+
     }
 }

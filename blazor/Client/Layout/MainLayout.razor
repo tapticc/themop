@@ -5,6 +5,7 @@
 @inject NavigationManager Nav
 @inject SuiInterop SuiInterop
 @inject SuiNetworkService Network
+@inject IConfiguration Config
 @implements IDisposable
 
 <RadzenLayout class="eve-layout">
@@ -17,8 +18,12 @@
 			<RadzenMenu class="mop-menu">
 				<RadzenMenuItem Text="Dashboard" Path="/" Match="NavLinkMatch.All" />
 				<RadzenMenuItem Text="Styles Demo" Path="/styles-demo" />
+				@if (AppState.RoleContext?.Permissions?.CanAssignRoles == true)
+				{
+					<RadzenMenuItem Text="Role Admin" Path="/admin-roles" />
+					<RadzenMenuItem Text="Character Search" Path="/character-search" />
+				}
 			</RadzenMenu>
-
 		</div>
 	</RadzenHeader>
 
@@ -34,11 +39,18 @@
 @code {
 	protected override async Task OnInitializedAsync()
 	{
+		var apiBaseUrl = Config["ApiSettings:BaseUrl"]
+			?? throw new Exception("ApiSettings:BaseUrl missing");
+
+		if (!apiBaseUrl.EndsWith("/"))
+			apiBaseUrl += "/";
+
 		AppState.OnChange += StateHasChanged;
 		await SuiInterop.InitAsync(
 			Network.Current.Network.ToString().ToLowerInvariant(),
 			Network.Current.RpcUrl,
-			Network.Current.PreferredWallet
+			Network.Current.PreferredWallet,
+			apiBaseUrl
 		);
 
 		Network.OnChanged += HandleNetworkChanged;
@@ -46,10 +58,17 @@
 
 	private async void HandleNetworkChanged()
 	{
+		var apiBaseUrl = Config["ApiSettings:BaseUrl"]
+			?? throw new Exception("ApiSettings:BaseUrl missing");
+
+		if (!apiBaseUrl.EndsWith("/"))
+			apiBaseUrl += "/";
+
 		await SuiInterop.InitAsync(
 			Network.Current.Network.ToString().ToLowerInvariant(),
 			Network.Current.RpcUrl,
-			Network.Current.PreferredWallet
+			Network.Current.PreferredWallet,
+			apiBaseUrl
 		);
 
 		await InvokeAsync(StateHasChanged);

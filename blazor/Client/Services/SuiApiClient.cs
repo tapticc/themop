@@ -1,12 +1,14 @@
 ﻿using Common.Roles;
 using Common.Sui;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 
 namespace Client.Services
 {
-    public class SuiApiClient(HttpClient http)
+    public class SuiApiClient(HttpClient http, IOptions<SuiContractOptions> options)
     {
         private readonly HttpClient _http = http;
+        private readonly SuiContractOptions _options = options.Value;
 
         public async Task<HttpResponseMessage> GetBalanceAsync(string owner, string network)
         {
@@ -63,6 +65,16 @@ namespace Client.Services
                 $"api/sui/character-from-wallet?walletAddress={Uri.EscapeDataString(walletAddress)}");
         }
 
+        public async Task<WalletRoleContext?> GetWalletRoleContextAsync(string walletAddress)
+        {
+            var url =
+                $"api/sui/wallet-role-context" +
+                $"?walletAddress={Uri.EscapeDataString(walletAddress)}" +
+                $"&packageId={Uri.EscapeDataString(_options.TheMopPackageId)}";
+
+            return await _http.GetFromJsonAsync<WalletRoleContext>(url);
+        }
+
         public async Task<WalletRoleContext?> GetWalletRoleContextAsync(string walletAddress, string packageId)
         {
             var url =
@@ -71,6 +83,28 @@ namespace Client.Services
                 $"&packageId={Uri.EscapeDataString(packageId)}";
 
             return await _http.GetFromJsonAsync<WalletRoleContext>(url);
+        }
+
+        public async Task<List<WalletRoleCapSummary>> GetOwnedRoleCapsAsync(string walletAddress)
+        {
+            var response = await _http.GetFromJsonAsync<List<WalletRoleCapSummary>>(
+                $"api/sui/owned-role-caps?walletAddress={walletAddress}");
+
+            return response ?? [];
+        }
+
+        public async Task<PagedKnownCharactersResponse?> GetKnownCharactersPageAsync(
+            int first = 20,
+            string? after = null)
+        {
+            var url = $"api/sui/known-characters?first={first}";
+
+            if (!string.IsNullOrWhiteSpace(after))
+            {
+                url += $"&after={Uri.EscapeDataString(after)}";
+            }
+
+            return await _http.GetFromJsonAsync<PagedKnownCharactersResponse>(url);
         }
     }
 }

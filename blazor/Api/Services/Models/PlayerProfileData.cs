@@ -7,7 +7,10 @@ namespace Api.Services.Models
         [JsonPropertyName("id")]
         public string? Id { get; set; }
 
-        [JsonPropertyName("character_id")]
-        public string? CharacterId { get; set; }
+        [JsonPropertyName("character_address")]
+        public string? CharacterAddress { get; set; }
+
+        [JsonPropertyName("metadata")]
+        public PlayerProfileMetadata? Metadata { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Api.Services.Sui;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace Api.Endpoints;
 
@@ -57,14 +58,36 @@ public static class SuiEndpoints
                 var resp = await gw.ExecuteSignedTransactionAsync(body.Network, txBytes, sigs);
                 return Results.Ok(resp);
             }
-            catch (FormatException)
+            catch (FormatException ex)
             {
-                return Results.BadRequest(new { title = "Invalid base64 in request.", status = 400 });
+                return Results.BadRequest(new
+                {
+                    title = "Invalid base64 in request.",
+                    status = 400,
+                    detail = ex.Message
+                });
             }
             catch (Exception ex)
             {
-                return Results.Problem($"An error occurred while executing the transaction: {ex.Message}");
+                return Results.Problem(
+                    title: "Transaction execution failed",
+                    detail: BuildExceptionDetails(ex),
+                    statusCode: 500);
             }
         });
+
+        static string BuildExceptionDetails(Exception ex)
+        {
+            var parts = new List<string>();
+            var current = ex;
+
+            while (current is not null)
+            {
+                parts.Add($"{current.GetType().Name}: {current.Message}");
+                current = current.InnerException;
+            }
+
+            return string.Join(" --> ", parts);
+        }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Api.Services.GraphQL
+﻿namespace Api.Services.GraphQL
 {
     public class OwnedObjectsQueryResponse
     {

@@ -69,12 +69,12 @@ namespace Api.Services.GraphQL
                 return null;
 
             var profile = Deserialize<PlayerProfileData>(profileNode.AsMoveObject.Contents.Json.Value);
-            if (profile is null || string.IsNullOrWhiteSpace(profile.CharacterId))
+            if (profile is null || string.IsNullOrWhiteSpace(profile.Id))
                 return null;
 
             var characterResult = await _graphql.SendAsync<CharacterQueryResponse>(
                 SuiQueries.GetCharacter,
-                new { id = profile.CharacterId },
+                new { id = profile.Id },
                 cancellationToken);
 
             var characterNode = characterResult.Object;
@@ -109,7 +109,6 @@ namespace Api.Services.GraphQL
 
             var roles = await GetOwnedRoleCapsForWalletAsync(
                 walletAddress,
-                mopPackageId,
                 cancellationToken);
 
             var roleIds = roles
@@ -152,9 +151,10 @@ namespace Api.Services.GraphQL
 
         public async Task<List<WalletRoleCapSummary>> GetOwnedRoleCapsForWalletAsync(
             string walletAddress,
-            string packageId,
             CancellationToken cancellationToken = default)
         {
+            var mopPackageId = _options.Packages.TheMop;
+
             var result = await _graphql.SendAsync<OwnedObjectsQueryResponse>(
                 SuiQueries.GetOwnedObjectsWithType,
                 new
@@ -163,7 +163,7 @@ namespace Api.Services.GraphQL
                 },
                 cancellationToken);
 
-            var roleCapType = $"{packageId}::roles::RoleCap";
+            var roleCapType = $"{mopPackageId}::roles::RoleCap";
 
             var nodes = result.Address?.Objects?.Nodes?
                 .Where(x =>
@@ -226,13 +226,11 @@ namespace Api.Services.GraphQL
 
         public async Task<bool> WalletHasRoleAsync(
             string walletAddress,
-            string packageId,
             byte roleId,
             CancellationToken cancellationToken = default)
         {
             var roles = await GetOwnedRoleCapsForWalletAsync(
                 walletAddress,
-                packageId,
                 cancellationToken);
 
             return roles.Any(x => x.RoleId == roleId);
@@ -240,13 +238,11 @@ namespace Api.Services.GraphQL
 
         public async Task<string?> GetRoleCapIdForWalletAsync(
             string walletAddress,
-            string packageId,
             byte roleId,
             CancellationToken cancellationToken = default)
         {
             var roles = await GetOwnedRoleCapsForWalletAsync(
                 walletAddress,
-                packageId,
                 cancellationToken);
 
             return roles.FirstOrDefault(x => x.RoleId == roleId)?.RoleCapId;
@@ -254,17 +250,56 @@ namespace Api.Services.GraphQL
 
         public async Task<List<byte>> GetOwnedRoleIdsForWalletAsync(
             string walletAddress,
-            string packageId,
             CancellationToken cancellationToken = default)
         {
             var roles = await GetOwnedRoleCapsForWalletAsync(
                 walletAddress,
-                packageId,
                 cancellationToken);
 
             return [.. roles.Select(x => x.RoleId)];
         }
 
+        public async Task<PagedKnownCharactersResponse> GetKnownCharactersPageAsync(
+            int first,
+            string? after,
+            CancellationToken cancellationToken = default)
+        {
+            var playerProfilePackageId = _options.Packages.PlayerProfilePackageId;
+
+            var characterType = $"{playerProfilePackageId}::character::Character";
+
+            var result = await _graphql.SendAsync<KnownCharactersQueryResponse>(
+                SuiQueries.GetKnownCharactersPage,
+                new
+                {
+                    type = characterType,
+                    first,
+                    after
+                },
+                cancellationToken);
+
+            var items = result.Objects?.Nodes?
+                .Select(node =>
+                {
+                    var profile = Deserialize<PlayerProfileData>(
+                        node.AsMoveObject!.Contents!.Json!.Value);
+
+                    return new KnownCharacterSummary
+                    {
+                        CharacterId = profile?.Id ?? "",
+                        CharacterAddress = profile?.CharacterAddress ?? "",
+                        CharacterName = profile?.Metadata?.Name ?? "(Unnamed)"
+                    };
+                })
+                .ToList() ?? [];
+
+            return new PagedKnownCharactersResponse
+            {
+                Items = items,
+                HasNextPage = result.Objects?.PageInfo?.HasNextPage ?? false,
+                EndCursor = result.Objects?.PageInfo?.EndCursor
+            };
+        }
 
         public static string? TryGetPackageIdFromType(string? fullType)
         {

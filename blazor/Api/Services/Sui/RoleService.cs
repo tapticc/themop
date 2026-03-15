@@ -3,24 +3,16 @@ using Common.Roles;
 
 namespace Api.Services.Sui
 {
-    public class RoleService
+    public class RoleService(SuiGraphQLService graphql)
     {
-        private readonly SuiGraphQLService _graphql;
-
-        public RoleService(SuiGraphQLService graphql)
-        {
-            _graphql = graphql;
-        }
+        private readonly SuiGraphQLService _graphql = graphql;
 
         public async Task<WalletRoleContext> GetContextAsync(
             string walletAddress,
-            string packageId,
-            string network,
             CancellationToken cancellationToken = default)
         {
             var roles = await _graphql.GetOwnedRoleCapsForWalletAsync(
                 walletAddress,
-                packageId,
                 cancellationToken);
 
             var roleIds = roles

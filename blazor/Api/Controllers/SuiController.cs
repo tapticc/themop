@@ -40,5 +40,31 @@ namespace Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("owned-role-caps")]
+        public async Task<ActionResult<List<WalletRoleCapSummary>>> GetOwnedRoleCaps(
+            [FromQuery] string walletAddress,
+            CancellationToken cancellationToken)
+        {
+            var result = await _suiGraphQLService.GetOwnedRoleCapsForWalletAsync(
+                walletAddress,
+                cancellationToken);
+
+            return Ok(result);
+        }
+
+        [HttpGet("known-characters")]
+        public async Task<ActionResult<PagedKnownCharactersResponse>> GetKnownCharacters(
+            [FromQuery] int first = 20,
+            [FromQuery] string? after = null,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _suiGraphQLService.GetKnownCharactersPageAsync(
+                first,
+                after,
+                cancellationToken);
+
+            return Ok(result);
+        }
     }
 }

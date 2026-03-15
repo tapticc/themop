@@ -1257,3 +1257,20 @@ h1, h2, h3 {
     letter-spacing: .6px;
     font-family: Consolas, monospace;
 }
+
+.mop-button-warning {
+    background: linear-gradient(180deg, #3a1c1c, #241010) !important;
+    border: 1px solid #5a2a2a !important;
+    color: #ffb6a0 !important;
+}
+
+    .mop-button-warning:hover {
+        border-color: #ff5555 !important;
+        box-shadow: 0 0 10px rgba(255,80,80,.35) !important;
+    }
+
+.mop-id {
+    font-family: Consolas, monospace;
+    font-size: .85rem;
+    color: var(--eve-text-muted);
+}

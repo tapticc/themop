@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using Common.Roles;
+using Microsoft.JSInterop;
 
 namespace Client.Services;
 
@@ -7,10 +8,10 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
         js.InvokeAsync<IJSObjectReference>("import", "./js/suiInterop.js").AsTask());
 
-    public async Task InitAsync(string network, string rpcUrl, string preferredWallet)
+    public async Task InitAsync(string network, string rpcUrl, string preferredWallet, string apiBaseUrl)
     {
         var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("init", network, rpcUrl, preferredWallet);
+        await module.InvokeVoidAsync("init", network, rpcUrl, preferredWallet, apiBaseUrl);
     }
 
     public async Task<string> ConnectSuiAsync()
@@ -58,6 +59,8 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
 
     // -------------------- Move method calls (via API) --------------------
 
+    // CONFIG
+
     public async Task<object> SetResourceConfigAsync(object args)
     {
         var module = await _moduleTask.Value;
@@ -80,5 +83,20 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
     {
         var module = await _moduleTask.Value;
         return await module.InvokeAsync<object>("setFullItemConfig", args);
+    }
+
+
+    //ROLES
+
+    public async Task<TxResult> GrantRoleAsync(GrantRoleTxRequest request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("grantRole", request);
+    }
+
+    public async Task<TxResult> RevokeRoleAsync(RevokeRoleTxRequest request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("revokeRole", request);
     }
 }

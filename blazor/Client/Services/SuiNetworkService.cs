@@ -4,10 +4,10 @@ namespace Client.Services
 {
     public class SuiNetwork
     {
-        public string Network { get; set; } = "";
-        public string RpcUrl { get; set; } = "";
-        public string GraphQLEndpoint { get; set; } = "";
-        public string PreferredWallet { get; set; } = "";
+        public string Network { get; set; } = string.Empty;
+        public string RpcUrl { get; set; } = string.Empty;
+        public string GraphQLEndpoint { get; set; } = string.Empty;
+        public string PreferredWallet { get; set; } = string.Empty;
     }
 
     public record SuiNetworkConfig(SuiNetwork Network, string RpcUrl);

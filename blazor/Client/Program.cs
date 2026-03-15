@@ -21,11 +21,14 @@ builder.Services.AddScoped(sp =>
 });
 
 builder.Services.AddSingleton<AppState>();
+builder.Services.AddSingleton<SuiNetworkService>();
 
+builder.Services.Configure<SuiOptions>(builder.Configuration.GetSection("Sui"));
+builder.Services.Configure<SuiContractOptions>(builder.Configuration.GetSection("Sui:SuiContracts"));
+
+builder.Services.AddScoped<RoleTxService>();
 builder.Services.AddScoped<SuiWalletService>();
 builder.Services.AddScoped<SuiApiClient>();
-builder.Services.Configure<SuiOptions>(builder.Configuration.GetSection("Sui"));
-builder.Services.AddSingleton<SuiNetworkService>();
 builder.Services.AddScoped<SuiInterop>();
 
 builder.Services.AddRadzenComponents();

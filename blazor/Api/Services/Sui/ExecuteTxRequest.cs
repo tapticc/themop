@@ -3,7 +3,7 @@
     public class ExecuteTxRequest
     {
         public string Network { get; set; } = "localnet";
-        public string TxBytesBase64 { get; set; } = "";
+        public string TxBytesBase64 { get; set; } = string.Empty;
         public List<string> SignaturesBase64 { get; set; } = new();
     }
 }

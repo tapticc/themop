@@ -15,11 +15,26 @@ namespace Api.Services.Sui
 
         private static string GetGraphQLUrl(string network) => network switch
         {
+            //"localnet" => "http://127.0.0.1:9125/graphql",
+            //"testnet" => "https://sui-testnet.mystenlabs.com/graphql",
+            //"devnet" => "https://sui-devnet.mystenlabs.com/graphql",
+            //"mainnet" => "https://sui-mainnet.mystenlabs.com/graphql",
+            //_ => "https://sui-testnet.mystenlabs.com/graphql",
+
             "localnet" => "http://127.0.0.1:9125/graphql",
-            "testnet" => "https://sui-testnet.mystenlabs.com/graphql",
-            "devnet" => "https://sui-devnet.mystenlabs.com/graphql",
-            "mainnet" => "https://sui-mainnet.mystenlabs.com/graphql",
-            _ => "https://sui-testnet.mystenlabs.com/graphql",
+            "testnet" => "https://graphql.testnet.sui.io/graphql",
+            "devnet" => "https://graphql.devnet.sui.io/graphql",
+            "mainnet" => "https://graphql.mainnet.sui.io/graphql",
+            _ => "https://graphql.testnet.sui.io/graphql",
+        };
+
+        private static string GetFullNodeUrl(string network) => network switch
+        {
+            "localnet" => "http://127.0.0.1:9000",
+            "testnet" => "https://fullnode.testnet.sui.io:443",
+            "devnet" => "https://fullnode.devnet.sui.io:443",
+            "mainnet" => "https://fullnode.mainnet.sui.io:443",
+            _ => "https://fullnode.testnet.sui.io:443",
         };
 
         private GrpcChannel Channel(string network) =>
@@ -74,7 +89,7 @@ namespace Api.Services.Sui
             byte[] txBytes,
             IReadOnlyList<byte[]> signatures)
         {
-            using var channel = GrpcChannel.ForAddress(GetGraphQLUrl(network));
+            using var channel = GrpcChannel.ForAddress(GetFullNodeUrl(network));
             var client = new TransactionExecutionService.TransactionExecutionServiceClient(channel);
 
             var req = new ExecuteTransactionRequest
@@ -282,7 +297,7 @@ namespace Api.Services.Sui
             var oid = obj.ObjectId ?? oidNorm;
 
             bool isShared = false;
-            string initialSharedVersion = "";
+            string initialSharedVersion = string.Empty;
 
             // Owner is a protobuf message; easiest is to read it via protobuf-json
             if (obj.Owner is not null)
@@ -315,8 +330,8 @@ namespace Api.Services.Sui
             string ownerCapId = GetString(fields, "owner_cap_id");
 
             // key: { item_id, tenant }
-            string tenant = "";
-            string itemId = "";
+            string tenant = string.Empty;
+            string itemId = string.Empty;
             if (fields.TryGetProperty("key", out var keyEl) && keyEl.ValueKind == JsonValueKind.Object)
             {
                 tenant = GetString(keyEl, "tenant");
@@ -324,9 +339,9 @@ namespace Api.Services.Sui
             }
 
             // metadata: { assembly_id, name, description, url }
-            string name = "";
-            string description = "";
-            string url = "";
+            string name = string.Empty;
+            string description = string.Empty;
+            string url = string.Empty;
             if (fields.TryGetProperty("metadata", out var mdEl) && mdEl.ValueKind == JsonValueKind.Object)
             {
                 name = GetString(mdEl, "name");
