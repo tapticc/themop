@@ -1,5 +1,6 @@
 ﻿using Api.Services.Models;
 using Api.Services.Sui;
+using Common.Inventory;
 using Common.Roles;
 using Common.Sui;
 using Microsoft.Extensions.Options;
@@ -99,7 +100,10 @@ namespace Api.Services.GraphQL
             string walletAddress,
             CancellationToken cancellationToken = default)
         {
-            var mopPackageId = _options.Packages.TheMop;
+            if (string.IsNullOrWhiteSpace(_options.Packages.TheMopPackageId))
+                return new();
+
+            var mopPackageId = _options.Packages.TheMopPackageId;
 
             if (string.IsNullOrWhiteSpace(walletAddress))
                 return null;
@@ -153,7 +157,10 @@ namespace Api.Services.GraphQL
             string walletAddress,
             CancellationToken cancellationToken = default)
         {
-            var mopPackageId = _options.Packages.TheMop;
+            if (string.IsNullOrWhiteSpace(_options.Packages.TheMopPackageId))
+                return new();
+
+            var mopPackageId = _options.Packages.TheMopPackageId;
 
             var result = await _graphql.SendAsync<OwnedObjectsQueryResponse>(
                 SuiQueries.GetOwnedObjectsWithType,
@@ -264,9 +271,12 @@ namespace Api.Services.GraphQL
             string? after,
             CancellationToken cancellationToken = default)
         {
-            var playerProfilePackageId = _options.Packages.PlayerProfilePackageId;
+            if (string.IsNullOrWhiteSpace(_options.Packages.PlayerProfileObjectTypeId))
+                return new();
 
-            var characterType = $"{playerProfilePackageId}::character::Character";
+            var PlayerProfileObjectTypeId = _options.Packages.PlayerProfileObjectTypeId;
+
+            var characterType = $"{PlayerProfileObjectTypeId}::character::Character";
 
             var result = await _graphql.SendAsync<KnownCharactersQueryResponse>(
                 SuiQueries.GetKnownCharactersPage,
@@ -299,6 +309,43 @@ namespace Api.Services.GraphQL
                 HasNextPage = result.Objects?.PageInfo?.HasNextPage ?? false,
                 EndCursor = result.Objects?.PageInfo?.EndCursor
             };
+        }
+
+        //INVENTORY
+
+        public async Task<List<ItemConfigDto>> GetItemConfigsAsync(
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(_options.Packages.ItemConfigRegistryId))
+                return [];
+
+            var result = await _graphql.SendAsync<ItemConfigsQueryResponse>(
+                SuiQueries.GetItemConfigs,
+                new
+                {
+                    registry = _options.Packages.ItemConfigRegistryId
+                },
+                cancellationToken);
+
+            var items = result.Object?.DynamicFields?.Nodes?
+                .Select(node =>
+                {
+                    var data = Deserialize<ItemConfigData>(
+                        node.Value!.Json!.Value);
+
+                    return new ItemConfigDto
+                    {
+                        ItemId = ulong.Parse(data?.ItemId ?? "0"),
+                        DisplayName = data?.DisplayName ?? "",
+                        CompliancePoints = ulong.Parse(data?.CompliancePoints ?? "0"),
+                        EssentialMultiplier = ulong.Parse(data?.EssentialMultiplier ?? "0"),
+                        IsEnabled = data?.IsEnabled ?? false
+                    };
+                })
+                .OrderBy(x => x.ItemId)
+                .ToList() ?? [];
+
+            return items;
         }
 
         public static string? TryGetPackageIdFromType(string? fullType)

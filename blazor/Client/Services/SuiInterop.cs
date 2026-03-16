@@ -1,4 +1,5 @@
-﻿using Common.Roles;
+﻿using Common.Inventory;
+using Common.Roles;
 using Microsoft.JSInterop;
 
 namespace Client.Services;
@@ -98,5 +99,19 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
     {
         var module = await _moduleTask.Value;
         return await module.InvokeAsync<TxResult>("revokeRole", request);
+    }
+
+    //INVENTORY
+
+    public async Task<TxResult> SetItemConfigAsync(SetItemConfigTxRequest request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("setItemConfig", request);
+    }
+
+    public async Task<TxResult> RemoveItemConfigAsync(RemoveItemConfigTxRequest request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("removeItemConfig", request);
     }
 }

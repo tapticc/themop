@@ -318,6 +318,8 @@ export async function grantRole(args: {
             ],
         });
 
+        tx.setGasBudget(50_000_000);
+
         return await signAndExecuteViaApi(network, tx);
     }
     catch (err) {
@@ -347,6 +349,8 @@ export async function revokeRole(args: {
                 tx.object(args.roleCapId),
             ],
         });
+
+        tx.setGasBudget(50_000_000);
 
         return await signAndExecuteViaApi(network, tx);
     }
@@ -395,6 +399,64 @@ export function extractCreatedRoleCapId(txResult: any): string | null {
     }
 
     return null;
+}
+
+// INVENTORY
+
+export async function setItemConfig(args: {
+    packageId: string;
+    itemConfigRegistryId: string;
+    roleCapId: string;
+    itemId: number;
+    displayName: string;
+    compliancePoints: number;
+    essentialMultiplier: number;
+    isEnabled: boolean;
+}) {
+    const { network } = requireInit();
+
+    const tx = new Transaction();
+
+    tx.moveCall({
+        target: `${args.packageId}::items::set_item_config_as_role_manager`,
+        arguments: [
+            tx.object(args.itemConfigRegistryId),
+            tx.object(args.roleCapId),
+            tx.pure.u64(args.itemId),
+            tx.pure.string(args.displayName),
+            tx.pure.u64(args.compliancePoints),
+            tx.pure.u64(args.essentialMultiplier),
+            tx.pure.bool(args.isEnabled),
+        ],
+    });
+
+    tx.setGasBudget(50_000_000);
+
+    return await signAndExecuteViaApi(network, tx);
+}
+
+export async function removeItemConfig(args: {
+    packageId: string;
+    itemConfigRegistryId: string;
+    adminCapId: string;
+    itemId: number;
+}) {
+    const { network } = requireInit();
+
+    const tx = new Transaction();
+
+    tx.moveCall({
+        target: `${args.packageId}::items::remove_item_config_as_role_manager`,
+        arguments: [
+            tx.object(args.itemConfigRegistryId),
+            tx.object(args.adminCapId),
+            tx.pure.u64(args.itemId),
+        ],
+    });
+
+    tx.setGasBudget(50_000_000);
+
+    return await signAndExecuteViaApi(network, tx);
 }
 
 // -------------------- JSON-RPC lookup helpers --------------------

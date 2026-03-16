@@ -20,6 +20,7 @@
 				<RadzenMenuItem Text="Styles Demo" Path="/styles-demo" />
 				@if (AppState.RoleContext?.Permissions?.CanAssignRoles == true)
 				{
+					<RadzenMenuItem Text="Inventory Admin" Path="/admin-inventory" />
 					<RadzenMenuItem Text="Role Admin" Path="/admin-roles" />
 					<RadzenMenuItem Text="Character Search" Path="/character-search" />
 				}

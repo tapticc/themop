@@ -74,5 +74,25 @@
         }
         """;
 
+        public const string GetItemConfigs = """
+        query GetItemConfigs($registry: SuiAddress!) {
+          object(address: $registry) {
+            dynamicFields(first: 50) {
+              nodes {
+                name {
+                  json
+                }
+                value {
+                  __typename
+                  ... on MoveValue {
+                    json
+                  }
+                }
+              }
+            }
+          }
+        }
+        """;
+
     }
 }

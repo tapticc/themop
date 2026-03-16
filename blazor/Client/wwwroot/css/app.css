@@ -1274,3 +1274,7 @@ h1, h2, h3 {
     font-size: .85rem;
     color: var(--eve-text-muted);
 }
+
+.mop-row-selected td {
+    background: rgba(212,175,55,.06);
+}

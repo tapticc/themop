@@ -20382,6 +20382,7 @@ async function grantRole(args) {
         tx.pure.address(args.grantee)
       ]
     });
+    tx.setGasBudget(5e7);
     return await signAndExecuteViaApi(network, tx);
   } catch (err) {
     console.error("grantRole failed", err);
@@ -20402,6 +20403,7 @@ async function revokeRole(args) {
         tx.object(args.roleCapId)
       ]
     });
+    tx.setGasBudget(5e7);
     return await signAndExecuteViaApi(network, tx);
   } catch (err) {
     console.error("revokeRole failed", err);
@@ -20428,6 +20430,38 @@ function extractCreatedRoleCapId(txResult) {
     }
   }
   return null;
+}
+async function setItemConfig(args) {
+  const { network } = requireInit();
+  const tx = new Transaction2();
+  tx.moveCall({
+    target: `${args.packageId}::items::set_item_config_as_role_manager`,
+    arguments: [
+      tx.object(args.itemConfigRegistryId),
+      tx.object(args.roleCapId),
+      tx.pure.u64(args.itemId),
+      tx.pure.string(args.displayName),
+      tx.pure.u64(args.compliancePoints),
+      tx.pure.u64(args.essentialMultiplier),
+      tx.pure.bool(args.isEnabled)
+    ]
+  });
+  tx.setGasBudget(5e7);
+  return await signAndExecuteViaApi(network, tx);
+}
+async function removeItemConfig(args) {
+  const { network } = requireInit();
+  const tx = new Transaction2();
+  tx.moveCall({
+    target: `${args.packageId}::items::remove_item_config_as_role_manager`,
+    arguments: [
+      tx.object(args.itemConfigRegistryId),
+      tx.object(args.adminCapId),
+      tx.pure.u64(args.itemId)
+    ]
+  });
+  tx.setGasBudget(5e7);
+  return await signAndExecuteViaApi(network, tx);
 }
 async function findOwnedObjectIdByType(args) {
   const wallet = pickWallet();
@@ -20583,10 +20617,12 @@ export {
   hasRole,
   init,
   pickWallet,
+  removeItemConfig,
   revokeRole,
   setComplianceConfig,
   setFullItemConfig,
   setGateCostConfig,
+  setItemConfig,
   setResourceConfig
 };
 /*! Bundled license information:

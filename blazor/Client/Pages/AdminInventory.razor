@@ -1,0 +1,364 @@
+﻿@page "/admin-inventory"
+@using Client.Models
+@using Common.Inventory
+@inject AppState AppState
+@inject Client.Services.SuiApiClient Api
+@inject Client.Services.InventoryConfigTxService InventoryConfigTxService
+@inject NavigationManager Nav
+
+<PageTitle>Inventory Maintenance</PageTitle>
+
+@if (!IsAuthorized)
+{
+    Nav.NavigateTo("/unauthorised-access", true);
+}
+
+<div class="mop-section">
+    <h1 class="mop-directive-title">Inventory Maintenance</h1>
+    <div class="mop-section-rule"></div>
+
+    <p class="eve-text-muted">
+        Maintain item ids, points, multipliers, and enabled state.
+    </p>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(_message))
+{
+    <div class="mop-dossier mt-3">
+        <div class="mop-dossier-title">Status</div>
+        <p class="eve-text-muted mb-0">@_message</p>
+    </div>
+}
+
+<div class="mop-grid">
+    <div class="mop-dossier">
+        <div class="mop-dossier-title">
+            @(_isEditMode ? "Edit Item Config" : "Add Item Config")
+        </div>
+
+        <div class="mop-dossier-row">
+            <div class="mop-dossier-key">Item ID</div>
+            <div>
+                <InputNumber @bind-Value="_edit.ItemId" class="form-control" />
+            </div>
+        </div>
+
+        <div class="mop-dossier-row">
+            <div class="mop-dossier-key">Display Name</div>
+            <div>
+                <InputText @bind-Value="_edit.DisplayName" class="form-control" />
+            </div>
+        </div>
+
+        <div class="mop-dossier-row">
+            <div class="mop-dossier-key">Compliance Points</div>
+            <div>
+                <InputNumber @bind-Value="_edit.CompliancePoints" class="form-control" />
+            </div>
+        </div>
+
+        <div class="mop-dossier-row">
+            <div class="mop-dossier-key">Essential Multiplier</div>
+            <div>
+                <InputNumber @bind-Value="_edit.EssentialMultiplier" class="form-control" />
+            </div>
+        </div>
+
+        <div class="mop-dossier-row">
+            <div class="mop-dossier-key">Enabled</div>
+            <div>
+                <InputCheckbox @bind-Value="_edit.IsEnabled" />
+            </div>
+        </div>
+
+        <div class="mt-3 d-flex gap-2 flex-wrap">
+            <RadzenButton Text="@(_isEditMode ? "Update" : "Create")"
+                          Click="@Save"
+                          Disabled="@_busy"
+                          class="mop-button-authority" />
+
+            <RadzenButton Text="Add New"
+                          Click="@ClearForm"
+                          Disabled="@_busy"
+                          class="mop-button" />
+
+            <RadzenButton Text="Refresh"
+                          Click="@Load"
+                          Disabled="@_busy"
+                          class="mop-button" />
+        </div>
+    </div>
+
+    <div class="mop-dossier">
+        <div class="mop-dossier-title">Known Items</div>
+
+        <table class="mop-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Item ID</th>
+                    <th>Points</th>
+                    <th>Multiplier</th>
+                    <th>Enabled</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in _items.OrderBy(x => x.ItemId))
+                {
+                    var isSelected = _selectedItemId == item.ItemId;
+
+                    <tr class="@(isSelected ? "mop-row-selected" : null)">
+                        <td>@item.DisplayName</td>
+                        <td class="mop-dossier-value">@item.ItemId</td>
+                        <td>@item.CompliancePoints</td>
+                        <td>@item.EssentialMultiplier</td>
+                        <td>
+                            <span class="mop-role-status mop-label @(item.IsEnabled ? "mop-label-success" : "mop-label-warning")">
+                                @(item.IsEnabled ? "YES" : "NO")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <RadzenButton Text="Edit"
+                                              Click="@(() => Edit(item))"
+                                              Disabled="@_busy"
+                                              class="mop-button" />
+
+                                <RadzenButton Text="Delete"
+                                              Click="@(() => ConfirmDelete(item))"
+                                              Disabled="@_busy"
+                                              class="mop-button mop-button-warning" />
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (_confirmDeleteItem is not null)
+        {
+            <div class="mop-dossier mt-3">
+                <div class="mop-dossier-title">Confirm Delete</div>
+                <p class="eve-text-muted">
+                    Remove item config for <b>@_confirmDeleteItem.DisplayName</b> (ID @(_confirmDeleteItem.ItemId))?
+                </p>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <RadzenButton Text="Cancel"
+                                  Click="@CancelDelete"
+                                  Disabled="@_busy"
+                                  class="mop-button" />
+
+                    <RadzenButton Text="Confirm Delete"
+                                  Click="@DeleteConfirmed"
+                                  Disabled="@_busy"
+                                  class="mop-button mop-button-warning" />
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private readonly List<ItemConfigDto> _items = [];
+    private ItemConfigEditModel _edit = new();
+    private string? _message;
+    private bool _busy;
+    private bool _isEditMode;
+    private ulong? _selectedItemId;
+    private ItemConfigDto? _confirmDeleteItem;
+
+    private bool IsAuthorized =>
+        AppState.RoleContext?.Permissions?.CanConfigureEconomy == true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!IsAuthorized)
+            return;
+
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            _busy = true;
+            _message = null;
+
+            var result = await Api.GetItemConfigsAsync();
+
+            _items.Clear();
+            _items.AddRange(result);
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void Edit(ItemConfigDto item)
+    {
+        _selectedItemId = item.ItemId;
+        _isEditMode = true;
+        _confirmDeleteItem = null;
+
+        _edit = new ItemConfigEditModel
+        {
+            ItemId = (long)item.ItemId,
+            DisplayName = item.DisplayName,
+            CompliancePoints = (long)item.CompliancePoints,
+            EssentialMultiplier = (long)item.EssentialMultiplier,
+            IsEnabled = item.IsEnabled
+        };
+
+        _message = $"Editing item {item.ItemId}.";
+    }
+
+    private void ClearForm()
+    {
+        _edit = new ItemConfigEditModel();
+        _isEditMode = false;
+        _selectedItemId = null;
+        _confirmDeleteItem = null;
+        _message = null;
+    }
+
+    private void ConfirmDelete(ItemConfigDto item)
+    {
+        _confirmDeleteItem = item;
+        _selectedItemId = item.ItemId;
+        _message = null;
+    }
+
+    private void CancelDelete()
+    {
+        _confirmDeleteItem = null;
+    }
+
+    private async Task Save()
+    {
+        if (_edit.ItemId <= 0)
+        {
+            _message = "Item ID must be greater than zero.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_edit.DisplayName))
+        {
+            _message = "Display name is required.";
+            return;
+        }
+
+        if (_edit.CompliancePoints < 0)
+        {
+            _message = "Compliance points cannot be negative.";
+            return;
+        }
+
+        if (_edit.EssentialMultiplier <= 0)
+        {
+            _message = "Essential multiplier must be greater than zero.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(AppState.WalletAddress))
+        {
+            _message = "Connected wallet required.";
+            return;
+        }
+
+        try
+        {
+            _busy = true;
+            _message = null;
+
+            var tx = await InventoryConfigTxService.SetItemConfigAsync(
+                (ulong)_edit.ItemId,
+                _edit.DisplayName,
+                (ulong)_edit.CompliancePoints,
+                (ulong)_edit.EssentialMultiplier,
+                _edit.IsEnabled,
+                AppState.WalletAddress);
+
+            if (!tx.Success)
+            {
+                _message = tx.Error ?? "Save failed.";
+                return;
+            }
+
+            _message = _isEditMode ? "Item config updated." : "Item config created.";
+
+            await Load();
+
+            _selectedItemId = (ulong)_edit.ItemId;
+            _isEditMode = true;
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task DeleteConfirmed()
+    {
+        if (_confirmDeleteItem is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(AppState.WalletAddress))
+        {
+            _message = "Connected wallet required.";
+            return;
+        }
+
+        try
+        {
+            _busy = true;
+            _message = null;
+
+            var tx = await InventoryConfigTxService.RemoveItemConfigAsync(
+                _confirmDeleteItem.ItemId,
+                AppState.WalletAddress);
+
+            if (!tx.Success)
+            {
+                _message = tx.Error ?? "Delete failed.";
+                return;
+            }
+
+            _message = "Item config removed.";
+            _confirmDeleteItem = null;
+            _selectedItemId = null;
+            _isEditMode = false;
+            _edit = new ItemConfigEditModel();
+
+            await Load();
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private sealed class ItemConfigEditModel
+    {
+        public long ItemId { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
+        public long CompliancePoints { get; set; }
+        public long EssentialMultiplier { get; set; } = 1;
+        public bool IsEnabled { get; set; } = true;
+    }
+}

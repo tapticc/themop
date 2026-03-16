@@ -26,6 +26,7 @@ builder.Services.AddSingleton<SuiNetworkService>();
 builder.Services.Configure<SuiOptions>(builder.Configuration.GetSection("Sui"));
 builder.Services.Configure<SuiContractOptions>(builder.Configuration.GetSection("Sui:SuiContracts"));
 
+builder.Services.AddScoped<InventoryConfigTxService>();
 builder.Services.AddScoped<RoleTxService>();
 builder.Services.AddScoped<SuiWalletService>();
 builder.Services.AddScoped<SuiApiClient>();

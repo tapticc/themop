@@ -1,4 +1,5 @@
 ﻿using Api.Services.GraphQL;
+using Common.Inventory;
 using Common.Roles;
 using Common.Sui;
 using Microsoft.AspNetCore.Mvc;
@@ -64,6 +65,16 @@ namespace Api.Controllers
                 after,
                 cancellationToken);
 
+            return Ok(result);
+        }
+
+        //INVENTORY
+
+        [HttpGet("item-configs")]
+        public async Task<ActionResult<List<ItemConfigDto>>> GetItemConfigs(
+            CancellationToken cancellationToken)
+        {
+            var result = await _suiGraphQLService.GetItemConfigsAsync(cancellationToken);
             return Ok(result);
         }
     }

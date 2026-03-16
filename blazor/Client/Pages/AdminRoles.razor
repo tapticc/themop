@@ -301,5 +301,5 @@
     private WalletRoleCapSummary? GetTargetRole(byte roleId) =>
         _targetRoleContext?.Roles?.FirstOrDefault(x => x.RoleId == roleId);
 
-    private sealed record RoleRow(byte Id, string Name);
+    private record RoleRow(byte Id, string Name);
 }

@@ -1,4 +1,5 @@
-﻿using Common.Roles;
+﻿using Common.Inventory;
+using Common.Roles;
 using Common.Sui;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
@@ -105,6 +106,16 @@ namespace Client.Services
             }
 
             return await _http.GetFromJsonAsync<PagedKnownCharactersResponse>(url);
+        }
+
+        //INVENTORY
+
+        public async Task<List<ItemConfigDto>> GetItemConfigsAsync()
+        {
+            var response = await _http.GetFromJsonAsync<List<ItemConfigDto>>(
+                "api/sui/item-configs");
+
+            return response ?? [];
         }
     }
 }
