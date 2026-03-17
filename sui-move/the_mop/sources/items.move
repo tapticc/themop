@@ -237,6 +237,10 @@ public fun is_item_config_manager(role_cap: &RoleCap): bool {
     can_manage_item_config(role_id(role_cap))
 }
 
+public fun is_enabled(config: &ItemConfig): bool {
+    config.is_enabled
+}
+
 public fun has_item_config(
     registry: &ItemConfigRegistry,
     item_id: u64,

@@ -4,7 +4,26 @@ edition = "2024"         # edition = "legacy" to use legacy (pre-2024) Move
 # license = ""           # e.g., "MIT", "GPL", "Apache 2.0"
 # authors = ["..."]      # e.g., ["Joe Smith (joesmith@noemail.com)", "John Snow (johnsnow@noemail.com)"]
 
-[dependencies]
+[environments]
+testnet_utopia = "4c78adac"
+testnet_stillness = "4c78adac"
 
-# Read more about the package management system options:
-# https://docs.sui.io/guides/developer/sui-101/move-package-management
+[dependencies.world]
+git = "https://github.com/evefrontier/world-contracts.git"
+subdir = "contracts/world"
+rev = "main"
+override = true
+
+[dep-replacements.testnet_utopia.world]
+git = "https://github.com/evefrontier/world-contracts.git"
+subdir = "contracts/world"
+rev = "main"
+use-environment = "testnet_utopia"
+
+[dep-replacements.testnet_stillness.world]
+git = "https://github.com/evefrontier/world-contracts.git"
+subdir = "contracts/world"
+rev = "main"
+use-environment = "testnet_stillness"
+
+world = { local = "../../world-contracts/contracts/world" }
