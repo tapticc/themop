@@ -1,4 +1,5 @@
 ﻿using Common.Inventory;
+using Common.Roles;
 using Microsoft.Extensions.Options;
 
 namespace Client.Services
@@ -78,7 +79,9 @@ namespace Client.Services
         {
             var caps = await _api.GetOwnedRoleCapsAsync(walletAddress);
 
-            var cap = caps.FirstOrDefault();
+            var cap =
+                caps.FirstOrDefault(x => x.RoleId == RoleIds.HighExecutor)
+                ?? caps.FirstOrDefault(x => x.RoleId == RoleIds.TreasuryOfficer);
 
             if (cap is null || string.IsNullOrWhiteSpace(cap.RoleCapId))
                 throw new InvalidOperationException("Connected wallet does not own RoleCap.");

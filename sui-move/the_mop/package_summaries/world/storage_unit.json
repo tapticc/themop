@@ -1,0 +1,3597 @@
+{
+  "id": {
+    "address": "world",
+    "name": "storage_unit"
+  },
+  "doc": " This module handles the functionality of the in-game Storage Unit Assembly\n\n The Storage Unit is a programmable, on-chain storage structure.\n It can allow players to store, withdraw, and manage items under rules they design themselves.\n The behaviour of a Storage Unit can be customized by registering a custom contract\n using the typed witness pattern. https://github.com/evefrontier/world-contracts/blob/main/docs/architechture.md#layer-3-player-extensions-moddability\n\n Storage Units support three access modes to enable player-to-player interactions:\n\n 1. **Extension-based access** (Main inventory):\n    - Functions: `deposit_item<Auth>`, `withdraw_item<Auth>`\n    - Allows 3rd party contracts to handle inventory operations on behalf of the owner\n\n 2. **Extension-to-owned deposit**:\n    - Function: `deposit_to_owned<Auth>`\n    - Allows extensions to push items into a player's owned inventory\n    - Target is validated as an existing Character (owner_cap_id derived on-chain)\n    - Target player does NOT need to be the transaction sender\n    - Source inventory depends on extension logic (main or owned)\n    - Enables async trading, guild hangars, automated rewards\n\n 3. **Owner-direct access** (Owned inventory)\n    - Functions: `deposit_by_owner`, `withdraw_by_owner`\n    - Allows the owner to deposit/withdraw from their owned inventory\n    - Requires OwnerCap + sender == character address\n\n Future pattern: Storage Units (extension-controlled), Ships (owner-controlled)",
+  "immediate_dependencies": [
+    {
+      "address": "std",
+      "name": "bcs"
+    },
+    {
+      "address": "std",
+      "name": "option"
+    },
+    {
+      "address": "std",
+      "name": "string"
+    },
+    {
+      "address": "std",
+      "name": "type_name"
+    },
+    {
+      "address": "std",
+      "name": "vector"
+    },
+    {
+      "address": "sui",
+      "name": "address"
+    },
+    {
+      "address": "sui",
+      "name": "clock"
+    },
+    {
+      "address": "sui",
+      "name": "derived_object"
+    },
+    {
+      "address": "sui",
+      "name": "dynamic_field"
+    },
+    {
+      "address": "sui",
+      "name": "event"
+    },
+    {
+      "address": "sui",
+      "name": "hash"
+    },
+    {
+      "address": "sui",
+      "name": "object"
+    },
+    {
+      "address": "sui",
+      "name": "transfer"
+    },
+    {
+      "address": "sui",
+      "name": "tx_context"
+    },
+    {
+      "address": "world",
+      "name": "access"
+    },
+    {
+      "address": "world",
+      "name": "character"
+    },
+    {
+      "address": "world",
+      "name": "energy"
+    },
+    {
+      "address": "world",
+      "name": "extension_freeze"
+    },
+    {
+      "address": "world",
+      "name": "in_game_id"
+    },
+    {
+      "address": "world",
+      "name": "inventory"
+    },
+    {
+      "address": "world",
+      "name": "location"
+    },
+    {
+      "address": "world",
+      "name": "metadata"
+    },
+    {
+      "address": "world",
+      "name": "network_node"
+    },
+    {
+      "address": "world",
+      "name": "object_registry"
+    },
+    {
+      "address": "world",
+      "name": "status"
+    }
+  ],
+  "attributes": [],
+  "functions": {
+    "authorize_extension": {
+      "source_index": 0,
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "Auth",
+          "constraints": [
+            "Drop"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "Datatype": {
+                          "module": {
+                            "address": "world",
+                            "name": "storage_unit"
+                          },
+                          "name": "StorageUnit",
+                          "type_arguments": []
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "freeze_extension_config": {
+      "source_index": 1,
+      "index": 1,
+      "doc": " Freezes the storage unit's extension configuration so the owner can no longer change it (builds user trust).\n Requires an extension to be configured. One-time; cannot be undone.",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "Datatype": {
+                          "module": {
+                            "address": "world",
+                            "name": "storage_unit"
+                          },
+                          "name": "StorageUnit",
+                          "type_arguments": []
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "online": {
+      "source_index": 2,
+      "index": 2,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "energy_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "energy"
+                  },
+                  "name": "EnergyConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "Datatype": {
+                          "module": {
+                            "address": "world",
+                            "name": "storage_unit"
+                          },
+                          "name": "StorageUnit",
+                          "type_arguments": []
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "offline": {
+      "source_index": 3,
+      "index": 3,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "energy_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "energy"
+                  },
+                  "name": "EnergyConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "Datatype": {
+                          "module": {
+                            "address": "world",
+                            "name": "storage_unit"
+                          },
+                          "name": "StorageUnit",
+                          "type_arguments": []
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "chain_item_to_game_inventory": {
+      "source_index": 4,
+      "index": 4,
+      "doc": " Bridges items from chain to game inventory",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "T",
+          "constraints": [
+            "Key"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "server_registry",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "ServerAddressRegistry",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "NamedTypeParameter": "T"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "quantity",
+          "type_": "u32"
+        },
+        {
+          "name": "location_proof",
+          "type_": {
+            "vector": "u8"
+          }
+        },
+        {
+          "name": "clock",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "clock"
+                  },
+                  "name": "Clock",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "deposit_item": {
+      "source_index": 5,
+      "index": 5,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "Auth",
+          "constraints": [
+            "Drop"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "item",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "inventory"
+              },
+              "name": "Item",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "NamedTypeParameter": "Auth"
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "withdraw_item": {
+      "source_index": 6,
+      "index": 6,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "Auth",
+          "constraints": [
+            "Drop"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "NamedTypeParameter": "Auth"
+          }
+        },
+        {
+          "name": "type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "quantity",
+          "type_": "u32"
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "inventory"
+            },
+            "name": "Item",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "deposit_to_open_inventory": {
+      "source_index": 7,
+      "index": 7,
+      "doc": " Extension-only deposit into open storage (contract-controlled).\n Owners and players can withdraw only via `withdraw_from_open_inventory`, i.e. through extension logic, not directly.\n Creates the open inventory on first use. Only the registered extension can call this.",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "Auth",
+          "constraints": [
+            "Drop"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "item",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "inventory"
+              },
+              "name": "Item",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "NamedTypeParameter": "Auth"
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "withdraw_from_open_inventory": {
+      "source_index": 8,
+      "index": 8,
+      "doc": " Extension-only withdraw from open storage. Only the registered extension can call this.\n Aborts with EOpenStorageNotInitialized if open storage has never been used (no prior deposit_to_open_inventory).",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "Auth",
+          "constraints": [
+            "Drop"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "NamedTypeParameter": "Auth"
+          }
+        },
+        {
+          "name": "type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "quantity",
+          "type_": "u32"
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "inventory"
+            },
+            "name": "Item",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "deposit_to_owned": {
+      "source_index": 9,
+      "index": 9,
+      "doc": " Extension-authorized deposit into a player's owned inventory.\n Unlike `deposit_by_owner`, the recipient (the `character` argument) does NOT need to be\n the transaction sender. The recipient's owned inventory is derived from\n `character.owner_cap_id()`, ensuring the character is a valid, existing Character.\n Creates the owned inventory if it doesn't exist yet.",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "Auth",
+          "constraints": [
+            "Drop"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "item",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "inventory"
+              },
+              "name": "Item",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "NamedTypeParameter": "Auth"
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "deposit_by_owner": {
+      "source_index": 10,
+      "index": 10,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "T",
+          "constraints": [
+            "Key"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "item",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "inventory"
+              },
+              "name": "Item",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "NamedTypeParameter": "T"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "withdraw_by_owner": {
+      "source_index": 11,
+      "index": 11,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "T",
+          "constraints": [
+            "Key"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "NamedTypeParameter": "T"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "quantity",
+          "type_": "u32"
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "inventory"
+            },
+            "name": "Item",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "update_metadata_name": {
+      "source_index": 12,
+      "index": 12,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "Datatype": {
+                          "module": {
+                            "address": "world",
+                            "name": "storage_unit"
+                          },
+                          "name": "StorageUnit",
+                          "type_arguments": []
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "name",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "std",
+                "name": "string"
+              },
+              "name": "String",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    },
+    "update_metadata_description": {
+      "source_index": 13,
+      "index": 13,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "Datatype": {
+                          "module": {
+                            "address": "world",
+                            "name": "storage_unit"
+                          },
+                          "name": "StorageUnit",
+                          "type_arguments": []
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "description",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "std",
+                "name": "string"
+              },
+              "name": "String",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    },
+    "update_metadata_url": {
+      "source_index": 14,
+      "index": 14,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "Datatype": {
+                          "module": {
+                            "address": "world",
+                            "name": "storage_unit"
+                          },
+                          "name": "StorageUnit",
+                          "type_arguments": []
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "url",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "std",
+                "name": "string"
+              },
+              "name": "String",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    },
+    "reveal_location": {
+      "source_index": 15,
+      "index": 15,
+      "doc": " Reveals plain-text location (solarsystem, x, y, z) for this storage unit. Admin ACL only. Optional; enables dapps (e.g. route maps).\n Temporary: use until the offchain location reveal service is ready.",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "location"
+                  },
+                  "name": "LocationRegistry",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "solarsystem",
+          "type_": "u64"
+        },
+        {
+          "name": "x",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "std",
+                "name": "string"
+              },
+              "name": "String",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "y",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "std",
+                "name": "string"
+              },
+              "name": "String",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "z",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "std",
+                "name": "string"
+              },
+              "name": "String",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "status": {
+      "source_index": 16,
+      "index": 16,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Reference": [
+            false,
+            {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "status"
+                },
+                "name": "AssemblyStatus",
+                "type_arguments": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "location": {
+      "source_index": 17,
+      "index": 17,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Reference": [
+            false,
+            {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "location"
+                },
+                "name": "Location",
+                "type_arguments": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "inventory": {
+      "source_index": 18,
+      "index": 18,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Reference": [
+            false,
+            {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "inventory"
+                },
+                "name": "Inventory",
+                "type_arguments": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "owner_cap_id": {
+      "source_index": 19,
+      "index": 19,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "sui",
+              "name": "object"
+            },
+            "name": "ID",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "energy_source_id": {
+      "source_index": 20,
+      "index": 20,
+      "doc": " Returns the storage unit's energy source (network node) ID if set",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Reference": [
+            false,
+            {
+              "Datatype": {
+                "module": {
+                  "address": "std",
+                  "name": "option"
+                },
+                "name": "Option",
+                "type_arguments": [
+                  {
+                    "phantom": false,
+                    "argument": {
+                      "Datatype": {
+                        "module": {
+                          "address": "sui",
+                          "name": "object"
+                        },
+                        "name": "ID",
+                        "type_arguments": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "is_extension_frozen": {
+      "source_index": 21,
+      "index": 21,
+      "doc": " Returns true if the storage unit's extension configuration is frozen (owner cannot change extension).",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        "bool"
+      ]
+    },
+    "open_storage_key": {
+      "source_index": 22,
+      "index": 22,
+      "doc": " Returns the dynamic field key for open storage (contract-only; no owner or player control).\n Clients can use this to identify the open slot in inventory_keys and display it separately.",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "sui",
+              "name": "object"
+            },
+            "name": "ID",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "has_open_storage": {
+      "source_index": 23,
+      "index": 23,
+      "doc": " Returns true if this storage unit has open storage (always true for SSUs anchored with open storage).",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        "bool"
+      ]
+    },
+    "anchor": {
+      "source_index": 24,
+      "index": 24,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "registry",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "object_registry"
+                  },
+                  "name": "ObjectRegistry",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "item_id",
+          "type_": "u64"
+        },
+        {
+          "name": "type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "max_capacity",
+          "type_": "u64"
+        },
+        {
+          "name": "location_hash",
+          "type_": {
+            "vector": "u8"
+          }
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "storage_unit"
+            },
+            "name": "StorageUnit",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "share_storage_unit": {
+      "source_index": 25,
+      "index": 25,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "storage_unit"
+              },
+              "name": "StorageUnit",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "update_energy_source": {
+      "source_index": 26,
+      "index": 26,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "update_energy_source_connected_storage_unit": {
+      "source_index": 27,
+      "index": 27,
+      "doc": " Updates the storage unit's energy source and removes it from the UpdateEnergySources hot potato.\n Must be called for each storage unit in the hot potato returned by connect_assemblies.",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "update_energy_sources",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "network_node"
+              },
+              "name": "UpdateEnergySources",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "network_node"
+            },
+            "name": "UpdateEnergySources",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "offline_connected_storage_unit": {
+      "source_index": 28,
+      "index": 28,
+      "doc": " Brings a connected storage unit offline and removes it from the hot potato\n Must be called for each storage unit in the hot potato list\n Returns the updated hot potato with the processed storage unit removed\n After all storage units are processed, call destroy_offline_assemblies to consume the hot potato\n Used for nwn.offline() flow; keeps the energy source so the storage unit can go online again with the same NWN.",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "offline_assemblies",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "network_node"
+              },
+              "name": "OfflineAssemblies",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "energy_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "energy"
+                  },
+                  "name": "EnergyConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "network_node"
+            },
+            "name": "OfflineAssemblies",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "offline_orphaned_storage_unit": {
+      "source_index": 29,
+      "index": 29,
+      "doc": " Brings a connected storage unit offline, releases energy, clears energy source, and removes it from the hot potato\n Must be called for each storage unit in the hot potato returned by nwn.unanchor()\n Returns the updated HandleOrphanedAssemblies; after all are processed, call destroy_network_node with it",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "orphaned_assemblies",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "network_node"
+              },
+              "name": "HandleOrphanedAssemblies",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "energy_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "energy"
+                  },
+                  "name": "EnergyConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "network_node"
+            },
+            "name": "HandleOrphanedAssemblies",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "unanchor": {
+      "source_index": 30,
+      "index": 30,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "storage_unit"
+              },
+              "name": "StorageUnit",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "energy_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "energy"
+                  },
+                  "name": "EnergyConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "unanchor_orphan": {
+      "source_index": 31,
+      "index": 31,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "storage_unit"
+              },
+              "name": "StorageUnit",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "game_item_to_chain_inventory": {
+      "source_index": 32,
+      "index": 32,
+      "doc": " Bridges items from game to chain inventory",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "T",
+          "constraints": [
+            "Key"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "NamedTypeParameter": "T"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "item_id",
+          "type_": "u64"
+        },
+        {
+          "name": "type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "volume",
+          "type_": "u64"
+        },
+        {
+          "name": "quantity",
+          "type_": "u32"
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "open_storage_key_from_id": {
+      "source_index": 33,
+      "index": 33,
+      "doc": " Deterministic key for open inventory derived from storage unit id (no collision with owner_cap_id).",
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "sui",
+              "name": "object"
+            },
+            "name": "ID",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "ensure_open_inventory": {
+      "source_index": 34,
+      "index": 34,
+      "doc": " Creates the open inventory if it does not exist (backward compat for SSUs anchored before open storage existed).\n Bootstraps max_capacity from owner ephemeral (same as deposit_to_owned).\n TODO: If we later decouple native vs ephemeral capacity, this bootstrap must be updated.",
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "bring_offline_and_release_energy": {
+      "source_index": 35,
+      "index": 35,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "storage_unit_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "energy_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "energy"
+                  },
+                  "name": "EnergyConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "reserve_energy": {
+      "source_index": 36,
+      "index": 36,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "energy_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "energy"
+                  },
+                  "name": "EnergyConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "release_energy": {
+      "source_index": 37,
+      "index": 37,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "energy_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "energy"
+                  },
+                  "name": "EnergyConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "release_energy_by_type": {
+      "source_index": 38,
+      "index": 38,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "network_node",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "network_node"
+                  },
+                  "name": "NetworkNode",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "energy_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "energy"
+                  },
+                  "name": "EnergyConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "type_id",
+          "type_": "u64"
+        }
+      ],
+      "return_": []
+    },
+    "check_inventory_authorization": {
+      "source_index": 39,
+      "index": 39,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "T",
+          "constraints": [
+            "Key"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "owner_cap",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "OwnerCap",
+                  "type_arguments": [
+                    {
+                      "phantom": true,
+                      "argument": {
+                        "NamedTypeParameter": "T"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "storage_unit",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "storage_unit"
+                  },
+                  "name": "StorageUnit",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "character_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    }
+  },
+  "structs": {
+    "StorageUnit": {
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Key"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "UID",
+                "type_arguments": []
+              }
+            }
+          },
+          "key": {
+            "index": 1,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "owner_cap_id": {
+            "index": 2,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "ID",
+                "type_arguments": []
+              }
+            }
+          },
+          "type_id": {
+            "index": 3,
+            "doc": null,
+            "type_": "u64"
+          },
+          "status": {
+            "index": 4,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "status"
+                },
+                "name": "AssemblyStatus",
+                "type_arguments": []
+              }
+            }
+          },
+          "location": {
+            "index": 5,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "location"
+                },
+                "name": "Location",
+                "type_arguments": []
+              }
+            }
+          },
+          "inventory_keys": {
+            "index": 6,
+            "doc": null,
+            "type_": {
+              "vector": {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "object"
+                  },
+                  "name": "ID",
+                  "type_arguments": []
+                }
+              }
+            }
+          },
+          "energy_source_id": {
+            "index": 7,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "std",
+                  "name": "option"
+                },
+                "name": "Option",
+                "type_arguments": [
+                  {
+                    "phantom": false,
+                    "argument": {
+                      "Datatype": {
+                        "module": {
+                          "address": "sui",
+                          "name": "object"
+                        },
+                        "name": "ID",
+                        "type_arguments": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "metadata": {
+            "index": 8,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "std",
+                  "name": "option"
+                },
+                "name": "Option",
+                "type_arguments": [
+                  {
+                    "phantom": false,
+                    "argument": {
+                      "Datatype": {
+                        "module": {
+                          "address": "world",
+                          "name": "metadata"
+                        },
+                        "name": "Metadata",
+                        "type_arguments": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "extension": {
+            "index": 9,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "std",
+                  "name": "option"
+                },
+                "name": "Option",
+                "type_arguments": [
+                  {
+                    "phantom": false,
+                    "argument": {
+                      "Datatype": {
+                        "module": {
+                          "address": "std",
+                          "name": "type_name"
+                        },
+                        "name": "TypeName",
+                        "type_arguments": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "StorageUnitCreatedEvent": {
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "storage_unit_id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "ID",
+                "type_arguments": []
+              }
+            }
+          },
+          "assembly_key": {
+            "index": 1,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "owner_cap_id": {
+            "index": 2,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "ID",
+                "type_arguments": []
+              }
+            }
+          },
+          "type_id": {
+            "index": 3,
+            "doc": null,
+            "type_": "u64"
+          },
+          "max_capacity": {
+            "index": 4,
+            "doc": null,
+            "type_": "u64"
+          },
+          "location_hash": {
+            "index": 5,
+            "doc": null,
+            "type_": {
+              "vector": "u8"
+            }
+          },
+          "status": {
+            "index": 6,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "status"
+                },
+                "name": "Status",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "ExtensionAuthorizedEvent": {
+      "index": 2,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "assembly_id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "ID",
+                "type_arguments": []
+              }
+            }
+          },
+          "assembly_key": {
+            "index": 1,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "extension_type": {
+            "index": 2,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "std",
+                  "name": "type_name"
+                },
+                "name": "TypeName",
+                "type_arguments": []
+              }
+            }
+          },
+          "previous_extension": {
+            "index": 3,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "std",
+                  "name": "option"
+                },
+                "name": "Option",
+                "type_arguments": [
+                  {
+                    "phantom": false,
+                    "argument": {
+                      "Datatype": {
+                        "module": {
+                          "address": "std",
+                          "name": "type_name"
+                        },
+                        "name": "TypeName",
+                        "type_arguments": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "owner_cap_id": {
+            "index": 4,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "ID",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "enums": {}
+}

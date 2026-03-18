@@ -1,0 +1,567 @@
+{
+  "id": {
+    "address": "the_mop",
+    "name": "config"
+  },
+  "doc": null,
+  "immediate_dependencies": [
+    {
+      "address": "sui",
+      "name": "dynamic_field"
+    },
+    {
+      "address": "sui",
+      "name": "object"
+    },
+    {
+      "address": "sui",
+      "name": "transfer"
+    },
+    {
+      "address": "sui",
+      "name": "tx_context"
+    }
+  ],
+  "attributes": [],
+  "functions": {
+    "x_auth": {
+      "source_index": 0,
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "the_mop",
+              "name": "config"
+            },
+            "name": "XAuth",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "init": {
+      "source_index": 1,
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "has_rule": {
+      "source_index": 2,
+      "index": 2,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "K",
+          "constraints": [
+            "Copy",
+            "Drop",
+            "Store"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "ExtensionConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "key",
+          "type_": {
+            "NamedTypeParameter": "K"
+          }
+        }
+      ],
+      "return_": [
+        "bool"
+      ]
+    },
+    "borrow_rule": {
+      "source_index": 3,
+      "index": 3,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "K",
+          "constraints": [
+            "Copy",
+            "Drop",
+            "Store"
+          ]
+        },
+        {
+          "name": "V",
+          "constraints": [
+            "Store"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "ExtensionConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "key",
+          "type_": {
+            "NamedTypeParameter": "K"
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Reference": [
+            false,
+            {
+              "NamedTypeParameter": "V"
+            }
+          ]
+        }
+      ]
+    },
+    "borrow_rule_mut": {
+      "source_index": 4,
+      "index": 4,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "K",
+          "constraints": [
+            "Copy",
+            "Drop",
+            "Store"
+          ]
+        },
+        {
+          "name": "V",
+          "constraints": [
+            "Store"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "config",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "ExtensionConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "AdminCap",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "key",
+          "type_": {
+            "NamedTypeParameter": "K"
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Reference": [
+            true,
+            {
+              "NamedTypeParameter": "V"
+            }
+          ]
+        }
+      ]
+    },
+    "add_rule": {
+      "source_index": 5,
+      "index": 5,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "K",
+          "constraints": [
+            "Copy",
+            "Drop",
+            "Store"
+          ]
+        },
+        {
+          "name": "V",
+          "constraints": [
+            "Store"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "config",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "ExtensionConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "AdminCap",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "key",
+          "type_": {
+            "NamedTypeParameter": "K"
+          }
+        },
+        {
+          "name": "value",
+          "type_": {
+            "NamedTypeParameter": "V"
+          }
+        }
+      ],
+      "return_": []
+    },
+    "set_rule": {
+      "source_index": 6,
+      "index": 6,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "K",
+          "constraints": [
+            "Copy",
+            "Drop",
+            "Store"
+          ]
+        },
+        {
+          "name": "V",
+          "constraints": [
+            "Drop",
+            "Store"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "config",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "ExtensionConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "AdminCap",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "key",
+          "type_": {
+            "NamedTypeParameter": "K"
+          }
+        },
+        {
+          "name": "value",
+          "type_": {
+            "NamedTypeParameter": "V"
+          }
+        }
+      ],
+      "return_": []
+    },
+    "remove_rule": {
+      "source_index": 7,
+      "index": 7,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [
+        {
+          "name": "K",
+          "constraints": [
+            "Copy",
+            "Drop",
+            "Store"
+          ]
+        },
+        {
+          "name": "V",
+          "constraints": [
+            "Store"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "config",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "ExtensionConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "_",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "the_mop",
+                    "name": "config"
+                  },
+                  "name": "AdminCap",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "key",
+          "type_": {
+            "NamedTypeParameter": "K"
+          }
+        }
+      ],
+      "return_": [
+        {
+          "NamedTypeParameter": "V"
+        }
+      ]
+    }
+  },
+  "structs": {
+    "ExtensionConfig": {
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Key"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "UID",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "AdminCap": {
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Key",
+        "Store"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "UID",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "XAuth": {
+      "index": 2,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Drop"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "dummy_field": {
+            "index": 0,
+            "type_": "bool"
+          }
+        }
+      }
+    }
+  },
+  "enums": {}
+}

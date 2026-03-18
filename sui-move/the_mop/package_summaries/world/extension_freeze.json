@@ -1,0 +1,201 @@
+{
+  "id": {
+    "address": "world",
+    "name": "extension_freeze"
+  },
+  "doc": " Shared types and event for freezing assembly extension configuration.\n Used by Gate, Turret, and StorageUnit so the owner cannot change the extension after freeze (no rugpull).\n\n **Tradeoff:** Once frozen, the assembly cannot be re-authorised to a different or fixed extension package.\n If a bug is found in the extension code, the owner cannot point this assembly at a fixed version; they would\n need to use a new assembly (e.g. anchor a new gate) and authorise the fixed extension there. Freeze only\n after the extension is audited/tested and you are comfortable with this permanence.",
+  "immediate_dependencies": [
+    {
+      "address": "sui",
+      "name": "dynamic_field"
+    },
+    {
+      "address": "sui",
+      "name": "event"
+    },
+    {
+      "address": "sui",
+      "name": "object"
+    }
+  ],
+  "attributes": [],
+  "functions": {
+    "is_extension_frozen": {
+      "source_index": 0,
+      "index": 0,
+      "doc": " Returns true if the given object has its extension config frozen (dynamic field present).",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "object",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "object"
+                  },
+                  "name": "UID",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        "bool"
+      ]
+    },
+    "freeze_extension_config": {
+      "source_index": 1,
+      "index": 1,
+      "doc": " Adds the frozen marker and emits the event. Call from Gate/Turret/StorageUnit after auth and extension checks.\n One-time and irreversible: the assembly will stay on this extension package; no upgrade path if the extension has a bug.",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "parent",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "object"
+                  },
+                  "name": "UID",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    },
+    "remove_frozen_marker_if_present": {
+      "source_index": 2,
+      "index": 2,
+      "doc": " Removes the frozen marker if present. Call from Gate/Turret/StorageUnit unanchor/unanchor_orphan before deleting the assembly UID so DF storage is cleaned up.",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "parent",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "object"
+                  },
+                  "name": "UID",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    }
+  },
+  "structs": {
+    "ExtensionFrozenKey": {
+      "index": 0,
+      "doc": " Dynamic field key for the \"extension config frozen\" slot on an assembly.",
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop",
+        "Store"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "dummy_field": {
+            "index": 0,
+            "type_": "bool"
+          }
+        }
+      }
+    },
+    "ExtensionFrozen": {
+      "index": 1,
+      "doc": " Marker value stored as a dynamic field when extension config is frozen.",
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop",
+        "Store"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "dummy_field": {
+            "index": 0,
+            "type_": "bool"
+          }
+        }
+      }
+    },
+    "ExtensionConfigFrozenEvent": {
+      "index": 2,
+      "doc": " Emitted when an assembly's extension configuration is frozen.",
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "assembly_id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "ID",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "enums": {}
+}

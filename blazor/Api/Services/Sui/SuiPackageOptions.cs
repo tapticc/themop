@@ -4,7 +4,6 @@
     {
         public string World { get; set; } = string.Empty;
         public string TheMopPackageId { get; set; } = string.Empty;
-        public string PlayerProfileObjectTypeId { get; set; } = string.Empty;
         public string ItemConfigRegistryId { get; set; } = string.Empty;
     }
 }

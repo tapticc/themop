@@ -1,0 +1,1488 @@
+{
+  "id": {
+    "address": "world",
+    "name": "fuel"
+  },
+  "doc": null,
+  "immediate_dependencies": [
+    {
+      "address": "std",
+      "name": "option"
+    },
+    {
+      "address": "sui",
+      "name": "clock"
+    },
+    {
+      "address": "sui",
+      "name": "event"
+    },
+    {
+      "address": "sui",
+      "name": "object"
+    },
+    {
+      "address": "sui",
+      "name": "table"
+    },
+    {
+      "address": "sui",
+      "name": "transfer"
+    },
+    {
+      "address": "sui",
+      "name": "tx_context"
+    },
+    {
+      "address": "world",
+      "name": "access"
+    },
+    {
+      "address": "world",
+      "name": "in_game_id"
+    }
+  ],
+  "attributes": [],
+  "functions": {
+    "fuel_efficiency": {
+      "source_index": 0,
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "FuelConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "fuel_type_id",
+          "type_": "u64"
+        }
+      ],
+      "return_": [
+        "u64"
+      ]
+    },
+    "quantity": {
+      "source_index": 1,
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        "u64"
+      ]
+    },
+    "type_id": {
+      "source_index": 2,
+      "index": 2,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "std",
+              "name": "option"
+            },
+            "name": "Option",
+            "type_arguments": [
+              {
+                "phantom": false,
+                "argument": "u64"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "volume": {
+      "source_index": 3,
+      "index": 3,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "std",
+              "name": "option"
+            },
+            "name": "Option",
+            "type_arguments": [
+              {
+                "phantom": false,
+                "argument": "u64"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "is_burning": {
+      "source_index": 4,
+      "index": 4,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        "bool"
+      ]
+    },
+    "has_enough_fuel": {
+      "source_index": 5,
+      "index": 5,
+      "doc": " Checks if fuel has enough quantity to cover units that would be consumed at current time",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "fuel_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "FuelConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "clock",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "clock"
+                  },
+                  "name": "Clock",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        "bool"
+      ]
+    },
+    "need_update": {
+      "source_index": 6,
+      "index": 6,
+      "doc": " Checks if fuel state needs to be updated based on elapsed time since last update.\n Returns true if there are any fuel units needs to be consumed, false otherwise.\n Useful for cron jobs to determine if `update()` should be called.",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "fuel_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "FuelConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "clock",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "clock"
+                  },
+                  "name": "Clock",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        "bool"
+      ]
+    },
+    "set_fuel_efficiency": {
+      "source_index": 7,
+      "index": 7,
+      "doc": " Sets or updates the fuel efficiency percentage for a fuel type (10-100%)",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel_config",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "FuelConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "fuel_type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "fuel_efficiency",
+          "type_": "u64"
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "unset_fuel_efficiency": {
+      "source_index": 8,
+      "index": 8,
+      "doc": " Removes the fuel efficiency configuration for a fuel type",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel_config",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "FuelConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "fuel_type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "create": {
+      "source_index": 9,
+      "index": 9,
+      "doc": " Creates a new fuel object with specified capacity and burn rate (in milliseconds)",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "max_capacity",
+          "type_": "u64"
+        },
+        {
+          "name": "burn_rate_in_ms",
+          "type_": "u64"
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "fuel"
+            },
+            "name": "Fuel",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "deposit": {
+      "source_index": 10,
+      "index": 10,
+      "doc": " Deposits fuel of a specific type. Initializes fuel type if empty, or verifies type matches.\n Resets time tracking if fuel was empty and burning was active.",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "unit_volume",
+          "type_": "u64"
+        },
+        {
+          "name": "quantity",
+          "type_": "u64"
+        },
+        {
+          "name": "clock",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "clock"
+                  },
+                  "name": "Clock",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "withdraw": {
+      "source_index": 11,
+      "index": 11,
+      "doc": " Withdraws specified quantity of fuel. Fails if insufficient fuel available.",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "type_id",
+          "type_": "u64"
+        },
+        {
+          "name": "quantity",
+          "type_": "u64"
+        }
+      ],
+      "return_": []
+    },
+    "start_burning": {
+      "source_index": 12,
+      "index": 12,
+      "doc": " Starts burning fuel. Consumes 1 unit immediately and sets burn_start_time.\n Requires fuel quantity > 0 or previous_cycle_elapsed_time > 0.",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "clock",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "clock"
+                  },
+                  "name": "Clock",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "stop_burning": {
+      "source_index": 13,
+      "index": 13,
+      "doc": " Stops burning fuel. Saves remaining elapsed time for next burn cycle",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "fuel_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "FuelConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "clock",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "clock"
+                  },
+                  "name": "Clock",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "delete": {
+      "source_index": 14,
+      "index": 14,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "fuel"
+              },
+              "name": "Fuel",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    },
+    "update": {
+      "source_index": 15,
+      "index": 15,
+      "doc": " Updates fuel consumption state. Consumes units based on elapsed time since last update.\n If there is not enough fuel to consume, then stop burning",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "fuel_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "FuelConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "clock",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "clock"
+                  },
+                  "name": "Clock",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "consume_fuel_units": {
+      "source_index": 16,
+      "index": 16,
+      "doc": " Consumes fuel units based on elapsed time, capping at available quantity.\n Updates burn_start_time and emits FuelEvent when units are consumed.",
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "units_to_consume",
+          "type_": "u64"
+        },
+        {
+          "name": "remaining_elapsed_ms",
+          "type_": "u64"
+        },
+        {
+          "name": "current_time_ms",
+          "type_": "u64"
+        }
+      ],
+      "return_": []
+    },
+    "calculate_units_to_consume": {
+      "source_index": 17,
+      "index": 17,
+      "doc": " Calculates units to consume and remaining elapsed time based on total elapsed time and actual consumption rate.\n Accounts for previous_cycle_elapsed_time from interrupted burn cycles.",
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "fuel",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "Fuel",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "fuel_config",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "fuel"
+                  },
+                  "name": "FuelConfig",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "current_time_ms",
+          "type_": "u64"
+        }
+      ],
+      "return_": [
+        "u64",
+        "u64"
+      ]
+    },
+    "init": {
+      "source_index": 18,
+      "index": 18,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    }
+  },
+  "structs": {
+    "FuelConfig": {
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Key"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "UID",
+                "type_arguments": []
+              }
+            }
+          },
+          "fuel_efficiency": {
+            "index": 1,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "table"
+                },
+                "name": "Table",
+                "type_arguments": [
+                  {
+                    "phantom": true,
+                    "argument": "u64"
+                  },
+                  {
+                    "phantom": true,
+                    "argument": "u64"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Fuel": {
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Store"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "max_capacity": {
+            "index": 0,
+            "doc": null,
+            "type_": "u64"
+          },
+          "burn_rate_in_ms": {
+            "index": 1,
+            "doc": null,
+            "type_": "u64"
+          },
+          "type_id": {
+            "index": 2,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "std",
+                  "name": "option"
+                },
+                "name": "Option",
+                "type_arguments": [
+                  {
+                    "phantom": false,
+                    "argument": "u64"
+                  }
+                ]
+              }
+            }
+          },
+          "unit_volume": {
+            "index": 3,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "std",
+                  "name": "option"
+                },
+                "name": "Option",
+                "type_arguments": [
+                  {
+                    "phantom": false,
+                    "argument": "u64"
+                  }
+                ]
+              }
+            }
+          },
+          "quantity": {
+            "index": 4,
+            "doc": null,
+            "type_": "u64"
+          },
+          "is_burning": {
+            "index": 5,
+            "doc": null,
+            "type_": "bool"
+          },
+          "previous_cycle_elapsed_time": {
+            "index": 6,
+            "doc": null,
+            "type_": "u64"
+          },
+          "burn_start_time": {
+            "index": 7,
+            "doc": null,
+            "type_": "u64"
+          },
+          "last_updated": {
+            "index": 8,
+            "doc": null,
+            "type_": "u64"
+          }
+        }
+      }
+    },
+    "FuelEvent": {
+      "index": 2,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "assembly_id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "ID",
+                "type_arguments": []
+              }
+            }
+          },
+          "assembly_key": {
+            "index": 1,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "type_id": {
+            "index": 2,
+            "doc": null,
+            "type_": "u64"
+          },
+          "old_quantity": {
+            "index": 3,
+            "doc": null,
+            "type_": "u64"
+          },
+          "new_quantity": {
+            "index": 4,
+            "doc": null,
+            "type_": "u64"
+          },
+          "is_burning": {
+            "index": 5,
+            "doc": null,
+            "type_": "bool"
+          },
+          "action": {
+            "index": 6,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "fuel"
+                },
+                "name": "Action",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "FuelEfficiencySetEvent": {
+      "index": 3,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "fuel_type_id": {
+            "index": 0,
+            "doc": null,
+            "type_": "u64"
+          },
+          "efficiency": {
+            "index": 1,
+            "doc": null,
+            "type_": "u64"
+          }
+        }
+      }
+    },
+    "FuelEfficiencyRemovedEvent": {
+      "index": 4,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "fuel_type_id": {
+            "index": 0,
+            "doc": null,
+            "type_": "u64"
+          }
+        }
+      }
+    }
+  },
+  "enums": {
+    "Action": {
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop",
+        "Store"
+      ],
+      "type_parameters": [],
+      "variants": {
+        "DEPOSITED": {
+          "index": 0,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "WITHDRAWN": {
+          "index": 1,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "BURNING_STARTED": {
+          "index": 2,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "BURNING_STOPPED": {
+          "index": 3,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "BURNING_UPDATED": {
+          "index": 4,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "DELETED": {
+          "index": 5,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        }
+      }
+    }
+  }
+}

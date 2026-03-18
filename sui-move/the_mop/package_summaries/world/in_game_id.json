@@ -1,0 +1,167 @@
+{
+  "id": {
+    "address": "world",
+    "name": "in_game_id"
+  },
+  "doc": " This module holds all the identifiers used in-game to refer to entities",
+  "immediate_dependencies": [
+    {
+      "address": "std",
+      "name": "string"
+    }
+  ],
+  "attributes": [],
+  "functions": {
+    "item_id": {
+      "source_index": 0,
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "key",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "in_game_id"
+                  },
+                  "name": "TenantItemId",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        "u64"
+      ]
+    },
+    "tenant": {
+      "source_index": 1,
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "key",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "in_game_id"
+                  },
+                  "name": "TenantItemId",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "std",
+              "name": "string"
+            },
+            "name": "String",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "create_key": {
+      "source_index": 2,
+      "index": 2,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "item_id",
+          "type_": "u64"
+        },
+        {
+          "name": "tenant",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "std",
+                "name": "string"
+              },
+              "name": "String",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "in_game_id"
+            },
+            "name": "TenantItemId",
+            "type_arguments": []
+          }
+        }
+      ]
+    }
+  },
+  "structs": {
+    "TenantItemId": {
+      "index": 0,
+      "doc": " Represents a unique in-game identifier used to deterministically derive on-chain object IDs.\n # Argument\n * `item_id`- The unique in-game item identifier\n * `tenant` - Different game server instances e.g. production/development/testing”",
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop",
+        "Store"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "item_id": {
+            "index": 0,
+            "doc": null,
+            "type_": "u64"
+          },
+          "tenant": {
+            "index": 1,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "std",
+                  "name": "string"
+                },
+                "name": "String",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "enums": {}
+}

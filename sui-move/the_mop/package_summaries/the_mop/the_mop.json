@@ -1,0 +1,12 @@
+{
+  "id": {
+    "address": "the_mop",
+    "name": "the_mop"
+  },
+  "doc": null,
+  "immediate_dependencies": [],
+  "attributes": [],
+  "functions": {},
+  "structs": {},
+  "enums": {}
+}

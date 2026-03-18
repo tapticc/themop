@@ -1,0 +1,485 @@
+{
+  "id": {
+    "address": "world",
+    "name": "killmail"
+  },
+  "doc": " Killmail tracking system for EVE Frontier kills.\n Emits killmail events for indexer-based queries.\n Killmails are immutable records of player-vs-player combat losses.",
+  "immediate_dependencies": [
+    {
+      "address": "std",
+      "name": "string"
+    },
+    {
+      "address": "sui",
+      "name": "derived_object"
+    },
+    {
+      "address": "sui",
+      "name": "event"
+    },
+    {
+      "address": "sui",
+      "name": "object"
+    },
+    {
+      "address": "sui",
+      "name": "transfer"
+    },
+    {
+      "address": "sui",
+      "name": "tx_context"
+    },
+    {
+      "address": "world",
+      "name": "access"
+    },
+    {
+      "address": "world",
+      "name": "character"
+    },
+    {
+      "address": "world",
+      "name": "in_game_id"
+    },
+    {
+      "address": "world",
+      "name": "killmail_registry"
+    }
+  ],
+  "attributes": [],
+  "functions": {
+    "ship": {
+      "source_index": 0,
+      "index": 0,
+      "doc": " Returns the SHIP variant of LossType",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "killmail"
+            },
+            "name": "LossType",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "structure": {
+      "source_index": 1,
+      "index": 1,
+      "doc": " Returns the STRUCTURE variant of LossType",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "killmail"
+            },
+            "name": "LossType",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "create_killmail": {
+      "source_index": 2,
+      "index": 2,
+      "doc": " Creates a new killmail as a shared object on-chain\n Only authorized admin can create killmails",
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "registry",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "killmail_registry"
+                  },
+                  "name": "KillmailRegistry",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin_acl",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "access"
+                  },
+                  "name": "AdminACL",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "item_id",
+          "type_": "u64"
+        },
+        {
+          "name": "killer_id",
+          "type_": "u64"
+        },
+        {
+          "name": "victim_id",
+          "type_": "u64"
+        },
+        {
+          "name": "reported_by_character",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "character"
+                  },
+                  "name": "Character",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "kill_timestamp",
+          "type_": "u64"
+        },
+        {
+          "name": "loss_type",
+          "type_": "u8"
+        },
+        {
+          "name": "solar_system_id",
+          "type_": "u64"
+        },
+        {
+          "name": "ctx",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "sui",
+                    "name": "tx_context"
+                  },
+                  "name": "TxContext",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": []
+    },
+    "loss_type_from_u8": {
+      "source_index": 3,
+      "index": 3,
+      "doc": " Converts proto LossType u8 to LossType enum (1=SHIP, 2=STRUCTURE).\n Aborts with EInvalidLossType for LOSS_UNSPECIFIED (0) or unknown values.",
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "loss_type",
+          "type_": "u8"
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "killmail"
+            },
+            "name": "LossType",
+            "type_arguments": []
+          }
+        }
+      ]
+    }
+  },
+  "structs": {
+    "Killmail": {
+      "index": 0,
+      "doc": " Represents a killmail as a shared object on the Sui blockchain\n Can be queried directly using its Sui object ID",
+      "attributes": [],
+      "abilities": [
+        "Key"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "UID",
+                "type_arguments": []
+              }
+            }
+          },
+          "key": {
+            "index": 1,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "killer_id": {
+            "index": 2,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "victim_id": {
+            "index": 3,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "reported_by_character_id": {
+            "index": 4,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "kill_timestamp": {
+            "index": 5,
+            "doc": null,
+            "type_": "u64"
+          },
+          "loss_type": {
+            "index": 6,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "killmail"
+                },
+                "name": "LossType",
+                "type_arguments": []
+              }
+            }
+          },
+          "solar_system_id": {
+            "index": 7,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "KillmailCreatedEvent": {
+      "index": 1,
+      "doc": " Emitted when a new killmail is created",
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "key": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "killer_id": {
+            "index": 1,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "victim_id": {
+            "index": 2,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "reported_by_character_id": {
+            "index": 3,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "loss_type": {
+            "index": 4,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "killmail"
+                },
+                "name": "LossType",
+                "type_arguments": []
+              }
+            }
+          },
+          "kill_timestamp": {
+            "index": 5,
+            "doc": null,
+            "type_": "u64"
+          },
+          "solar_system_id": {
+            "index": 6,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "enums": {
+    "LossType": {
+      "index": 0,
+      "doc": " Represents the type of loss in a killmail",
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop",
+        "Store"
+      ],
+      "type_parameters": [],
+      "variants": {
+        "SHIP": {
+          "index": 0,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "STRUCTURE": {
+          "index": 1,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        }
+      }
+    }
+  }
+}

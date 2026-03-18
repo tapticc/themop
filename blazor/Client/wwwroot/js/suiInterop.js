@@ -1,4 +1,4 @@
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/suins.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/suins.mjs
 var SUI_NS_NAME_REGEX = /^(?!.*(^(?!@)|[-.@])($|[-.@]))(?:[a-z0-9-]{0,63}(?:\.[a-z0-9-]{0,63})*)?@[a-z0-9-]{0,63}$/i;
 var SUI_NS_DOMAIN_REGEX = /^(?!.*(^|[-.])($|[-.]))(?:[a-z0-9-]{0,63}\.)+sui$/i;
 var MAX_SUI_NS_NAME_LENGTH = 235;
@@ -9,25 +9,8 @@ function isValidSuiNSName(name) {
     return SUI_NS_NAME_REGEX.test(name);
   return SUI_NS_DOMAIN_REGEX.test(name);
 }
-function normalizeSuiNSName(name, format = "at") {
-  const lowerCase = name.toLowerCase();
-  let parts;
-  if (lowerCase.includes("@")) {
-    if (!SUI_NS_NAME_REGEX.test(lowerCase))
-      throw new Error(`Invalid SuiNS name ${name}`);
-    const [labels, domain] = lowerCase.split("@");
-    parts = [...labels ? labels.split(".") : [], domain];
-  } else {
-    if (!SUI_NS_DOMAIN_REGEX.test(lowerCase))
-      throw new Error(`Invalid SuiNS name ${name}`);
-    parts = lowerCase.split(".").slice(0, -1);
-  }
-  if (format === "dot")
-    return `${parts.join(".")}.sui`;
-  return `${parts.slice(0, -1).join(".")}@${parts[parts.length - 1]}`;
-}
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/move-registry.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/move-registry.mjs
 var NAME_PATTERN = /^([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 var VERSION_REGEX = /^\d+$/;
 var MAX_APP_SIZE = 64;
@@ -51,7 +34,7 @@ var isValidNamedType = (type) => {
   return isValidStructTag(type);
 };
 
-// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/uleb.mjs
+// ../node_modules/.pnpm/@mysten+bcs@2.0.3/node_modules/@mysten/bcs/dist/uleb.mjs
 function ulebEncode(num) {
   let bigNum = BigInt(num);
   const arr = [];
@@ -89,7 +72,7 @@ function ulebDecode(arr) {
   };
 }
 
-// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/reader.mjs
+// ../node_modules/.pnpm/@mysten+bcs@2.0.3/node_modules/@mysten/bcs/dist/reader.mjs
 var BcsReader = class {
   /**
   * @param {Uint8Array} data Data to use as a buffer.
@@ -197,7 +180,7 @@ var BcsReader = class {
   }
 };
 
-// node_modules/.pnpm/@scure+base@2.0.0/node_modules/@scure/base/index.js
+// ../node_modules/.pnpm/@scure+base@2.0.0/node_modules/@scure/base/index.js
 function isBytes(a) {
   return a instanceof Uint8Array || ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array";
 }
@@ -236,7 +219,7 @@ function anumArr(label, input) {
 // @__NO_SIDE_EFFECTS__
 function chain(...args) {
   const id = (a) => a;
-  const wrap = (a, b) => (c2) => a(b(c2));
+  const wrap = (a, b) => (c) => a(b(c));
   const encode = args.map((x) => x.encode).reduceRight(wrap, id);
   const decode = args.map((x) => x.decode).reduce(wrap, id);
   return { encode, decode };
@@ -349,13 +332,13 @@ function radix(num) {
 var genBase58 = /* @__NO_SIDE_EFFECTS__ */ (abc) => /* @__PURE__ */ chain(/* @__PURE__ */ radix(58), /* @__PURE__ */ alphabet(abc), /* @__PURE__ */ join(""));
 var base58 = /* @__PURE__ */ genBase58("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
 
-// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/b58.mjs
+// ../node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/b58.mjs
 var toBase58 = (buffer) => base58.encode(buffer);
 var fromBase58 = (str) => base58.decode(str);
 
-// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/b64.mjs
-function fromBase64(base64String2) {
-  return Uint8Array.from(atob(base64String2), (char) => char.charCodeAt(0));
+// ../node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/b64.mjs
+function fromBase64(base64String3) {
+  return Uint8Array.from(atob(base64String3), (char) => char.charCodeAt(0));
 }
 var CHUNK_SIZE = 8192;
 function toBase64(bytes) {
@@ -363,13 +346,13 @@ function toBase64(bytes) {
     return btoa(String.fromCharCode(...bytes));
   let output = "";
   for (var i = 0; i < bytes.length; i += CHUNK_SIZE) {
-    const chunk2 = bytes.slice(i, i + CHUNK_SIZE);
-    output += String.fromCharCode(...chunk2);
+    const chunk3 = bytes.slice(i, i + CHUNK_SIZE);
+    output += String.fromCharCode(...chunk3);
   }
   return btoa(output);
 }
 
-// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/hex.mjs
+// ../node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/hex.mjs
 function fromHex(hexStr) {
   const normalized = hexStr.startsWith("0x") ? hexStr.slice(2) : hexStr;
   const padded = normalized.length % 2 === 0 ? normalized : `0${normalized}`;
@@ -382,263 +365,14 @@ function toHex(bytes) {
   return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
 }
 
-// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/chunk.mjs
-function chunk(array2, size) {
-  return Array.from({ length: Math.ceil(array2.length / size) }, (_, i) => {
-    return array2.slice(i * size, (i + 1) * size);
+// ../node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/chunk.mjs
+function chunk(array3, size) {
+  return Array.from({ length: Math.ceil(array3.length / size) }, (_, i) => {
+    return array3.slice(i * size, (i + 1) * size);
   });
 }
 
-// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/dataloader.mjs
-var DataLoader = class {
-  constructor(batchLoadFn, options) {
-    if (typeof batchLoadFn !== "function")
-      throw new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but got: ${batchLoadFn}.`);
-    this._batchLoadFn = batchLoadFn;
-    this._maxBatchSize = getValidMaxBatchSize(options);
-    this._batchScheduleFn = getValidBatchScheduleFn(options);
-    this._cacheKeyFn = getValidCacheKeyFn(options);
-    this._cacheMap = getValidCacheMap(options);
-    this._batch = null;
-    this.name = getValidName(options);
-  }
-  /**
-  * Loads a key, returning a `Promise` for the value represented by that key.
-  */
-  load(key) {
-    if (key === null || key === void 0)
-      throw new TypeError(`The loader.load() function must be called with a value, but got: ${String(key)}.`);
-    const batch = getCurrentBatch(this);
-    const cacheMap = this._cacheMap;
-    let cacheKey;
-    if (cacheMap) {
-      cacheKey = this._cacheKeyFn(key);
-      const cachedPromise = cacheMap.get(cacheKey);
-      if (cachedPromise) {
-        const cacheHits = batch.cacheHits || (batch.cacheHits = []);
-        return new Promise((resolve) => {
-          cacheHits.push(() => {
-            resolve(cachedPromise);
-          });
-        });
-      }
-    }
-    batch.keys.push(key);
-    const promise = new Promise((resolve, reject) => {
-      batch.callbacks.push({
-        resolve,
-        reject
-      });
-    });
-    if (cacheMap)
-      cacheMap.set(cacheKey, promise);
-    return promise;
-  }
-  /**
-  * Loads multiple keys, promising an array of values:
-  *
-  *     var [ a, b ] = await myLoader.loadMany([ 'a', 'b' ]);
-  *
-  * This is similar to the more verbose:
-  *
-  *     var [ a, b ] = await Promise.all([
-  *       myLoader.load('a'),
-  *       myLoader.load('b')
-  *     ]);
-  *
-  * However it is different in the case where any load fails. Where
-  * Promise.all() would reject, loadMany() always resolves, however each result
-  * is either a value or an Error instance.
-  *
-  *     var [ a, b, c ] = await myLoader.loadMany([ 'a', 'b', 'badkey' ]);
-  *     // c instanceof Error
-  *
-  */
-  loadMany(keys) {
-    if (!isArrayLike(keys))
-      throw new TypeError(`The loader.loadMany() function must be called with Array<key>, but got: ${keys}.`);
-    const loadPromises = [];
-    for (let i = 0; i < keys.length; i++)
-      loadPromises.push(this.load(keys[i]).catch((error) => error));
-    return Promise.all(loadPromises);
-  }
-  /**
-  * Clears the value at `key` from the cache, if it exists. Returns itself for
-  * method chaining.
-  */
-  clear(key) {
-    const cacheMap = this._cacheMap;
-    if (cacheMap) {
-      const cacheKey = this._cacheKeyFn(key);
-      cacheMap.delete(cacheKey);
-    }
-    return this;
-  }
-  /**
-  * Clears the entire cache. To be used when some event results in unknown
-  * invalidations across this particular `DataLoader`. Returns itself for
-  * method chaining.
-  */
-  clearAll() {
-    const cacheMap = this._cacheMap;
-    if (cacheMap)
-      cacheMap.clear();
-    return this;
-  }
-  /**
-  * Adds the provided key and value to the cache. If the key already
-  * exists, no change is made. Returns itself for method chaining.
-  *
-  * To prime the cache with an error at a key, provide an Error instance.
-  */
-  prime(key, value) {
-    const cacheMap = this._cacheMap;
-    if (cacheMap) {
-      const cacheKey = this._cacheKeyFn(key);
-      if (cacheMap.get(cacheKey) === void 0) {
-        let promise;
-        if (value instanceof Error) {
-          promise = Promise.reject(value);
-          promise.catch(() => {
-          });
-        } else
-          promise = Promise.resolve(value);
-        cacheMap.set(cacheKey, promise);
-      }
-    }
-    return this;
-  }
-};
-var enqueuePostPromiseJob = typeof process === "object" && typeof process.nextTick === "function" ? function(fn) {
-  if (!resolvedPromise)
-    resolvedPromise = Promise.resolve();
-  resolvedPromise.then(() => {
-    process.nextTick(fn);
-  });
-} : typeof setImmediate === "function" ? function(fn) {
-  setImmediate(fn);
-} : function(fn) {
-  setTimeout(fn);
-};
-var resolvedPromise;
-function getCurrentBatch(loader) {
-  const existingBatch = loader._batch;
-  if (existingBatch !== null && !existingBatch.hasDispatched && existingBatch.keys.length < loader._maxBatchSize)
-    return existingBatch;
-  const newBatch = {
-    hasDispatched: false,
-    keys: [],
-    callbacks: []
-  };
-  loader._batch = newBatch;
-  loader._batchScheduleFn(() => {
-    dispatchBatch(loader, newBatch);
-  });
-  return newBatch;
-}
-function dispatchBatch(loader, batch) {
-  batch.hasDispatched = true;
-  if (batch.keys.length === 0) {
-    resolveCacheHits(batch);
-    return;
-  }
-  let batchPromise;
-  try {
-    batchPromise = loader._batchLoadFn(batch.keys);
-  } catch (e) {
-    return failedDispatch(loader, batch, /* @__PURE__ */ new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but the function errored synchronously: ${String(e)}.`));
-  }
-  if (!batchPromise || typeof batchPromise.then !== "function")
-    return failedDispatch(loader, batch, /* @__PURE__ */ new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but the function did not return a Promise: ${String(batchPromise)}.`));
-  Promise.resolve(batchPromise).then((values) => {
-    if (!isArrayLike(values))
-      throw new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but the function did not return a Promise of an Array: ${String(values)}.`);
-    if (values.length !== batch.keys.length)
-      throw new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but the function did not return a Promise of an Array of the same length as the Array of keys.
-
-Keys:
-${String(batch.keys)}
-
-Values:
-${String(values)}`);
-    resolveCacheHits(batch);
-    for (let i = 0; i < batch.callbacks.length; i++) {
-      const value = values[i];
-      if (value instanceof Error)
-        batch.callbacks[i].reject(value);
-      else
-        batch.callbacks[i].resolve(value);
-    }
-  }).catch((error) => {
-    failedDispatch(loader, batch, error);
-  });
-}
-function failedDispatch(loader, batch, error) {
-  resolveCacheHits(batch);
-  for (let i = 0; i < batch.keys.length; i++) {
-    loader.clear(batch.keys[i]);
-    batch.callbacks[i].reject(error);
-  }
-}
-function resolveCacheHits(batch) {
-  if (batch.cacheHits)
-    for (let i = 0; i < batch.cacheHits.length; i++)
-      batch.cacheHits[i]();
-}
-function getValidMaxBatchSize(options) {
-  if (!(!options || options.batch !== false))
-    return 1;
-  const maxBatchSize = options && options.maxBatchSize;
-  if (maxBatchSize === void 0)
-    return Infinity;
-  if (typeof maxBatchSize !== "number" || maxBatchSize < 1)
-    throw new TypeError(`maxBatchSize must be a positive number: ${maxBatchSize}`);
-  return maxBatchSize;
-}
-function getValidBatchScheduleFn(options) {
-  const batchScheduleFn = options && options.batchScheduleFn;
-  if (batchScheduleFn === void 0)
-    return enqueuePostPromiseJob;
-  if (typeof batchScheduleFn !== "function")
-    throw new TypeError(`batchScheduleFn must be a function: ${batchScheduleFn}`);
-  return batchScheduleFn;
-}
-function getValidCacheKeyFn(options) {
-  const cacheKeyFn = options && options.cacheKeyFn;
-  if (cacheKeyFn === void 0)
-    return (key) => key;
-  if (typeof cacheKeyFn !== "function")
-    throw new TypeError(`cacheKeyFn must be a function: ${cacheKeyFn}`);
-  return cacheKeyFn;
-}
-function getValidCacheMap(options) {
-  if (!(!options || options.cache !== false))
-    return null;
-  const cacheMap = options && options.cacheMap;
-  if (cacheMap === void 0)
-    return /* @__PURE__ */ new Map();
-  if (cacheMap !== null) {
-    const missingFunctions = [
-      "get",
-      "set",
-      "delete",
-      "clear"
-    ].filter((fnName) => cacheMap && typeof cacheMap[fnName] !== "function");
-    if (missingFunctions.length !== 0)
-      throw new TypeError("Custom cacheMap missing methods: " + missingFunctions.join(", "));
-  }
-  return cacheMap;
-}
-function getValidName(options) {
-  if (options && options.name)
-    return options.name;
-  return null;
-}
-function isArrayLike(x) {
-  return typeof x === "object" && x !== null && "length" in x && typeof x.length === "number" && (x.length === 0 || x.length > 0 && Object.prototype.hasOwnProperty.call(x, x.length - 1));
-}
-
-// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/utils.mjs
+// ../node_modules/.pnpm/@mysten+bcs@2.0.3/node_modules/@mysten/bcs/dist/utils.mjs
 function encodeStr(data, encoding) {
   switch (encoding) {
     case "base58":
@@ -673,7 +407,7 @@ function splitGenericParameters(str, genericSeparators = ["<", ">"]) {
   return tok;
 }
 
-// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/writer.mjs
+// ../node_modules/.pnpm/@mysten+bcs@2.0.3/node_modules/@mysten/bcs/dist/writer.mjs
 var BcsWriter = class {
   constructor({ initialSize = 1024, maxSize = Infinity, allocateSize = 1024 } = {}) {
     this.bytePosition = 0;
@@ -792,9 +526,9 @@ var BcsWriter = class {
   * @param {WriteVecCb} cb Callback to call on each element of the vector.
   * @returns {this}
   */
-  writeVec(vector2, cb) {
-    this.writeULEB(vector2.length);
-    Array.from(vector2).forEach((el, i) => cb(this, el, i, vector2.length));
+  writeVec(vector3, cb) {
+    this.writeULEB(vector3.length);
+    Array.from(vector3).forEach((el, i) => cb(this, el, i, vector3.length));
     return this;
   }
   /**
@@ -821,18 +555,18 @@ var BcsWriter = class {
     return encodeStr(this.toBytes(), encoding);
   }
 };
-function toLittleEndian(bigint2, size) {
+function toLittleEndian(bigint3, size) {
   const result = new Uint8Array(size);
   let i = 0;
-  while (bigint2 > 0) {
-    result[i] = Number(bigint2 % BigInt(256));
-    bigint2 = bigint2 / BigInt(256);
+  while (bigint3 > 0) {
+    result[i] = Number(bigint3 % BigInt(256));
+    bigint3 = bigint3 / BigInt(256);
     i += 1;
   }
   return result;
 }
 
-// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/bcs-type.mjs
+// ../node_modules/.pnpm/@mysten+bcs@2.0.3/node_modules/@mysten/bcs/dist/bcs-type.mjs
 var BcsType = class BcsType2 {
   #write;
   #serialize;
@@ -873,7 +607,7 @@ var BcsType = class BcsType2 {
   fromBase64(b64) {
     return this.parse(fromBase64(b64));
   }
-  transform({ name, input, output, validate: validate2 }) {
+  transform({ name, input, output, validate: validate3 }) {
     return new BcsType2({
       name: name ?? this.name,
       read: (reader) => output ? output(this.read(reader)) : this.read(reader),
@@ -881,7 +615,7 @@ var BcsType = class BcsType2 {
       serializedSize: (value) => this.serializedSize(input ? input(value) : value),
       serialize: (value, options) => this.#serialize(input ? input(value) : value, options),
       validate: (value) => {
-        validate2?.(value);
+        validate3?.(value);
         this.validate(input ? input(value) : value);
       }
     });
@@ -1113,7 +847,7 @@ var BcsTuple = class extends BcsType {
   }
 };
 
-// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/bcs.mjs
+// ../node_modules/.pnpm/@mysten+bcs@2.0.3/node_modules/@mysten/bcs/dist/bcs.mjs
 function fixedArray(size, type, options) {
   return new BcsType({
     read: (reader) => {
@@ -1314,9 +1048,9 @@ var bcs = {
         return reader.readBytes(length);
       },
       write: (value, writer) => {
-        const array2 = new Uint8Array(value);
-        writer.writeULEB(array2.length);
-        writer.writeBytes(array2);
+        const array3 = new Uint8Array(value);
+        writer.writeULEB(array3.length);
+        writer.writeBytes(array3);
       },
       ...options,
       name: options?.name ?? "vector<u8>",
@@ -1368,21 +1102,10 @@ var bcs = {
   }
 };
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/sui-types.mjs
-var TX_DIGEST_LENGTH = 32;
-function isValidTransactionDigest(value) {
-  try {
-    return fromBase58(value).length === TX_DIGEST_LENGTH;
-  } catch {
-    return false;
-  }
-}
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/sui-types.mjs
 var SUI_ADDRESS_LENGTH = 32;
 function isValidSuiAddress(value) {
   return isHex(value) && getHexByteLength(value) === SUI_ADDRESS_LENGTH;
-}
-function isValidSuiObjectId(value) {
-  return isValidSuiAddress(value);
 }
 var MOVE_IDENTIFIER_REGEX = /^[a-zA-Z][a-zA-Z0-9_]*$/;
 function isValidMoveIdentifier(name) {
@@ -1480,7 +1203,7 @@ function getHexByteLength(value) {
   return /^(0x|0X)/.test(value) ? (value.length - 2) / 2 : value.length / 2;
 }
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/type-tag-serializer.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/type-tag-serializer.mjs
 var VECTOR_REGEX = /^vector<(.+)>$/;
 var STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;
 var TypeTagSerializer = class TypeTagSerializer2 {
@@ -1549,7 +1272,7 @@ var TypeTagSerializer = class TypeTagSerializer2 {
   }
 };
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/bcs.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/bcs.mjs
 function unsafe_u64(options) {
   return bcs.u64({
     name: "unsafe_u64",
@@ -1837,7 +1560,7 @@ var ObjectInner = bcs.struct("ObjectInner", {
   storageRebate: bcs.u64()
 });
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/effects.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/effects.mjs
 var PackageUpgradeError = bcs.enum("PackageUpgradeError", {
   UnableToFetchPackage: bcs.struct("UnableToFetchPackage", { packageId: Address }),
   NotAPackage: bcs.struct("NotAPackage", { objectId: Address }),
@@ -2055,7 +1778,7 @@ var TransactionEffects = bcs.enum("TransactionEffects", {
   V2: TransactionEffectsV2
 });
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/pure.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/pure.mjs
 function pureBcsSchemaFromTypeName(name) {
   switch (name) {
     case "u8":
@@ -2089,7 +1812,7 @@ function pureBcsSchemaFromTypeName(name) {
   throw new Error(`Invalid Pure type name: ${name}`);
 }
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/index.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/index.mjs
 var suiBcs = {
   ...bcs,
   U8: bcs.u8(),
@@ -2142,1121 +1865,7 @@ var suiBcs = {
   UpgradeInfo
 };
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/cache.mjs
-var ClientCache = class ClientCache2 {
-  #prefix;
-  #cache;
-  constructor({ prefix, cache } = {}) {
-    this.#prefix = prefix ?? [];
-    this.#cache = cache ?? /* @__PURE__ */ new Map();
-  }
-  read(key, load) {
-    const cacheKey = [this.#prefix, ...key].join(":");
-    if (this.#cache.has(cacheKey))
-      return this.#cache.get(cacheKey);
-    const result = load();
-    this.#cache.set(cacheKey, result);
-    if (typeof result === "object" && result !== null && "then" in result)
-      return Promise.resolve(result).then((v) => {
-        this.#cache.set(cacheKey, v);
-        return v;
-      }).catch((err) => {
-        this.#cache.delete(cacheKey);
-        throw err;
-      });
-    return result;
-  }
-  readSync(key, load) {
-    const cacheKey = [this.#prefix, ...key].join(":");
-    if (this.#cache.has(cacheKey))
-      return this.#cache.get(cacheKey);
-    const result = load();
-    this.#cache.set(cacheKey, result);
-    return result;
-  }
-  clear(prefix) {
-    const prefixKey = [...this.#prefix, ...prefix ?? []].join(":");
-    if (!prefixKey) {
-      this.#cache.clear();
-      return;
-    }
-    for (const key of this.#cache.keys())
-      if (key.startsWith(prefixKey))
-        this.#cache.delete(key);
-  }
-  scope(prefix) {
-    return new ClientCache2({
-      prefix: [...this.#prefix, ...Array.isArray(prefix) ? prefix : [prefix]],
-      cache: this.#cache
-    });
-  }
-};
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/client.mjs
-var BaseClient = class {
-  constructor({ network, base, cache = base?.cache ?? new ClientCache() }) {
-    this.network = network;
-    this.base = base ?? this;
-    this.cache = cache;
-  }
-  $extend(...registrations) {
-    const extensions = Object.fromEntries(registrations.map((registration) => {
-      return [registration.name, registration.register(this)];
-    }));
-    const methodCache = /* @__PURE__ */ new Map();
-    return new Proxy(this, { get(target, prop, receiver) {
-      if (typeof prop === "string" && prop in extensions)
-        return extensions[prop];
-      const value = Reflect.get(target, prop, receiver);
-      if (typeof value === "function") {
-        if (prop === "$extend")
-          return value.bind(receiver);
-        if (!methodCache.has(prop))
-          methodCache.set(prop, value.bind(target));
-        return methodCache.get(prop);
-      }
-      return value;
-    } });
-  }
-};
-
-// node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/utils.js
-function isBytes2(a) {
-  return a instanceof Uint8Array || ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array";
-}
-function anumber2(n, title = "") {
-  if (!Number.isSafeInteger(n) || n < 0) {
-    const prefix = title && `"${title}" `;
-    throw new Error(`${prefix}expected integer >= 0, got ${n}`);
-  }
-}
-function abytes(value, length, title = "") {
-  const bytes = isBytes2(value);
-  const len = value?.length;
-  const needsLen = length !== void 0;
-  if (!bytes || needsLen && len !== length) {
-    const prefix = title && `"${title}" `;
-    const ofLen = needsLen ? ` of length ${length}` : "";
-    const got = bytes ? `length=${len}` : `type=${typeof value}`;
-    throw new Error(prefix + "expected Uint8Array" + ofLen + ", got " + got);
-  }
-  return value;
-}
-function aexists(instance, checkFinished = true) {
-  if (instance.destroyed)
-    throw new Error("Hash instance has been destroyed");
-  if (checkFinished && instance.finished)
-    throw new Error("Hash#digest() has already been called");
-}
-function aoutput(out, instance) {
-  abytes(out, void 0, "digestInto() output");
-  const min = instance.outputLen;
-  if (out.length < min) {
-    throw new Error('"digestInto() output" expected to be of length >=' + min);
-  }
-}
-function u32(arr) {
-  return new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
-}
-function clean(...arrays) {
-  for (let i = 0; i < arrays.length; i++) {
-    arrays[i].fill(0);
-  }
-}
-var isLE = /* @__PURE__ */ (() => new Uint8Array(new Uint32Array([287454020]).buffer)[0] === 68)();
-function byteSwap(word) {
-  return word << 24 & 4278190080 | word << 8 & 16711680 | word >>> 8 & 65280 | word >>> 24 & 255;
-}
-var swap8IfBE = isLE ? (n) => n : (n) => byteSwap(n);
-function byteSwap32(arr) {
-  for (let i = 0; i < arr.length; i++) {
-    arr[i] = byteSwap(arr[i]);
-  }
-  return arr;
-}
-var swap32IfBE = isLE ? (u) => u : byteSwap32;
-function createHasher(hashCons, info = {}) {
-  const hashC = (msg, opts) => hashCons(opts).update(msg).digest();
-  const tmp = hashCons(void 0);
-  hashC.outputLen = tmp.outputLen;
-  hashC.blockLen = tmp.blockLen;
-  hashC.create = (opts) => hashCons(opts);
-  Object.assign(hashC, info);
-  return Object.freeze(hashC);
-}
-
-// node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/_blake.js
-var BSIGMA = /* @__PURE__ */ Uint8Array.from([
-  0,
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  14,
-  10,
-  4,
-  8,
-  9,
-  15,
-  13,
-  6,
-  1,
-  12,
-  0,
-  2,
-  11,
-  7,
-  5,
-  3,
-  11,
-  8,
-  12,
-  0,
-  5,
-  2,
-  15,
-  13,
-  10,
-  14,
-  3,
-  6,
-  7,
-  1,
-  9,
-  4,
-  7,
-  9,
-  3,
-  1,
-  13,
-  12,
-  11,
-  14,
-  2,
-  6,
-  5,
-  10,
-  4,
-  0,
-  15,
-  8,
-  9,
-  0,
-  5,
-  7,
-  2,
-  4,
-  10,
-  15,
-  14,
-  1,
-  11,
-  12,
-  6,
-  8,
-  3,
-  13,
-  2,
-  12,
-  6,
-  10,
-  0,
-  11,
-  8,
-  3,
-  4,
-  13,
-  7,
-  5,
-  15,
-  14,
-  1,
-  9,
-  12,
-  5,
-  1,
-  15,
-  14,
-  13,
-  4,
-  10,
-  0,
-  7,
-  6,
-  3,
-  9,
-  2,
-  8,
-  11,
-  13,
-  11,
-  7,
-  14,
-  12,
-  1,
-  3,
-  9,
-  5,
-  0,
-  15,
-  4,
-  8,
-  6,
-  2,
-  10,
-  6,
-  15,
-  14,
-  9,
-  11,
-  3,
-  0,
-  8,
-  12,
-  2,
-  13,
-  7,
-  1,
-  4,
-  10,
-  5,
-  10,
-  2,
-  8,
-  4,
-  7,
-  6,
-  1,
-  5,
-  15,
-  11,
-  9,
-  14,
-  3,
-  12,
-  13,
-  0,
-  0,
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  14,
-  10,
-  4,
-  8,
-  9,
-  15,
-  13,
-  6,
-  1,
-  12,
-  0,
-  2,
-  11,
-  7,
-  5,
-  3,
-  // Blake1, unused in others
-  11,
-  8,
-  12,
-  0,
-  5,
-  2,
-  15,
-  13,
-  10,
-  14,
-  3,
-  6,
-  7,
-  1,
-  9,
-  4,
-  7,
-  9,
-  3,
-  1,
-  13,
-  12,
-  11,
-  14,
-  2,
-  6,
-  5,
-  10,
-  4,
-  0,
-  15,
-  8,
-  9,
-  0,
-  5,
-  7,
-  2,
-  4,
-  10,
-  15,
-  14,
-  1,
-  11,
-  12,
-  6,
-  8,
-  3,
-  13,
-  2,
-  12,
-  6,
-  10,
-  0,
-  11,
-  8,
-  3,
-  4,
-  13,
-  7,
-  5,
-  15,
-  14,
-  1,
-  9
-]);
-
-// node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/_u64.js
-var U32_MASK64 = /* @__PURE__ */ BigInt(2 ** 32 - 1);
-var _32n = /* @__PURE__ */ BigInt(32);
-function fromBig(n, le = false) {
-  if (le)
-    return { h: Number(n & U32_MASK64), l: Number(n >> _32n & U32_MASK64) };
-  return { h: Number(n >> _32n & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
-}
-var rotrSH = (h, l, s) => h >>> s | l << 32 - s;
-var rotrSL = (h, l, s) => h << 32 - s | l >>> s;
-var rotrBH = (h, l, s) => h << 64 - s | l >>> s - 32;
-var rotrBL = (h, l, s) => h >>> s - 32 | l << 64 - s;
-var rotr32H = (_h, l) => l;
-var rotr32L = (h, _l) => h;
-function add(Ah, Al, Bh, Bl) {
-  const l = (Al >>> 0) + (Bl >>> 0);
-  return { h: Ah + Bh + (l / 2 ** 32 | 0) | 0, l: l | 0 };
-}
-var add3L = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
-var add3H = (low, Ah, Bh, Ch) => Ah + Bh + Ch + (low / 2 ** 32 | 0) | 0;
-
-// node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/blake2.js
-var B2B_IV = /* @__PURE__ */ Uint32Array.from([
-  4089235720,
-  1779033703,
-  2227873595,
-  3144134277,
-  4271175723,
-  1013904242,
-  1595750129,
-  2773480762,
-  2917565137,
-  1359893119,
-  725511199,
-  2600822924,
-  4215389547,
-  528734635,
-  327033209,
-  1541459225
-]);
-var BBUF = /* @__PURE__ */ new Uint32Array(32);
-function G1b(a, b, c2, d, msg, x) {
-  const Xl = msg[x], Xh = msg[x + 1];
-  let Al = BBUF[2 * a], Ah = BBUF[2 * a + 1];
-  let Bl = BBUF[2 * b], Bh = BBUF[2 * b + 1];
-  let Cl = BBUF[2 * c2], Ch = BBUF[2 * c2 + 1];
-  let Dl = BBUF[2 * d], Dh = BBUF[2 * d + 1];
-  let ll = add3L(Al, Bl, Xl);
-  Ah = add3H(ll, Ah, Bh, Xh);
-  Al = ll | 0;
-  ({ Dh, Dl } = { Dh: Dh ^ Ah, Dl: Dl ^ Al });
-  ({ Dh, Dl } = { Dh: rotr32H(Dh, Dl), Dl: rotr32L(Dh, Dl) });
-  ({ h: Ch, l: Cl } = add(Ch, Cl, Dh, Dl));
-  ({ Bh, Bl } = { Bh: Bh ^ Ch, Bl: Bl ^ Cl });
-  ({ Bh, Bl } = { Bh: rotrSH(Bh, Bl, 24), Bl: rotrSL(Bh, Bl, 24) });
-  BBUF[2 * a] = Al, BBUF[2 * a + 1] = Ah;
-  BBUF[2 * b] = Bl, BBUF[2 * b + 1] = Bh;
-  BBUF[2 * c2] = Cl, BBUF[2 * c2 + 1] = Ch;
-  BBUF[2 * d] = Dl, BBUF[2 * d + 1] = Dh;
-}
-function G2b(a, b, c2, d, msg, x) {
-  const Xl = msg[x], Xh = msg[x + 1];
-  let Al = BBUF[2 * a], Ah = BBUF[2 * a + 1];
-  let Bl = BBUF[2 * b], Bh = BBUF[2 * b + 1];
-  let Cl = BBUF[2 * c2], Ch = BBUF[2 * c2 + 1];
-  let Dl = BBUF[2 * d], Dh = BBUF[2 * d + 1];
-  let ll = add3L(Al, Bl, Xl);
-  Ah = add3H(ll, Ah, Bh, Xh);
-  Al = ll | 0;
-  ({ Dh, Dl } = { Dh: Dh ^ Ah, Dl: Dl ^ Al });
-  ({ Dh, Dl } = { Dh: rotrSH(Dh, Dl, 16), Dl: rotrSL(Dh, Dl, 16) });
-  ({ h: Ch, l: Cl } = add(Ch, Cl, Dh, Dl));
-  ({ Bh, Bl } = { Bh: Bh ^ Ch, Bl: Bl ^ Cl });
-  ({ Bh, Bl } = { Bh: rotrBH(Bh, Bl, 63), Bl: rotrBL(Bh, Bl, 63) });
-  BBUF[2 * a] = Al, BBUF[2 * a + 1] = Ah;
-  BBUF[2 * b] = Bl, BBUF[2 * b + 1] = Bh;
-  BBUF[2 * c2] = Cl, BBUF[2 * c2 + 1] = Ch;
-  BBUF[2 * d] = Dl, BBUF[2 * d + 1] = Dh;
-}
-function checkBlake2Opts(outputLen, opts = {}, keyLen, saltLen, persLen) {
-  anumber2(keyLen);
-  if (outputLen < 0 || outputLen > keyLen)
-    throw new Error("outputLen bigger than keyLen");
-  const { key, salt, personalization } = opts;
-  if (key !== void 0 && (key.length < 1 || key.length > keyLen))
-    throw new Error('"key" expected to be undefined or of length=1..' + keyLen);
-  if (salt !== void 0)
-    abytes(salt, saltLen, "salt");
-  if (personalization !== void 0)
-    abytes(personalization, persLen, "personalization");
-}
-var _BLAKE2 = class {
-  buffer;
-  buffer32;
-  finished = false;
-  destroyed = false;
-  length = 0;
-  pos = 0;
-  blockLen;
-  outputLen;
-  constructor(blockLen, outputLen) {
-    anumber2(blockLen);
-    anumber2(outputLen);
-    this.blockLen = blockLen;
-    this.outputLen = outputLen;
-    this.buffer = new Uint8Array(blockLen);
-    this.buffer32 = u32(this.buffer);
-  }
-  update(data) {
-    aexists(this);
-    abytes(data);
-    const { blockLen, buffer, buffer32 } = this;
-    const len = data.length;
-    const offset = data.byteOffset;
-    const buf = data.buffer;
-    for (let pos = 0; pos < len; ) {
-      if (this.pos === blockLen) {
-        swap32IfBE(buffer32);
-        this.compress(buffer32, 0, false);
-        swap32IfBE(buffer32);
-        this.pos = 0;
-      }
-      const take = Math.min(blockLen - this.pos, len - pos);
-      const dataOffset = offset + pos;
-      if (take === blockLen && !(dataOffset % 4) && pos + take < len) {
-        const data32 = new Uint32Array(buf, dataOffset, Math.floor((len - pos) / 4));
-        swap32IfBE(data32);
-        for (let pos32 = 0; pos + blockLen < len; pos32 += buffer32.length, pos += blockLen) {
-          this.length += blockLen;
-          this.compress(data32, pos32, false);
-        }
-        swap32IfBE(data32);
-        continue;
-      }
-      buffer.set(data.subarray(pos, pos + take), this.pos);
-      this.pos += take;
-      this.length += take;
-      pos += take;
-    }
-    return this;
-  }
-  digestInto(out) {
-    aexists(this);
-    aoutput(out, this);
-    const { pos, buffer32 } = this;
-    this.finished = true;
-    clean(this.buffer.subarray(pos));
-    swap32IfBE(buffer32);
-    this.compress(buffer32, 0, true);
-    swap32IfBE(buffer32);
-    const out32 = u32(out);
-    this.get().forEach((v, i) => out32[i] = swap8IfBE(v));
-  }
-  digest() {
-    const { buffer, outputLen } = this;
-    this.digestInto(buffer);
-    const res = buffer.slice(0, outputLen);
-    this.destroy();
-    return res;
-  }
-  _cloneInto(to) {
-    const { buffer, length, finished, destroyed, outputLen, pos } = this;
-    to ||= new this.constructor({ dkLen: outputLen });
-    to.set(...this.get());
-    to.buffer.set(buffer);
-    to.destroyed = destroyed;
-    to.finished = finished;
-    to.length = length;
-    to.pos = pos;
-    to.outputLen = outputLen;
-    return to;
-  }
-  clone() {
-    return this._cloneInto();
-  }
-};
-var _BLAKE2b = class extends _BLAKE2 {
-  // Same as SHA-512, but LE
-  v0l = B2B_IV[0] | 0;
-  v0h = B2B_IV[1] | 0;
-  v1l = B2B_IV[2] | 0;
-  v1h = B2B_IV[3] | 0;
-  v2l = B2B_IV[4] | 0;
-  v2h = B2B_IV[5] | 0;
-  v3l = B2B_IV[6] | 0;
-  v3h = B2B_IV[7] | 0;
-  v4l = B2B_IV[8] | 0;
-  v4h = B2B_IV[9] | 0;
-  v5l = B2B_IV[10] | 0;
-  v5h = B2B_IV[11] | 0;
-  v6l = B2B_IV[12] | 0;
-  v6h = B2B_IV[13] | 0;
-  v7l = B2B_IV[14] | 0;
-  v7h = B2B_IV[15] | 0;
-  constructor(opts = {}) {
-    const olen = opts.dkLen === void 0 ? 64 : opts.dkLen;
-    super(128, olen);
-    checkBlake2Opts(olen, opts, 64, 16, 16);
-    let { key, personalization, salt } = opts;
-    let keyLength = 0;
-    if (key !== void 0) {
-      abytes(key, void 0, "key");
-      keyLength = key.length;
-    }
-    this.v0l ^= this.outputLen | keyLength << 8 | 1 << 16 | 1 << 24;
-    if (salt !== void 0) {
-      abytes(salt, void 0, "salt");
-      const slt = u32(salt);
-      this.v4l ^= swap8IfBE(slt[0]);
-      this.v4h ^= swap8IfBE(slt[1]);
-      this.v5l ^= swap8IfBE(slt[2]);
-      this.v5h ^= swap8IfBE(slt[3]);
-    }
-    if (personalization !== void 0) {
-      abytes(personalization, void 0, "personalization");
-      const pers = u32(personalization);
-      this.v6l ^= swap8IfBE(pers[0]);
-      this.v6h ^= swap8IfBE(pers[1]);
-      this.v7l ^= swap8IfBE(pers[2]);
-      this.v7h ^= swap8IfBE(pers[3]);
-    }
-    if (key !== void 0) {
-      const tmp = new Uint8Array(this.blockLen);
-      tmp.set(key);
-      this.update(tmp);
-    }
-  }
-  // prettier-ignore
-  get() {
-    let { v0l, v0h, v1l, v1h, v2l, v2h, v3l, v3h, v4l, v4h, v5l, v5h, v6l, v6h, v7l, v7h } = this;
-    return [v0l, v0h, v1l, v1h, v2l, v2h, v3l, v3h, v4l, v4h, v5l, v5h, v6l, v6h, v7l, v7h];
-  }
-  // prettier-ignore
-  set(v0l, v0h, v1l, v1h, v2l, v2h, v3l, v3h, v4l, v4h, v5l, v5h, v6l, v6h, v7l, v7h) {
-    this.v0l = v0l | 0;
-    this.v0h = v0h | 0;
-    this.v1l = v1l | 0;
-    this.v1h = v1h | 0;
-    this.v2l = v2l | 0;
-    this.v2h = v2h | 0;
-    this.v3l = v3l | 0;
-    this.v3h = v3h | 0;
-    this.v4l = v4l | 0;
-    this.v4h = v4h | 0;
-    this.v5l = v5l | 0;
-    this.v5h = v5h | 0;
-    this.v6l = v6l | 0;
-    this.v6h = v6h | 0;
-    this.v7l = v7l | 0;
-    this.v7h = v7h | 0;
-  }
-  compress(msg, offset, isLast) {
-    this.get().forEach((v, i) => BBUF[i] = v);
-    BBUF.set(B2B_IV, 16);
-    let { h, l } = fromBig(BigInt(this.length));
-    BBUF[24] = B2B_IV[8] ^ l;
-    BBUF[25] = B2B_IV[9] ^ h;
-    if (isLast) {
-      BBUF[28] = ~BBUF[28];
-      BBUF[29] = ~BBUF[29];
-    }
-    let j = 0;
-    const s = BSIGMA;
-    for (let i = 0; i < 12; i++) {
-      G1b(0, 4, 8, 12, msg, offset + 2 * s[j++]);
-      G2b(0, 4, 8, 12, msg, offset + 2 * s[j++]);
-      G1b(1, 5, 9, 13, msg, offset + 2 * s[j++]);
-      G2b(1, 5, 9, 13, msg, offset + 2 * s[j++]);
-      G1b(2, 6, 10, 14, msg, offset + 2 * s[j++]);
-      G2b(2, 6, 10, 14, msg, offset + 2 * s[j++]);
-      G1b(3, 7, 11, 15, msg, offset + 2 * s[j++]);
-      G2b(3, 7, 11, 15, msg, offset + 2 * s[j++]);
-      G1b(0, 5, 10, 15, msg, offset + 2 * s[j++]);
-      G2b(0, 5, 10, 15, msg, offset + 2 * s[j++]);
-      G1b(1, 6, 11, 12, msg, offset + 2 * s[j++]);
-      G2b(1, 6, 11, 12, msg, offset + 2 * s[j++]);
-      G1b(2, 7, 8, 13, msg, offset + 2 * s[j++]);
-      G2b(2, 7, 8, 13, msg, offset + 2 * s[j++]);
-      G1b(3, 4, 9, 14, msg, offset + 2 * s[j++]);
-      G2b(3, 4, 9, 14, msg, offset + 2 * s[j++]);
-    }
-    this.v0l ^= BBUF[0] ^ BBUF[16];
-    this.v0h ^= BBUF[1] ^ BBUF[17];
-    this.v1l ^= BBUF[2] ^ BBUF[18];
-    this.v1h ^= BBUF[3] ^ BBUF[19];
-    this.v2l ^= BBUF[4] ^ BBUF[20];
-    this.v2h ^= BBUF[5] ^ BBUF[21];
-    this.v3l ^= BBUF[6] ^ BBUF[22];
-    this.v3h ^= BBUF[7] ^ BBUF[23];
-    this.v4l ^= BBUF[8] ^ BBUF[24];
-    this.v4h ^= BBUF[9] ^ BBUF[25];
-    this.v5l ^= BBUF[10] ^ BBUF[26];
-    this.v5h ^= BBUF[11] ^ BBUF[27];
-    this.v6l ^= BBUF[12] ^ BBUF[28];
-    this.v6h ^= BBUF[13] ^ BBUF[29];
-    this.v7l ^= BBUF[14] ^ BBUF[30];
-    this.v7h ^= BBUF[15] ^ BBUF[31];
-    clean(BBUF);
-  }
-  destroy() {
-    this.destroyed = true;
-    clean(this.buffer32);
-    this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-  }
-};
-var blake2b = /* @__PURE__ */ createHasher((opts) => new _BLAKE2b(opts));
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/dynamic-fields.mjs
-function deriveDynamicFieldID(parentId, typeTag, key) {
-  const address = suiBcs.Address.serialize(parentId).toBytes();
-  const tag = suiBcs.TypeTag.serialize(typeTag).toBytes();
-  const keyLength = suiBcs.u64().serialize(key.length).toBytes();
-  const hash = blake2b.create({ dkLen: 32 });
-  hash.update(new Uint8Array([240]));
-  hash.update(address);
-  hash.update(keyLength);
-  hash.update(key);
-  hash.update(tag);
-  return `0x${toHex(hash.digest().slice(0, 32))}`;
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/version.mjs
-var PACKAGE_VERSION = "2.6.0";
-var TARGETED_RPC_VERSION = "1.68.0";
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/mvr.mjs
-var NAME_SEPARATOR2 = "/";
-var MVR_API_HEADER = { "Mvr-Source": `@mysten/sui@${PACKAGE_VERSION}` };
-var MvrClient = class {
-  #cache;
-  #url;
-  #pageSize;
-  #overrides;
-  constructor({ cache, url, pageSize = 50, overrides }) {
-    this.#cache = cache;
-    this.#url = url;
-    this.#pageSize = pageSize;
-    this.#overrides = {
-      packages: overrides?.packages,
-      types: overrides?.types
-    };
-    validateOverrides(this.#overrides);
-  }
-  get #mvrPackageDataLoader() {
-    return this.#cache.readSync(["#mvrPackageDataLoader", this.#url ?? ""], () => {
-      const loader = new DataLoader(async (packages) => {
-        if (!this.#url)
-          throw new Error(`MVR Api URL is not set for the current client (resolving ${packages.join(", ")})`);
-        const resolved = await this.#resolvePackages(packages);
-        return packages.map((pkg) => resolved[pkg] ?? /* @__PURE__ */ new Error(`Failed to resolve package: ${pkg}`));
-      });
-      const overrides = this.#overrides?.packages;
-      if (overrides)
-        for (const [pkg, id] of Object.entries(overrides))
-          loader.prime(pkg, id);
-      return loader;
-    });
-  }
-  get #mvrTypeDataLoader() {
-    return this.#cache.readSync(["#mvrTypeDataLoader", this.#url ?? ""], () => {
-      const loader = new DataLoader(async (types) => {
-        if (!this.#url)
-          throw new Error(`MVR Api URL is not set for the current client (resolving ${types.join(", ")})`);
-        const resolved = await this.#resolveTypes(types);
-        return types.map((type) => resolved[type] ?? /* @__PURE__ */ new Error(`Failed to resolve type: ${type}`));
-      });
-      const overrides = this.#overrides?.types;
-      if (overrides)
-        for (const [type, id] of Object.entries(overrides))
-          loader.prime(type, id);
-      return loader;
-    });
-  }
-  async #resolvePackages(packages) {
-    if (packages.length === 0)
-      return {};
-    const batches = chunk(packages, this.#pageSize);
-    const results = {};
-    await Promise.all(batches.map(async (batch) => {
-      const data = await this.#fetch("/v1/resolution/bulk", { names: batch });
-      if (!data?.resolution)
-        return;
-      for (const pkg of Object.keys(data?.resolution)) {
-        const pkgData = data.resolution[pkg]?.package_id;
-        if (!pkgData)
-          continue;
-        results[pkg] = pkgData;
-      }
-    }));
-    return results;
-  }
-  async #resolveTypes(types) {
-    if (types.length === 0)
-      return {};
-    const batches = chunk(types, this.#pageSize);
-    const results = {};
-    await Promise.all(batches.map(async (batch) => {
-      const data = await this.#fetch("/v1/struct-definition/bulk", { types: batch });
-      if (!data?.resolution)
-        return;
-      for (const type of Object.keys(data?.resolution)) {
-        const typeData = data.resolution[type]?.type_tag;
-        if (!typeData)
-          continue;
-        results[type] = typeData;
-      }
-    }));
-    return results;
-  }
-  async #fetch(url, body) {
-    if (!this.#url)
-      throw new Error("MVR Api URL is not set for the current client");
-    const response = await fetch(`${this.#url}${url}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...MVR_API_HEADER
-      },
-      body: JSON.stringify(body)
-    });
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({}));
-      throw new Error(`Failed to resolve types: ${errorBody?.message}`);
-    }
-    return response.json();
-  }
-  async resolvePackage({ package: name }) {
-    if (!hasMvrName(name))
-      return { package: name };
-    return { package: await this.#mvrPackageDataLoader.load(name) };
-  }
-  async resolveType({ type }) {
-    if (!hasMvrName(type))
-      return { type };
-    const mvrTypes = [...extractMvrTypes(type)];
-    const resolvedTypes = await this.#mvrTypeDataLoader.loadMany(mvrTypes);
-    const typeMap = {};
-    for (let i = 0; i < mvrTypes.length; i++) {
-      const resolvedType = resolvedTypes[i];
-      if (resolvedType instanceof Error)
-        throw resolvedType;
-      typeMap[mvrTypes[i]] = resolvedType;
-    }
-    return { type: replaceMvrNames(type, typeMap) };
-  }
-  async resolve({ types = [], packages = [] }) {
-    const mvrTypes = /* @__PURE__ */ new Set();
-    for (const type of types ?? [])
-      extractMvrTypes(type, mvrTypes);
-    const typesArray = [...mvrTypes];
-    const [resolvedTypes, resolvedPackages] = await Promise.all([typesArray.length > 0 ? this.#mvrTypeDataLoader.loadMany(typesArray) : [], packages.length > 0 ? this.#mvrPackageDataLoader.loadMany(packages) : []]);
-    const typeMap = { ...this.#overrides?.types };
-    for (const [i, type] of typesArray.entries()) {
-      const resolvedType = resolvedTypes[i];
-      if (resolvedType instanceof Error)
-        throw resolvedType;
-      typeMap[type] = resolvedType;
-    }
-    const replacedTypes = {};
-    for (const type of types ?? [])
-      replacedTypes[type] = { type: replaceMvrNames(type, typeMap) };
-    const replacedPackages = {};
-    for (const [i, pkg] of (packages ?? []).entries()) {
-      const resolvedPkg = this.#overrides?.packages?.[pkg] ?? resolvedPackages[i];
-      if (resolvedPkg instanceof Error)
-        throw resolvedPkg;
-      replacedPackages[pkg] = { package: resolvedPkg };
-    }
-    return {
-      types: replacedTypes,
-      packages: replacedPackages
-    };
-  }
-};
-function validateOverrides(overrides) {
-  if (overrides?.packages)
-    for (const [pkg, id] of Object.entries(overrides.packages)) {
-      if (!isValidNamedPackage(pkg))
-        throw new Error(`Invalid package name: ${pkg}`);
-      if (!isValidSuiAddress(normalizeSuiAddress(id)))
-        throw new Error(`Invalid package ID: ${id}`);
-    }
-  if (overrides?.types)
-    for (const [type, val] of Object.entries(overrides.types)) {
-      if (parseStructTag(type).typeParams.length > 0)
-        throw new Error("Type overrides must be first-level only. If you want to supply generic types, just pass each type individually.");
-      if (!isValidSuiAddress(parseStructTag(val).address))
-        throw new Error(`Invalid type: ${val}`);
-    }
-}
-function extractMvrTypes(type, types = /* @__PURE__ */ new Set()) {
-  if (typeof type === "string" && !hasMvrName(type))
-    return types;
-  const tag = isStructTag(type) ? type : parseStructTag(type);
-  if (hasMvrName(tag.address))
-    types.add(`${tag.address}::${tag.module}::${tag.name}`);
-  for (const param of tag.typeParams)
-    extractMvrTypes(param, types);
-  return types;
-}
-function replaceMvrNames(tag, typeCache) {
-  const type = isStructTag(tag) ? tag : parseStructTag(tag);
-  const cacheHit = typeCache[`${type.address}::${type.module}::${type.name}`];
-  return normalizeStructTag({
-    ...type,
-    address: cacheHit ? cacheHit.split("::")[0] : type.address,
-    typeParams: type.typeParams.map((param) => replaceMvrNames(param, typeCache))
-  });
-}
-function hasMvrName(nameOrType) {
-  return nameOrType.includes(NAME_SEPARATOR2) || nameOrType.includes("@") || nameOrType.includes(".sui");
-}
-function isStructTag(type) {
-  return typeof type === "object" && "address" in type && "module" in type && "name" in type && "typeParams" in type;
-}
-function findNamesInTransaction(builder) {
-  const packages = /* @__PURE__ */ new Set();
-  const types = /* @__PURE__ */ new Set();
-  for (const command of builder.commands)
-    switch (command.$kind) {
-      case "MakeMoveVec":
-        if (command.MakeMoveVec.type)
-          getNamesFromTypeList([command.MakeMoveVec.type]).forEach((type) => {
-            types.add(type);
-          });
-        break;
-      case "MoveCall":
-        const moveCall = command.MoveCall;
-        const pkg = moveCall.package.split("::")[0];
-        if (hasMvrName(pkg)) {
-          if (!isValidNamedPackage(pkg))
-            throw new Error(`Invalid package name: ${pkg}`);
-          packages.add(pkg);
-        }
-        getNamesFromTypeList(moveCall.typeArguments ?? []).forEach((type) => {
-          types.add(type);
-        });
-        break;
-      default:
-        break;
-    }
-  return {
-    packages: [...packages],
-    types: [...types]
-  };
-}
-function replaceNames(builder, resolved) {
-  for (const command of builder.commands) {
-    if (command.MakeMoveVec?.type) {
-      if (!hasMvrName(command.MakeMoveVec.type))
-        continue;
-      if (!resolved.types[command.MakeMoveVec.type])
-        throw new Error(`No resolution found for type: ${command.MakeMoveVec.type}`);
-      command.MakeMoveVec.type = resolved.types[command.MakeMoveVec.type].type;
-    }
-    const tx = command.MoveCall;
-    if (!tx)
-      continue;
-    const nameParts = tx.package.split("::");
-    const name = nameParts[0];
-    if (hasMvrName(name) && !resolved.packages[name])
-      throw new Error(`No address found for package: ${name}`);
-    if (hasMvrName(name)) {
-      nameParts[0] = resolved.packages[name].package;
-      tx.package = nameParts.join("::");
-    }
-    const types = tx.typeArguments;
-    if (!types)
-      continue;
-    for (let i = 0; i < types.length; i++) {
-      if (!hasMvrName(types[i]))
-        continue;
-      if (!resolved.types[types[i]])
-        throw new Error(`No resolution found for type: ${types[i]}`);
-      types[i] = resolved.types[types[i]].type;
-    }
-    tx.typeArguments = types;
-  }
-}
-function getNamesFromTypeList(types) {
-  const names = /* @__PURE__ */ new Set();
-  for (const type of types)
-    if (hasMvrName(type)) {
-      if (!isValidNamedType(type))
-        throw new Error(`Invalid type with names: ${type}`);
-      names.add(type);
-    }
-  return names;
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/core.mjs
-var DEFAULT_MVR_URLS = {
-  mainnet: "https://mainnet.mvr.mystenlabs.com",
-  testnet: "https://testnet.mvr.mystenlabs.com"
-};
-var CoreClient = class extends BaseClient {
-  constructor(options) {
-    super(options);
-    this.core = this;
-    this.mvr = new MvrClient({
-      cache: this.cache.scope("core.mvr"),
-      url: options.mvr?.url ?? DEFAULT_MVR_URLS[this.network],
-      pageSize: options.mvr?.pageSize,
-      overrides: options.mvr?.overrides
-    });
-  }
-  async getObject(options) {
-    const { objectId } = options;
-    const { objects: [result] } = await this.getObjects({
-      objectIds: [objectId],
-      signal: options.signal,
-      include: options.include
-    });
-    if (result instanceof Error)
-      throw result;
-    return { object: result };
-  }
-  async getDynamicField(options) {
-    const normalizedNameType = TypeTagSerializer.parseFromStr((await this.core.mvr.resolveType({ type: options.name.type })).type);
-    const fieldId = deriveDynamicFieldID(options.parentId, normalizedNameType, options.name.bcs);
-    const { objects: [fieldObject] } = await this.getObjects({
-      objectIds: [fieldId],
-      signal: options.signal,
-      include: {
-        previousTransaction: true,
-        content: true
-      }
-    });
-    if (fieldObject instanceof Error)
-      throw fieldObject;
-    const fieldType = parseStructTag(fieldObject.type);
-    const content = await fieldObject.content;
-    const nameTypeParam = fieldType.typeParams[0];
-    const isDynamicObject = typeof nameTypeParam !== "string" && nameTypeParam.module === "dynamic_object_field" && nameTypeParam.name === "Wrapper";
-    const valueBcs = content.slice(SUI_ADDRESS_LENGTH + options.name.bcs.length);
-    const valueType = typeof fieldType.typeParams[1] === "string" ? fieldType.typeParams[1] : normalizeStructTag(fieldType.typeParams[1]);
-    return { dynamicField: {
-      $kind: isDynamicObject ? "DynamicObject" : "DynamicField",
-      fieldId: fieldObject.objectId,
-      digest: fieldObject.digest,
-      version: fieldObject.version,
-      type: fieldObject.type,
-      previousTransaction: fieldObject.previousTransaction,
-      name: {
-        type: typeof nameTypeParam === "string" ? nameTypeParam : normalizeStructTag(nameTypeParam),
-        bcs: options.name.bcs
-      },
-      value: {
-        type: valueType,
-        bcs: valueBcs
-      },
-      childId: isDynamicObject ? suiBcs.Address.parse(valueBcs) : void 0
-    } };
-  }
-  async getDynamicObjectField(options) {
-    const wrappedType = `0x2::dynamic_object_field::Wrapper<${(await this.core.mvr.resolveType({ type: options.name.type })).type}>`;
-    const { dynamicField } = await this.getDynamicField({
-      parentId: options.parentId,
-      name: {
-        type: wrappedType,
-        bcs: options.name.bcs
-      },
-      signal: options.signal
-    });
-    const { object: object2 } = await this.getObject({
-      objectId: dynamicField.childId,
-      signal: options.signal,
-      include: options.include
-    });
-    return { object: object2 };
-  }
-  async waitForTransaction(options) {
-    const { signal, timeout = 60 * 1e3, include } = options;
-    const digest = "result" in options && options.result ? (options.result.Transaction ?? options.result.FailedTransaction).digest : options.digest;
-    const abortSignal = signal ? AbortSignal.any([AbortSignal.timeout(timeout), signal]) : AbortSignal.timeout(timeout);
-    const abortPromise = new Promise((_, reject) => {
-      abortSignal.addEventListener("abort", () => reject(abortSignal.reason));
-    });
-    abortPromise.catch(() => {
-    });
-    while (true) {
-      abortSignal.throwIfAborted();
-      try {
-        return await this.getTransaction({
-          digest,
-          include,
-          signal: abortSignal
-        });
-      } catch {
-        await Promise.race([new Promise((resolve) => setTimeout(resolve, 2e3)), abortPromise]);
-      }
-    }
-  }
-  async signAndExecuteTransaction({ transaction, signer, additionalSignatures = [], ...input }) {
-    let transactionBytes;
-    if (transaction instanceof Uint8Array)
-      transactionBytes = transaction;
-    else {
-      transaction.setSenderIfNotSet(signer.toSuiAddress());
-      transactionBytes = await transaction.build({ client: this });
-    }
-    const { signature } = await signer.signTransaction(transactionBytes);
-    return this.executeTransaction({
-      transaction: transactionBytes,
-      signatures: [signature, ...additionalSignatures],
-      ...input
-    });
-  }
-};
-
-// node_modules/.pnpm/valibot@1.2.0_typescript@5.9.3/node_modules/valibot/dist/index.mjs
+// ../node_modules/.pnpm/valibot@1.2.0_typescript@5.9.3/node_modules/valibot/dist/index.mjs
 var store$4;
 // @__NO_SIDE_EFFECTS__
 function getGlobalConfig(config$1) {
@@ -3887,7 +2496,7 @@ function union(options, message$1) {
     kind: "schema",
     type: "union",
     reference: union,
-    expects: /* @__PURE__ */ _joinExpects(options.map((option2) => option2.expects), "|"),
+    expects: /* @__PURE__ */ _joinExpects(options.map((option3) => option3.expects), "|"),
     async: false,
     options,
     message: message$1,
@@ -3976,7 +2585,7 @@ function pipe(...pipe$1) {
   };
 }
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/internal.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/internal.mjs
 function safeEnum(options) {
   return union(Object.keys(options).map((key) => withKind(key, object({ [key]: options[key] }))));
 }
@@ -4167,7 +2776,89 @@ var TransactionDataSchema = object({
   commands: array(CommandSchema)
 });
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/v1.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/utils.mjs
+function getIdFromCallArg(arg) {
+  if (typeof arg === "string")
+    return normalizeSuiAddress(arg);
+  if (arg.Object) {
+    if (arg.Object.ImmOrOwnedObject)
+      return normalizeSuiAddress(arg.Object.ImmOrOwnedObject.objectId);
+    if (arg.Object.Receiving)
+      return normalizeSuiAddress(arg.Object.Receiving.objectId);
+    return normalizeSuiAddress(arg.Object.SharedObject.objectId);
+  }
+  if (arg.UnresolvedObject)
+    return normalizeSuiAddress(arg.UnresolvedObject.objectId);
+}
+function remapCommandArguments(command, inputMapping, commandMapping) {
+  const remapArg = (arg) => {
+    switch (arg.$kind) {
+      case "Input": {
+        const newInputIndex = inputMapping.get(arg.Input);
+        if (newInputIndex === void 0)
+          throw new Error(`Input ${arg.Input} not found in input mapping`);
+        return {
+          ...arg,
+          Input: newInputIndex
+        };
+      }
+      case "Result": {
+        const newCommandIndex = commandMapping.get(arg.Result);
+        if (newCommandIndex !== void 0)
+          return {
+            ...arg,
+            Result: newCommandIndex
+          };
+        return arg;
+      }
+      case "NestedResult": {
+        const newCommandIndex = commandMapping.get(arg.NestedResult[0]);
+        if (newCommandIndex !== void 0)
+          return {
+            ...arg,
+            NestedResult: [newCommandIndex, arg.NestedResult[1]]
+          };
+        return arg;
+      }
+      default:
+        return arg;
+    }
+  };
+  switch (command.$kind) {
+    case "MoveCall":
+      command.MoveCall.arguments = command.MoveCall.arguments.map(remapArg);
+      break;
+    case "TransferObjects":
+      command.TransferObjects.objects = command.TransferObjects.objects.map(remapArg);
+      command.TransferObjects.address = remapArg(command.TransferObjects.address);
+      break;
+    case "SplitCoins":
+      command.SplitCoins.coin = remapArg(command.SplitCoins.coin);
+      command.SplitCoins.amounts = command.SplitCoins.amounts.map(remapArg);
+      break;
+    case "MergeCoins":
+      command.MergeCoins.destination = remapArg(command.MergeCoins.destination);
+      command.MergeCoins.sources = command.MergeCoins.sources.map(remapArg);
+      break;
+    case "MakeMoveVec":
+      command.MakeMoveVec.elements = command.MakeMoveVec.elements.map(remapArg);
+      break;
+    case "Upgrade":
+      command.Upgrade.ticket = remapArg(command.Upgrade.ticket);
+      break;
+    case "$Intent": {
+      const inputs = command.$Intent.inputs;
+      command.$Intent.inputs = {};
+      for (const [key, value] of Object.entries(inputs))
+        command.$Intent.inputs[key] = Array.isArray(value) ? value.map(remapArg) : remapArg(value);
+      break;
+    }
+    case "Publish":
+      break;
+  }
+}
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/v1.mjs
 var ObjectRef = object({
   digest: string(),
   objectId: string(),
@@ -4541,7 +3232,640 @@ function parseV1TransactionArgument(arg) {
   }
 }
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/hash.mjs
+// ../node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/utils.js
+function isBytes2(a) {
+  return a instanceof Uint8Array || ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array";
+}
+function anumber2(n, title = "") {
+  if (!Number.isSafeInteger(n) || n < 0) {
+    const prefix = title && `"${title}" `;
+    throw new Error(`${prefix}expected integer >= 0, got ${n}`);
+  }
+}
+function abytes(value, length, title = "") {
+  const bytes = isBytes2(value);
+  const len = value?.length;
+  const needsLen = length !== void 0;
+  if (!bytes || needsLen && len !== length) {
+    const prefix = title && `"${title}" `;
+    const ofLen = needsLen ? ` of length ${length}` : "";
+    const got = bytes ? `length=${len}` : `type=${typeof value}`;
+    throw new Error(prefix + "expected Uint8Array" + ofLen + ", got " + got);
+  }
+  return value;
+}
+function aexists(instance, checkFinished = true) {
+  if (instance.destroyed)
+    throw new Error("Hash instance has been destroyed");
+  if (checkFinished && instance.finished)
+    throw new Error("Hash#digest() has already been called");
+}
+function aoutput(out, instance) {
+  abytes(out, void 0, "digestInto() output");
+  const min = instance.outputLen;
+  if (out.length < min) {
+    throw new Error('"digestInto() output" expected to be of length >=' + min);
+  }
+}
+function u32(arr) {
+  return new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
+}
+function clean(...arrays) {
+  for (let i = 0; i < arrays.length; i++) {
+    arrays[i].fill(0);
+  }
+}
+var isLE = /* @__PURE__ */ (() => new Uint8Array(new Uint32Array([287454020]).buffer)[0] === 68)();
+function byteSwap(word) {
+  return word << 24 & 4278190080 | word << 8 & 16711680 | word >>> 8 & 65280 | word >>> 24 & 255;
+}
+var swap8IfBE = isLE ? (n) => n : (n) => byteSwap(n);
+function byteSwap32(arr) {
+  for (let i = 0; i < arr.length; i++) {
+    arr[i] = byteSwap(arr[i]);
+  }
+  return arr;
+}
+var swap32IfBE = isLE ? (u) => u : byteSwap32;
+function createHasher(hashCons, info = {}) {
+  const hashC = (msg, opts) => hashCons(opts).update(msg).digest();
+  const tmp = hashCons(void 0);
+  hashC.outputLen = tmp.outputLen;
+  hashC.blockLen = tmp.blockLen;
+  hashC.create = (opts) => hashCons(opts);
+  Object.assign(hashC, info);
+  return Object.freeze(hashC);
+}
+
+// ../node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/_blake.js
+var BSIGMA = /* @__PURE__ */ Uint8Array.from([
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  14,
+  10,
+  4,
+  8,
+  9,
+  15,
+  13,
+  6,
+  1,
+  12,
+  0,
+  2,
+  11,
+  7,
+  5,
+  3,
+  11,
+  8,
+  12,
+  0,
+  5,
+  2,
+  15,
+  13,
+  10,
+  14,
+  3,
+  6,
+  7,
+  1,
+  9,
+  4,
+  7,
+  9,
+  3,
+  1,
+  13,
+  12,
+  11,
+  14,
+  2,
+  6,
+  5,
+  10,
+  4,
+  0,
+  15,
+  8,
+  9,
+  0,
+  5,
+  7,
+  2,
+  4,
+  10,
+  15,
+  14,
+  1,
+  11,
+  12,
+  6,
+  8,
+  3,
+  13,
+  2,
+  12,
+  6,
+  10,
+  0,
+  11,
+  8,
+  3,
+  4,
+  13,
+  7,
+  5,
+  15,
+  14,
+  1,
+  9,
+  12,
+  5,
+  1,
+  15,
+  14,
+  13,
+  4,
+  10,
+  0,
+  7,
+  6,
+  3,
+  9,
+  2,
+  8,
+  11,
+  13,
+  11,
+  7,
+  14,
+  12,
+  1,
+  3,
+  9,
+  5,
+  0,
+  15,
+  4,
+  8,
+  6,
+  2,
+  10,
+  6,
+  15,
+  14,
+  9,
+  11,
+  3,
+  0,
+  8,
+  12,
+  2,
+  13,
+  7,
+  1,
+  4,
+  10,
+  5,
+  10,
+  2,
+  8,
+  4,
+  7,
+  6,
+  1,
+  5,
+  15,
+  11,
+  9,
+  14,
+  3,
+  12,
+  13,
+  0,
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  14,
+  10,
+  4,
+  8,
+  9,
+  15,
+  13,
+  6,
+  1,
+  12,
+  0,
+  2,
+  11,
+  7,
+  5,
+  3,
+  // Blake1, unused in others
+  11,
+  8,
+  12,
+  0,
+  5,
+  2,
+  15,
+  13,
+  10,
+  14,
+  3,
+  6,
+  7,
+  1,
+  9,
+  4,
+  7,
+  9,
+  3,
+  1,
+  13,
+  12,
+  11,
+  14,
+  2,
+  6,
+  5,
+  10,
+  4,
+  0,
+  15,
+  8,
+  9,
+  0,
+  5,
+  7,
+  2,
+  4,
+  10,
+  15,
+  14,
+  1,
+  11,
+  12,
+  6,
+  8,
+  3,
+  13,
+  2,
+  12,
+  6,
+  10,
+  0,
+  11,
+  8,
+  3,
+  4,
+  13,
+  7,
+  5,
+  15,
+  14,
+  1,
+  9
+]);
+
+// ../node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/_u64.js
+var U32_MASK64 = /* @__PURE__ */ BigInt(2 ** 32 - 1);
+var _32n = /* @__PURE__ */ BigInt(32);
+function fromBig(n, le = false) {
+  if (le)
+    return { h: Number(n & U32_MASK64), l: Number(n >> _32n & U32_MASK64) };
+  return { h: Number(n >> _32n & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
+}
+var rotrSH = (h, l, s) => h >>> s | l << 32 - s;
+var rotrSL = (h, l, s) => h << 32 - s | l >>> s;
+var rotrBH = (h, l, s) => h << 64 - s | l >>> s - 32;
+var rotrBL = (h, l, s) => h >>> s - 32 | l << 64 - s;
+var rotr32H = (_h, l) => l;
+var rotr32L = (h, _l) => h;
+function add(Ah, Al, Bh, Bl) {
+  const l = (Al >>> 0) + (Bl >>> 0);
+  return { h: Ah + Bh + (l / 2 ** 32 | 0) | 0, l: l | 0 };
+}
+var add3L = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
+var add3H = (low, Ah, Bh, Ch) => Ah + Bh + Ch + (low / 2 ** 32 | 0) | 0;
+
+// ../node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/blake2.js
+var B2B_IV = /* @__PURE__ */ Uint32Array.from([
+  4089235720,
+  1779033703,
+  2227873595,
+  3144134277,
+  4271175723,
+  1013904242,
+  1595750129,
+  2773480762,
+  2917565137,
+  1359893119,
+  725511199,
+  2600822924,
+  4215389547,
+  528734635,
+  327033209,
+  1541459225
+]);
+var BBUF = /* @__PURE__ */ new Uint32Array(32);
+function G1b(a, b, c, d, msg, x) {
+  const Xl = msg[x], Xh = msg[x + 1];
+  let Al = BBUF[2 * a], Ah = BBUF[2 * a + 1];
+  let Bl = BBUF[2 * b], Bh = BBUF[2 * b + 1];
+  let Cl = BBUF[2 * c], Ch = BBUF[2 * c + 1];
+  let Dl = BBUF[2 * d], Dh = BBUF[2 * d + 1];
+  let ll = add3L(Al, Bl, Xl);
+  Ah = add3H(ll, Ah, Bh, Xh);
+  Al = ll | 0;
+  ({ Dh, Dl } = { Dh: Dh ^ Ah, Dl: Dl ^ Al });
+  ({ Dh, Dl } = { Dh: rotr32H(Dh, Dl), Dl: rotr32L(Dh, Dl) });
+  ({ h: Ch, l: Cl } = add(Ch, Cl, Dh, Dl));
+  ({ Bh, Bl } = { Bh: Bh ^ Ch, Bl: Bl ^ Cl });
+  ({ Bh, Bl } = { Bh: rotrSH(Bh, Bl, 24), Bl: rotrSL(Bh, Bl, 24) });
+  BBUF[2 * a] = Al, BBUF[2 * a + 1] = Ah;
+  BBUF[2 * b] = Bl, BBUF[2 * b + 1] = Bh;
+  BBUF[2 * c] = Cl, BBUF[2 * c + 1] = Ch;
+  BBUF[2 * d] = Dl, BBUF[2 * d + 1] = Dh;
+}
+function G2b(a, b, c, d, msg, x) {
+  const Xl = msg[x], Xh = msg[x + 1];
+  let Al = BBUF[2 * a], Ah = BBUF[2 * a + 1];
+  let Bl = BBUF[2 * b], Bh = BBUF[2 * b + 1];
+  let Cl = BBUF[2 * c], Ch = BBUF[2 * c + 1];
+  let Dl = BBUF[2 * d], Dh = BBUF[2 * d + 1];
+  let ll = add3L(Al, Bl, Xl);
+  Ah = add3H(ll, Ah, Bh, Xh);
+  Al = ll | 0;
+  ({ Dh, Dl } = { Dh: Dh ^ Ah, Dl: Dl ^ Al });
+  ({ Dh, Dl } = { Dh: rotrSH(Dh, Dl, 16), Dl: rotrSL(Dh, Dl, 16) });
+  ({ h: Ch, l: Cl } = add(Ch, Cl, Dh, Dl));
+  ({ Bh, Bl } = { Bh: Bh ^ Ch, Bl: Bl ^ Cl });
+  ({ Bh, Bl } = { Bh: rotrBH(Bh, Bl, 63), Bl: rotrBL(Bh, Bl, 63) });
+  BBUF[2 * a] = Al, BBUF[2 * a + 1] = Ah;
+  BBUF[2 * b] = Bl, BBUF[2 * b + 1] = Bh;
+  BBUF[2 * c] = Cl, BBUF[2 * c + 1] = Ch;
+  BBUF[2 * d] = Dl, BBUF[2 * d + 1] = Dh;
+}
+function checkBlake2Opts(outputLen, opts = {}, keyLen, saltLen, persLen) {
+  anumber2(keyLen);
+  if (outputLen < 0 || outputLen > keyLen)
+    throw new Error("outputLen bigger than keyLen");
+  const { key, salt, personalization } = opts;
+  if (key !== void 0 && (key.length < 1 || key.length > keyLen))
+    throw new Error('"key" expected to be undefined or of length=1..' + keyLen);
+  if (salt !== void 0)
+    abytes(salt, saltLen, "salt");
+  if (personalization !== void 0)
+    abytes(personalization, persLen, "personalization");
+}
+var _BLAKE2 = class {
+  buffer;
+  buffer32;
+  finished = false;
+  destroyed = false;
+  length = 0;
+  pos = 0;
+  blockLen;
+  outputLen;
+  constructor(blockLen, outputLen) {
+    anumber2(blockLen);
+    anumber2(outputLen);
+    this.blockLen = blockLen;
+    this.outputLen = outputLen;
+    this.buffer = new Uint8Array(blockLen);
+    this.buffer32 = u32(this.buffer);
+  }
+  update(data) {
+    aexists(this);
+    abytes(data);
+    const { blockLen, buffer, buffer32 } = this;
+    const len = data.length;
+    const offset = data.byteOffset;
+    const buf = data.buffer;
+    for (let pos = 0; pos < len; ) {
+      if (this.pos === blockLen) {
+        swap32IfBE(buffer32);
+        this.compress(buffer32, 0, false);
+        swap32IfBE(buffer32);
+        this.pos = 0;
+      }
+      const take = Math.min(blockLen - this.pos, len - pos);
+      const dataOffset = offset + pos;
+      if (take === blockLen && !(dataOffset % 4) && pos + take < len) {
+        const data32 = new Uint32Array(buf, dataOffset, Math.floor((len - pos) / 4));
+        swap32IfBE(data32);
+        for (let pos32 = 0; pos + blockLen < len; pos32 += buffer32.length, pos += blockLen) {
+          this.length += blockLen;
+          this.compress(data32, pos32, false);
+        }
+        swap32IfBE(data32);
+        continue;
+      }
+      buffer.set(data.subarray(pos, pos + take), this.pos);
+      this.pos += take;
+      this.length += take;
+      pos += take;
+    }
+    return this;
+  }
+  digestInto(out) {
+    aexists(this);
+    aoutput(out, this);
+    const { pos, buffer32 } = this;
+    this.finished = true;
+    clean(this.buffer.subarray(pos));
+    swap32IfBE(buffer32);
+    this.compress(buffer32, 0, true);
+    swap32IfBE(buffer32);
+    const out32 = u32(out);
+    this.get().forEach((v, i) => out32[i] = swap8IfBE(v));
+  }
+  digest() {
+    const { buffer, outputLen } = this;
+    this.digestInto(buffer);
+    const res = buffer.slice(0, outputLen);
+    this.destroy();
+    return res;
+  }
+  _cloneInto(to) {
+    const { buffer, length, finished, destroyed, outputLen, pos } = this;
+    to ||= new this.constructor({ dkLen: outputLen });
+    to.set(...this.get());
+    to.buffer.set(buffer);
+    to.destroyed = destroyed;
+    to.finished = finished;
+    to.length = length;
+    to.pos = pos;
+    to.outputLen = outputLen;
+    return to;
+  }
+  clone() {
+    return this._cloneInto();
+  }
+};
+var _BLAKE2b = class extends _BLAKE2 {
+  // Same as SHA-512, but LE
+  v0l = B2B_IV[0] | 0;
+  v0h = B2B_IV[1] | 0;
+  v1l = B2B_IV[2] | 0;
+  v1h = B2B_IV[3] | 0;
+  v2l = B2B_IV[4] | 0;
+  v2h = B2B_IV[5] | 0;
+  v3l = B2B_IV[6] | 0;
+  v3h = B2B_IV[7] | 0;
+  v4l = B2B_IV[8] | 0;
+  v4h = B2B_IV[9] | 0;
+  v5l = B2B_IV[10] | 0;
+  v5h = B2B_IV[11] | 0;
+  v6l = B2B_IV[12] | 0;
+  v6h = B2B_IV[13] | 0;
+  v7l = B2B_IV[14] | 0;
+  v7h = B2B_IV[15] | 0;
+  constructor(opts = {}) {
+    const olen = opts.dkLen === void 0 ? 64 : opts.dkLen;
+    super(128, olen);
+    checkBlake2Opts(olen, opts, 64, 16, 16);
+    let { key, personalization, salt } = opts;
+    let keyLength = 0;
+    if (key !== void 0) {
+      abytes(key, void 0, "key");
+      keyLength = key.length;
+    }
+    this.v0l ^= this.outputLen | keyLength << 8 | 1 << 16 | 1 << 24;
+    if (salt !== void 0) {
+      abytes(salt, void 0, "salt");
+      const slt = u32(salt);
+      this.v4l ^= swap8IfBE(slt[0]);
+      this.v4h ^= swap8IfBE(slt[1]);
+      this.v5l ^= swap8IfBE(slt[2]);
+      this.v5h ^= swap8IfBE(slt[3]);
+    }
+    if (personalization !== void 0) {
+      abytes(personalization, void 0, "personalization");
+      const pers = u32(personalization);
+      this.v6l ^= swap8IfBE(pers[0]);
+      this.v6h ^= swap8IfBE(pers[1]);
+      this.v7l ^= swap8IfBE(pers[2]);
+      this.v7h ^= swap8IfBE(pers[3]);
+    }
+    if (key !== void 0) {
+      const tmp = new Uint8Array(this.blockLen);
+      tmp.set(key);
+      this.update(tmp);
+    }
+  }
+  // prettier-ignore
+  get() {
+    let { v0l, v0h, v1l, v1h, v2l, v2h, v3l, v3h, v4l, v4h, v5l, v5h, v6l, v6h, v7l, v7h } = this;
+    return [v0l, v0h, v1l, v1h, v2l, v2h, v3l, v3h, v4l, v4h, v5l, v5h, v6l, v6h, v7l, v7h];
+  }
+  // prettier-ignore
+  set(v0l, v0h, v1l, v1h, v2l, v2h, v3l, v3h, v4l, v4h, v5l, v5h, v6l, v6h, v7l, v7h) {
+    this.v0l = v0l | 0;
+    this.v0h = v0h | 0;
+    this.v1l = v1l | 0;
+    this.v1h = v1h | 0;
+    this.v2l = v2l | 0;
+    this.v2h = v2h | 0;
+    this.v3l = v3l | 0;
+    this.v3h = v3h | 0;
+    this.v4l = v4l | 0;
+    this.v4h = v4h | 0;
+    this.v5l = v5l | 0;
+    this.v5h = v5h | 0;
+    this.v6l = v6l | 0;
+    this.v6h = v6h | 0;
+    this.v7l = v7l | 0;
+    this.v7h = v7h | 0;
+  }
+  compress(msg, offset, isLast) {
+    this.get().forEach((v, i) => BBUF[i] = v);
+    BBUF.set(B2B_IV, 16);
+    let { h, l } = fromBig(BigInt(this.length));
+    BBUF[24] = B2B_IV[8] ^ l;
+    BBUF[25] = B2B_IV[9] ^ h;
+    if (isLast) {
+      BBUF[28] = ~BBUF[28];
+      BBUF[29] = ~BBUF[29];
+    }
+    let j = 0;
+    const s = BSIGMA;
+    for (let i = 0; i < 12; i++) {
+      G1b(0, 4, 8, 12, msg, offset + 2 * s[j++]);
+      G2b(0, 4, 8, 12, msg, offset + 2 * s[j++]);
+      G1b(1, 5, 9, 13, msg, offset + 2 * s[j++]);
+      G2b(1, 5, 9, 13, msg, offset + 2 * s[j++]);
+      G1b(2, 6, 10, 14, msg, offset + 2 * s[j++]);
+      G2b(2, 6, 10, 14, msg, offset + 2 * s[j++]);
+      G1b(3, 7, 11, 15, msg, offset + 2 * s[j++]);
+      G2b(3, 7, 11, 15, msg, offset + 2 * s[j++]);
+      G1b(0, 5, 10, 15, msg, offset + 2 * s[j++]);
+      G2b(0, 5, 10, 15, msg, offset + 2 * s[j++]);
+      G1b(1, 6, 11, 12, msg, offset + 2 * s[j++]);
+      G2b(1, 6, 11, 12, msg, offset + 2 * s[j++]);
+      G1b(2, 7, 8, 13, msg, offset + 2 * s[j++]);
+      G2b(2, 7, 8, 13, msg, offset + 2 * s[j++]);
+      G1b(3, 4, 9, 14, msg, offset + 2 * s[j++]);
+      G2b(3, 4, 9, 14, msg, offset + 2 * s[j++]);
+    }
+    this.v0l ^= BBUF[0] ^ BBUF[16];
+    this.v0h ^= BBUF[1] ^ BBUF[17];
+    this.v1l ^= BBUF[2] ^ BBUF[18];
+    this.v1h ^= BBUF[3] ^ BBUF[19];
+    this.v2l ^= BBUF[4] ^ BBUF[20];
+    this.v2h ^= BBUF[5] ^ BBUF[21];
+    this.v3l ^= BBUF[6] ^ BBUF[22];
+    this.v3h ^= BBUF[7] ^ BBUF[23];
+    this.v4l ^= BBUF[8] ^ BBUF[24];
+    this.v4h ^= BBUF[9] ^ BBUF[25];
+    this.v5l ^= BBUF[10] ^ BBUF[26];
+    this.v5h ^= BBUF[11] ^ BBUF[27];
+    this.v6l ^= BBUF[12] ^ BBUF[28];
+    this.v6h ^= BBUF[13] ^ BBUF[29];
+    this.v7l ^= BBUF[14] ^ BBUF[30];
+    this.v7h ^= BBUF[15] ^ BBUF[31];
+    clean(BBUF);
+  }
+  destroy() {
+    this.destroyed = true;
+    clean(this.buffer32);
+    this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  }
+};
+var blake2b = /* @__PURE__ */ createHasher((opts) => new _BLAKE2b(opts));
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/hash.mjs
 function hashTypedData(typeTag, data) {
   const typeTagBytes = Array.from(`${typeTag}::`).map((e) => e.charCodeAt(0));
   const dataWithTag = new Uint8Array(typeTagBytes.length + data.length);
@@ -4550,89 +3874,7 @@ function hashTypedData(typeTag, data) {
   return blake2b(dataWithTag, { dkLen: 32 });
 }
 
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/utils.mjs
-function getIdFromCallArg(arg) {
-  if (typeof arg === "string")
-    return normalizeSuiAddress(arg);
-  if (arg.Object) {
-    if (arg.Object.ImmOrOwnedObject)
-      return normalizeSuiAddress(arg.Object.ImmOrOwnedObject.objectId);
-    if (arg.Object.Receiving)
-      return normalizeSuiAddress(arg.Object.Receiving.objectId);
-    return normalizeSuiAddress(arg.Object.SharedObject.objectId);
-  }
-  if (arg.UnresolvedObject)
-    return normalizeSuiAddress(arg.UnresolvedObject.objectId);
-}
-function remapCommandArguments(command, inputMapping, commandMapping) {
-  const remapArg = (arg) => {
-    switch (arg.$kind) {
-      case "Input": {
-        const newInputIndex = inputMapping.get(arg.Input);
-        if (newInputIndex === void 0)
-          throw new Error(`Input ${arg.Input} not found in input mapping`);
-        return {
-          ...arg,
-          Input: newInputIndex
-        };
-      }
-      case "Result": {
-        const newCommandIndex = commandMapping.get(arg.Result);
-        if (newCommandIndex !== void 0)
-          return {
-            ...arg,
-            Result: newCommandIndex
-          };
-        return arg;
-      }
-      case "NestedResult": {
-        const newCommandIndex = commandMapping.get(arg.NestedResult[0]);
-        if (newCommandIndex !== void 0)
-          return {
-            ...arg,
-            NestedResult: [newCommandIndex, arg.NestedResult[1]]
-          };
-        return arg;
-      }
-      default:
-        return arg;
-    }
-  };
-  switch (command.$kind) {
-    case "MoveCall":
-      command.MoveCall.arguments = command.MoveCall.arguments.map(remapArg);
-      break;
-    case "TransferObjects":
-      command.TransferObjects.objects = command.TransferObjects.objects.map(remapArg);
-      command.TransferObjects.address = remapArg(command.TransferObjects.address);
-      break;
-    case "SplitCoins":
-      command.SplitCoins.coin = remapArg(command.SplitCoins.coin);
-      command.SplitCoins.amounts = command.SplitCoins.amounts.map(remapArg);
-      break;
-    case "MergeCoins":
-      command.MergeCoins.destination = remapArg(command.MergeCoins.destination);
-      command.MergeCoins.sources = command.MergeCoins.sources.map(remapArg);
-      break;
-    case "MakeMoveVec":
-      command.MakeMoveVec.elements = command.MakeMoveVec.elements.map(remapArg);
-      break;
-    case "Upgrade":
-      command.Upgrade.ticket = remapArg(command.Upgrade.ticket);
-      break;
-    case "$Intent": {
-      const inputs = command.$Intent.inputs;
-      command.$Intent.inputs = {};
-      for (const [key, value] of Object.entries(inputs))
-        command.$Intent.inputs[key] = Array.isArray(value) ? value.map(remapArg) : remapArg(value);
-      break;
-    }
-    case "Publish":
-      break;
-  }
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/TransactionData.mjs
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/TransactionData.mjs
 function prepareSuiAddress(address) {
   return normalizeSuiAddress(address).replace("0x", "");
 }
@@ -4943,6 +4185,8177 @@ var TransactionDataBuilder = class TransactionDataBuilder2 {
   }
 };
 
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Commands.mjs
+var TransactionCommands = {
+  MoveCall(input) {
+    const [pkg, mod = "", fn = ""] = "target" in input ? input.target.split("::") : [
+      input.package,
+      input.module,
+      input.function
+    ];
+    return {
+      $kind: "MoveCall",
+      MoveCall: {
+        package: pkg,
+        module: mod,
+        function: fn,
+        typeArguments: input.typeArguments ?? [],
+        arguments: input.arguments ?? []
+      }
+    };
+  },
+  TransferObjects(objects, address) {
+    return {
+      $kind: "TransferObjects",
+      TransferObjects: {
+        objects: objects.map((o) => parse(ArgumentSchema, o)),
+        address: parse(ArgumentSchema, address)
+      }
+    };
+  },
+  SplitCoins(coin, amounts) {
+    return {
+      $kind: "SplitCoins",
+      SplitCoins: {
+        coin: parse(ArgumentSchema, coin),
+        amounts: amounts.map((o) => parse(ArgumentSchema, o))
+      }
+    };
+  },
+  MergeCoins(destination, sources) {
+    return {
+      $kind: "MergeCoins",
+      MergeCoins: {
+        destination: parse(ArgumentSchema, destination),
+        sources: sources.map((o) => parse(ArgumentSchema, o))
+      }
+    };
+  },
+  Publish({ modules, dependencies }) {
+    return {
+      $kind: "Publish",
+      Publish: {
+        modules: modules.map((module) => typeof module === "string" ? module : toBase64(new Uint8Array(module))),
+        dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep))
+      }
+    };
+  },
+  Upgrade({ modules, dependencies, package: packageId, ticket }) {
+    return {
+      $kind: "Upgrade",
+      Upgrade: {
+        modules: modules.map((module) => typeof module === "string" ? module : toBase64(new Uint8Array(module))),
+        dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
+        package: packageId,
+        ticket: parse(ArgumentSchema, ticket)
+      }
+    };
+  },
+  MakeMoveVec({ type, elements }) {
+    return {
+      $kind: "MakeMoveVec",
+      MakeMoveVec: {
+        type: type ?? null,
+        elements: elements.map((o) => parse(ArgumentSchema, o))
+      }
+    };
+  },
+  Intent({ name, inputs = {}, data = {} }) {
+    return {
+      $kind: "$Intent",
+      $Intent: {
+        name,
+        inputs: Object.fromEntries(Object.entries(inputs).map(([key, value]) => [key, Array.isArray(value) ? value.map((o) => parse(ArgumentSchema, o)) : parse(ArgumentSchema, value)])),
+        data
+      }
+    };
+  }
+};
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Inputs.mjs
+function Pure(data) {
+  return {
+    $kind: "Pure",
+    Pure: { bytes: data instanceof Uint8Array ? toBase64(data) : data.toBase64() }
+  };
+}
+var Inputs = {
+  Pure,
+  ObjectRef({ objectId, digest, version }) {
+    return {
+      $kind: "Object",
+      Object: {
+        $kind: "ImmOrOwnedObject",
+        ImmOrOwnedObject: {
+          digest,
+          version,
+          objectId: normalizeSuiAddress(objectId)
+        }
+      }
+    };
+  },
+  SharedObjectRef({ objectId, mutable, initialSharedVersion }) {
+    return {
+      $kind: "Object",
+      Object: {
+        $kind: "SharedObject",
+        SharedObject: {
+          mutable,
+          initialSharedVersion,
+          objectId: normalizeSuiAddress(objectId)
+        }
+      }
+    };
+  },
+  ReceivingRef({ objectId, digest, version }) {
+    return {
+      $kind: "Object",
+      Object: {
+        $kind: "Receiving",
+        Receiving: {
+          digest,
+          version,
+          objectId: normalizeSuiAddress(objectId)
+        }
+      }
+    };
+  },
+  FundsWithdrawal({ reservation, typeArg, withdrawFrom }) {
+    return {
+      $kind: "FundsWithdrawal",
+      FundsWithdrawal: {
+        reservation,
+        typeArg,
+        withdrawFrom
+      }
+    };
+  }
+};
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/constants.mjs
+var MIST_PER_SUI = BigInt(1e9);
+var MOVE_STDLIB_ADDRESS = "0x0000000000000000000000000000000000000000000000000000000000000001";
+var SUI_FRAMEWORK_ADDRESS = "0x0000000000000000000000000000000000000000000000000000000000000002";
+var SUI_CLOCK_OBJECT_ID = "0x0000000000000000000000000000000000000000000000000000000000000006";
+var SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::sui::SUI`;
+var SUI_SYSTEM_STATE_OBJECT_ID = "0x0000000000000000000000000000000000000000000000000000000000000005";
+var SUI_RANDOM_OBJECT_ID = "0x0000000000000000000000000000000000000000000000000000000000000008";
+var SUI_DENY_LIST_OBJECT_ID = "0x0000000000000000000000000000000000000000000000000000000000000403";
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/serializer.mjs
+function parseTypeName(typeName) {
+  const parts = typeName.split("::");
+  if (parts.length !== 3)
+    throw new Error(`Invalid type name format: ${typeName}`);
+  return {
+    package: parts[0],
+    module: parts[1],
+    name: parts[2]
+  };
+}
+function isTxContext(param) {
+  if (param.body.$kind !== "datatype")
+    return false;
+  const { package: pkg, module, name } = parseTypeName(param.body.datatype.typeName);
+  return normalizeSuiAddress(pkg) === SUI_FRAMEWORK_ADDRESS && module === "tx_context" && name === "TxContext";
+}
+function getPureBcsSchema(typeSignature) {
+  switch (typeSignature.$kind) {
+    case "address":
+      return suiBcs.Address;
+    case "bool":
+      return suiBcs.Bool;
+    case "u8":
+      return suiBcs.U8;
+    case "u16":
+      return suiBcs.U16;
+    case "u32":
+      return suiBcs.U32;
+    case "u64":
+      return suiBcs.U64;
+    case "u128":
+      return suiBcs.U128;
+    case "u256":
+      return suiBcs.U256;
+    case "vector": {
+      if (typeSignature.vector.$kind === "u8")
+        return suiBcs.byteVector().transform({
+          input: (val) => typeof val === "string" ? new TextEncoder().encode(val) : val,
+          output: (val) => val
+        });
+      const type = getPureBcsSchema(typeSignature.vector);
+      return type ? suiBcs.vector(type) : null;
+    }
+    case "datatype": {
+      const { package: pkg, module, name } = parseTypeName(typeSignature.datatype.typeName);
+      const normalizedPkg = normalizeSuiAddress(pkg);
+      if (normalizedPkg === MOVE_STDLIB_ADDRESS) {
+        if (module === "ascii" && name === "String")
+          return suiBcs.String;
+        if (module === "string" && name === "String")
+          return suiBcs.String;
+        if (module === "option" && name === "Option") {
+          const type = getPureBcsSchema(typeSignature.datatype.typeParameters[0]);
+          return type ? suiBcs.vector(type) : null;
+        }
+      }
+      if (normalizedPkg === SUI_FRAMEWORK_ADDRESS) {
+        if (module === "object" && name === "ID")
+          return suiBcs.Address;
+      }
+      return null;
+    }
+    case "typeParameter":
+    case "unknown":
+      return null;
+  }
+}
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/intents/CoinWithBalance.mjs
+var COIN_WITH_BALANCE = "CoinWithBalance";
+var SUI_TYPE = normalizeStructTag("0x2::sui::SUI");
+var CoinWithBalanceData = object({
+  type: string(),
+  balance: bigint()
+});
+async function resolveCoinBalance(transactionData, buildOptions, next) {
+  const coinTypes = /* @__PURE__ */ new Set();
+  const totalByType = /* @__PURE__ */ new Map();
+  if (!transactionData.sender)
+    throw new Error("Sender must be set to resolve CoinWithBalance");
+  for (const command of transactionData.commands)
+    if (command.$kind === "$Intent" && command.$Intent.name === COIN_WITH_BALANCE) {
+      const { type, balance } = parse(CoinWithBalanceData, command.$Intent.data);
+      if (type !== "gas" && balance > 0n)
+        coinTypes.add(type);
+      totalByType.set(type, (totalByType.get(type) ?? 0n) + balance);
+    }
+  const usedIds = /* @__PURE__ */ new Set();
+  for (const input of transactionData.inputs) {
+    if (input.Object?.ImmOrOwnedObject)
+      usedIds.add(input.Object.ImmOrOwnedObject.objectId);
+    if (input.UnresolvedObject?.objectId)
+      usedIds.add(input.UnresolvedObject.objectId);
+  }
+  const coinsByType = /* @__PURE__ */ new Map();
+  const addressBalanceByType = /* @__PURE__ */ new Map();
+  const client = buildOptions.client;
+  if (!client)
+    throw new Error("Client must be provided to build or serialize transactions with CoinWithBalance intents");
+  await Promise.all([...[...coinTypes].map(async (coinType) => {
+    const { coins, addressBalance } = await getCoinsAndBalanceOfType({
+      coinType,
+      balance: totalByType.get(coinType),
+      client,
+      owner: transactionData.sender,
+      usedIds
+    });
+    coinsByType.set(coinType, coins);
+    addressBalanceByType.set(coinType, addressBalance);
+  }), totalByType.has("gas") ? await client.core.getBalance({
+    owner: transactionData.sender,
+    coinType: SUI_TYPE
+  }).then(({ balance }) => {
+    addressBalanceByType.set("gas", BigInt(balance.addressBalance));
+  }) : null]);
+  const mergedCoins = /* @__PURE__ */ new Map();
+  for (const [index, transaction] of transactionData.commands.entries()) {
+    if (transaction.$kind !== "$Intent" || transaction.$Intent.name !== COIN_WITH_BALANCE)
+      continue;
+    const { type, balance } = transaction.$Intent.data;
+    if (balance === 0n) {
+      transactionData.replaceCommand(index, TransactionCommands.MoveCall({
+        target: "0x2::coin::zero",
+        typeArguments: [type === "gas" ? SUI_TYPE : type]
+      }));
+      continue;
+    }
+    const commands = [];
+    if (addressBalanceByType.get(type) >= totalByType.get(type))
+      commands.push(TransactionCommands.MoveCall({
+        target: "0x2::coin::redeem_funds",
+        typeArguments: [type === "gas" ? SUI_TYPE : type],
+        arguments: [transactionData.addInput("withdrawal", Inputs.FundsWithdrawal({
+          reservation: {
+            $kind: "MaxAmountU64",
+            MaxAmountU64: String(balance)
+          },
+          typeArg: {
+            $kind: "Balance",
+            Balance: type === "gas" ? SUI_TYPE : type
+          },
+          withdrawFrom: {
+            $kind: "Sender",
+            Sender: true
+          }
+        }))]
+      }));
+    else {
+      if (!mergedCoins.has(type)) {
+        const addressBalance = addressBalanceByType.get(type) ?? 0n;
+        const coinType = type === "gas" ? SUI_TYPE : type;
+        let baseCoin;
+        let restCoins;
+        if (type === "gas") {
+          baseCoin = {
+            $kind: "GasCoin",
+            GasCoin: true
+          };
+          restCoins = [];
+        } else
+          [baseCoin, ...restCoins] = coinsByType.get(type).map((coin) => transactionData.addInput("object", Inputs.ObjectRef({
+            objectId: coin.objectId,
+            digest: coin.digest,
+            version: coin.version
+          })));
+        if (addressBalance > 0n) {
+          commands.push(TransactionCommands.MoveCall({
+            target: "0x2::coin::redeem_funds",
+            typeArguments: [coinType],
+            arguments: [transactionData.addInput("withdrawal", Inputs.FundsWithdrawal({
+              reservation: {
+                $kind: "MaxAmountU64",
+                MaxAmountU64: String(addressBalance)
+              },
+              typeArg: {
+                $kind: "Balance",
+                Balance: coinType
+              },
+              withdrawFrom: {
+                $kind: "Sender",
+                Sender: true
+              }
+            }))]
+          }));
+          commands.push(TransactionCommands.MergeCoins(baseCoin, [{
+            $kind: "Result",
+            Result: index + commands.length - 1
+          }, ...restCoins]));
+        } else if (restCoins.length > 0)
+          commands.push(TransactionCommands.MergeCoins(baseCoin, restCoins));
+        mergedCoins.set(type, baseCoin);
+      }
+      commands.push(TransactionCommands.SplitCoins(mergedCoins.get(type), [transactionData.addInput("pure", Inputs.Pure(suiBcs.u64().serialize(balance)))]));
+    }
+    transactionData.replaceCommand(index, commands);
+    transactionData.mapArguments((arg, _command, commandIndex) => {
+      if (commandIndex >= index && commandIndex < index + commands.length)
+        return arg;
+      if (arg.$kind === "Result" && arg.Result === index)
+        return {
+          $kind: "NestedResult",
+          NestedResult: [index + commands.length - 1, 0]
+        };
+      return arg;
+    });
+  }
+  return next();
+}
+async function getCoinsAndBalanceOfType({ coinType, balance, client, owner, usedIds }) {
+  let remainingBalance = balance;
+  const coins = [];
+  const balanceRequest = client.core.getBalance({
+    owner,
+    coinType
+  }).then(({ balance: balance$1 }) => {
+    remainingBalance -= BigInt(balance$1.addressBalance);
+    return balance$1;
+  });
+  const [allCoins, balanceResponse] = await Promise.all([loadMoreCoins(), balanceRequest]);
+  if (BigInt(balanceResponse.balance) < balance)
+    throw new Error(`Insufficient balance of ${coinType} for owner ${owner}. Required: ${balance}, Available: ${balance - remainingBalance}`);
+  return {
+    coins: allCoins,
+    balance: BigInt(balanceResponse.coinBalance),
+    addressBalance: BigInt(balanceResponse.addressBalance),
+    coinBalance: BigInt(balanceResponse.coinBalance)
+  };
+  async function loadMoreCoins(cursor = null) {
+    const { objects, hasNextPage, cursor: nextCursor } = await client.core.listCoins({
+      owner,
+      coinType,
+      cursor
+    });
+    await balanceRequest;
+    if (remainingBalance > 0n) {
+      for (const coin of objects) {
+        if (usedIds.has(coin.objectId))
+          continue;
+        const coinBalance = BigInt(coin.balance);
+        coins.push(coin);
+        remainingBalance -= coinBalance;
+        if (remainingBalance <= 0)
+          break;
+      }
+      if (hasNextPage)
+        return loadMoreCoins(nextCursor);
+    }
+    return coins;
+  }
+}
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/v2.mjs
+function enumUnion(options) {
+  return union(Object.entries(options).map(([key, value]) => object({ [key]: value })));
+}
+var Argument2 = enumUnion({
+  GasCoin: literal(true),
+  Input: pipe(number(), integer()),
+  Result: pipe(number(), integer()),
+  NestedResult: tuple([pipe(number(), integer()), pipe(number(), integer())])
+});
+var GasData2 = object({
+  budget: nullable(JsonU64),
+  price: nullable(JsonU64),
+  owner: nullable(SuiAddress),
+  payment: nullable(array(ObjectRefSchema))
+});
+var ProgrammableMoveCall2 = object({
+  package: ObjectID,
+  module: string(),
+  function: string(),
+  typeArguments: array(string()),
+  arguments: array(Argument2)
+});
+var $Intent2 = object({
+  name: string(),
+  inputs: record(string(), union([Argument2, array(Argument2)])),
+  data: record(string(), unknown())
+});
+var Command2 = enumUnion({
+  MoveCall: ProgrammableMoveCall2,
+  TransferObjects: object({
+    objects: array(Argument2),
+    address: Argument2
+  }),
+  SplitCoins: object({
+    coin: Argument2,
+    amounts: array(Argument2)
+  }),
+  MergeCoins: object({
+    destination: Argument2,
+    sources: array(Argument2)
+  }),
+  Publish: object({
+    modules: array(BCSBytes),
+    dependencies: array(ObjectID)
+  }),
+  MakeMoveVec: object({
+    type: nullable(string()),
+    elements: array(Argument2)
+  }),
+  Upgrade: object({
+    modules: array(BCSBytes),
+    dependencies: array(ObjectID),
+    package: ObjectID,
+    ticket: Argument2
+  }),
+  $Intent: $Intent2
+});
+var CallArg2 = enumUnion({
+  Object: enumUnion({
+    ImmOrOwnedObject: ObjectRefSchema,
+    SharedObject: object({
+      objectId: ObjectID,
+      initialSharedVersion: JsonU64,
+      mutable: boolean()
+    }),
+    Receiving: ObjectRefSchema
+  }),
+  Pure: object({ bytes: BCSBytes }),
+  UnresolvedPure: object({ value: unknown() }),
+  UnresolvedObject: object({
+    objectId: ObjectID,
+    version: optional(nullable(JsonU64)),
+    digest: optional(nullable(string())),
+    initialSharedVersion: optional(nullable(JsonU64)),
+    mutable: optional(nullable(boolean()))
+  }),
+  FundsWithdrawal: FundsWithdrawalArgSchema
+});
+var TransactionExpiration4 = enumUnion({
+  None: literal(true),
+  Epoch: JsonU64,
+  ValidDuring: ValidDuringSchema
+});
+var SerializedTransactionDataV2Schema = object({
+  version: literal(2),
+  sender: nullish(SuiAddress),
+  expiration: nullish(TransactionExpiration4),
+  gasData: GasData2,
+  inputs: array(CallArg2),
+  commands: array(Command2),
+  digest: optional(nullable(string()))
+});
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/errors.mjs
+var SuiClientError = class extends Error {
+};
+var SimulationError = class extends SuiClientError {
+  constructor(message, options) {
+    super(message, { cause: options?.cause });
+    this.executionError = options?.executionError;
+  }
+};
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/core-resolver.mjs
+var MAX_OBJECTS_PER_FETCH = 50;
+var GAS_SAFE_OVERHEAD = 1000n;
+var MAX_GAS = 5e10;
+function getClient(options) {
+  if (!options.client)
+    throw new Error(`No sui client passed to Transaction#build, but transaction data was not sufficient to build offline.`);
+  return options.client;
+}
+async function coreClientResolveTransactionPlugin(transactionData, options, next) {
+  const client = getClient(options);
+  await normalizeInputs(transactionData, client);
+  await resolveObjectReferences(transactionData, client);
+  if (!options.onlyTransactionKind)
+    await setGasData(transactionData, client);
+  return await next();
+}
+async function setGasData(transactionData, client) {
+  let systemState = null;
+  if (!transactionData.gasData.price) {
+    systemState = (await client.core.getCurrentSystemState()).systemState;
+    transactionData.gasData.price = systemState.referenceGasPrice;
+  }
+  await setGasBudget(transactionData, client);
+  await setGasPayment(transactionData, client);
+  if (!transactionData.expiration)
+    await setExpiration(transactionData, client, systemState);
+}
+async function setGasBudget(transactionData, client) {
+  if (transactionData.gasData.budget)
+    return;
+  const simulateResult = await client.core.simulateTransaction({
+    transaction: transactionData.build({ overrides: { gasData: {
+      budget: String(MAX_GAS),
+      payment: []
+    } } }),
+    include: { effects: true }
+  });
+  if (simulateResult.$kind === "FailedTransaction") {
+    const executionError = simulateResult.FailedTransaction.status.error ?? void 0;
+    throw new SimulationError(`Transaction resolution failed: ${executionError?.message ?? "Unknown error"}`, {
+      cause: simulateResult,
+      executionError
+    });
+  }
+  const gasUsed = simulateResult.Transaction.effects.gasUsed;
+  const safeOverhead = GAS_SAFE_OVERHEAD * BigInt(transactionData.gasData.price || 1n);
+  const baseComputationCostWithOverhead = BigInt(gasUsed.computationCost) + safeOverhead;
+  const gasBudget = baseComputationCostWithOverhead + BigInt(gasUsed.storageCost) - BigInt(gasUsed.storageRebate);
+  transactionData.gasData.budget = String(gasBudget > baseComputationCostWithOverhead ? gasBudget : baseComputationCostWithOverhead);
+}
+async function setGasPayment(transactionData, client) {
+  if (!transactionData.gasData.payment) {
+    const gasPayer = transactionData.gasData.owner ?? transactionData.sender;
+    if (!gasPayer)
+      throw new Error("Either a gas owner or sender must be set to determine gas payment.");
+    const normalizedGasPayer = normalizeSuiAddress(gasPayer);
+    let usesGasCoin = false;
+    let withdrawals = 0n;
+    transactionData.mapArguments((arg) => {
+      if (arg.$kind === "GasCoin")
+        usesGasCoin = true;
+      else if (arg.$kind === "Input") {
+        const input = transactionData.inputs[arg.Input];
+        if (input.$kind === "FundsWithdrawal") {
+          const withdrawalOwner = input.FundsWithdrawal.withdrawFrom.Sender ? transactionData.sender : gasPayer;
+          if (withdrawalOwner && normalizeSuiAddress(withdrawalOwner) === normalizedGasPayer) {
+            if (input.FundsWithdrawal.reservation.$kind === "MaxAmountU64")
+              withdrawals += BigInt(input.FundsWithdrawal.reservation.MaxAmountU64);
+          }
+        }
+      }
+      return arg;
+    });
+    const [suiBalance, coins] = await Promise.all([usesGasCoin ? null : client.core.getBalance({ owner: gasPayer }), client.core.listCoins({
+      owner: gasPayer,
+      coinType: SUI_TYPE_ARG
+    })]);
+    if (suiBalance?.balance.addressBalance && BigInt(suiBalance.balance.addressBalance) >= BigInt(transactionData.gasData.budget || "0") + withdrawals) {
+      transactionData.gasData.payment = [];
+      return;
+    }
+    const paymentCoins = coins.objects.filter((coin) => {
+      return !transactionData.inputs.find((input) => {
+        if (input.Object?.ImmOrOwnedObject)
+          return coin.objectId === input.Object.ImmOrOwnedObject.objectId;
+        return false;
+      });
+    }).map((coin) => parse(ObjectRefSchema, {
+      objectId: coin.objectId,
+      digest: coin.digest,
+      version: coin.version
+    }));
+    if (!paymentCoins.length)
+      throw new Error("No valid gas coins found for the transaction.");
+    transactionData.gasData.payment = paymentCoins;
+  }
+}
+async function setExpiration(transactionData, client, existingSystemState) {
+  const [systemState, { chainIdentifier }] = await Promise.all([existingSystemState ?? client.core.getCurrentSystemState().then((r) => r.systemState), client.core.getChainIdentifier()]);
+  const currentEpoch = BigInt(systemState.epoch);
+  transactionData.expiration = {
+    $kind: "ValidDuring",
+    ValidDuring: {
+      minEpoch: String(currentEpoch),
+      maxEpoch: String(currentEpoch + 1n),
+      minTimestamp: null,
+      maxTimestamp: null,
+      chain: chainIdentifier,
+      nonce: Math.random() * 4294967296 >>> 0
+    }
+  };
+}
+async function resolveObjectReferences(transactionData, client) {
+  const objectsToResolve = transactionData.inputs.filter((input) => {
+    return input.UnresolvedObject && !(input.UnresolvedObject.version || input.UnresolvedObject?.initialSharedVersion);
+  });
+  const dedupedIds = [...new Set(objectsToResolve.map((input) => normalizeSuiObjectId(input.UnresolvedObject.objectId)))];
+  const objectChunks = dedupedIds.length ? chunk(dedupedIds, MAX_OBJECTS_PER_FETCH) : [];
+  const resolved = (await Promise.all(objectChunks.map((chunkIds) => client.core.getObjects({ objectIds: chunkIds })))).flatMap((result) => result.objects);
+  const responsesById = new Map(dedupedIds.map((id, index) => {
+    return [id, resolved[index]];
+  }));
+  const invalidObjects = Array.from(responsesById).filter(([_, obj]) => obj instanceof Error).map(([_, obj]) => obj.message);
+  if (invalidObjects.length)
+    throw new Error(`The following input objects are invalid: ${invalidObjects.join(", ")}`);
+  const objects = resolved.map((object$1) => {
+    if (object$1 instanceof Error)
+      throw new Error(`Failed to fetch object: ${object$1.message}`);
+    const owner = object$1.owner;
+    const initialSharedVersion = owner && typeof owner === "object" ? owner.$kind === "Shared" ? owner.Shared.initialSharedVersion : owner.$kind === "ConsensusAddressOwner" ? owner.ConsensusAddressOwner.startVersion : null : null;
+    return {
+      objectId: object$1.objectId,
+      digest: object$1.digest,
+      version: object$1.version,
+      initialSharedVersion
+    };
+  });
+  const objectsById = new Map(dedupedIds.map((id, index) => {
+    return [id, objects[index]];
+  }));
+  for (const [index, input] of transactionData.inputs.entries()) {
+    if (!input.UnresolvedObject)
+      continue;
+    let updated;
+    const id = normalizeSuiAddress(input.UnresolvedObject.objectId);
+    const object$1 = objectsById.get(id);
+    if (input.UnresolvedObject.initialSharedVersion ?? object$1?.initialSharedVersion)
+      updated = Inputs.SharedObjectRef({
+        objectId: id,
+        initialSharedVersion: input.UnresolvedObject.initialSharedVersion || object$1?.initialSharedVersion,
+        mutable: input.UnresolvedObject.mutable || isUsedAsMutable(transactionData, index)
+      });
+    else if (isUsedAsReceiving(transactionData, index))
+      updated = Inputs.ReceivingRef({
+        objectId: id,
+        digest: input.UnresolvedObject.digest ?? object$1?.digest,
+        version: input.UnresolvedObject.version ?? object$1?.version
+      });
+    transactionData.inputs[transactionData.inputs.indexOf(input)] = updated ?? Inputs.ObjectRef({
+      objectId: id,
+      digest: input.UnresolvedObject.digest ?? object$1?.digest,
+      version: input.UnresolvedObject.version ?? object$1?.version
+    });
+  }
+}
+async function normalizeInputs(transactionData, client) {
+  const { inputs, commands } = transactionData;
+  const moveCallsToResolve = [];
+  const moveFunctionsToResolve = /* @__PURE__ */ new Set();
+  commands.forEach((command) => {
+    if (command.MoveCall) {
+      if (command.MoveCall._argumentTypes)
+        return;
+      if (command.MoveCall.arguments.map((arg) => {
+        if (arg.$kind === "Input")
+          return transactionData.inputs[arg.Input];
+        return null;
+      }).some((input) => input?.UnresolvedPure || input?.UnresolvedObject && typeof input?.UnresolvedObject.mutable !== "boolean")) {
+        const functionName = `${command.MoveCall.package}::${command.MoveCall.module}::${command.MoveCall.function}`;
+        moveFunctionsToResolve.add(functionName);
+        moveCallsToResolve.push(command.MoveCall);
+      }
+    }
+  });
+  const moveFunctionParameters = /* @__PURE__ */ new Map();
+  if (moveFunctionsToResolve.size > 0)
+    await Promise.all([...moveFunctionsToResolve].map(async (functionName) => {
+      const [packageId, moduleName, name] = functionName.split("::");
+      const { function: def } = await client.core.getMoveFunction({
+        packageId,
+        moduleName,
+        name
+      });
+      moveFunctionParameters.set(functionName, def.parameters);
+    }));
+  if (moveCallsToResolve.length)
+    await Promise.all(moveCallsToResolve.map(async (moveCall) => {
+      const parameters = moveFunctionParameters.get(`${moveCall.package}::${moveCall.module}::${moveCall.function}`);
+      if (!parameters)
+        return;
+      moveCall._argumentTypes = parameters.length > 0 && isTxContext(parameters.at(-1)) ? parameters.slice(0, parameters.length - 1) : parameters;
+    }));
+  commands.forEach((command) => {
+    if (!command.MoveCall)
+      return;
+    const moveCall = command.MoveCall;
+    const fnName = `${moveCall.package}::${moveCall.module}::${moveCall.function}`;
+    const params = moveCall._argumentTypes;
+    if (!params)
+      return;
+    if (params.length !== command.MoveCall.arguments.length)
+      throw new Error(`Incorrect number of arguments for ${fnName}`);
+    params.forEach((param, i) => {
+      const arg = moveCall.arguments[i];
+      if (arg.$kind !== "Input")
+        return;
+      const input = inputs[arg.Input];
+      if (!input.UnresolvedPure && !input.UnresolvedObject)
+        return;
+      const inputValue = input.UnresolvedPure?.value ?? input.UnresolvedObject?.objectId;
+      const schema = getPureBcsSchema(param.body);
+      if (schema) {
+        arg.type = "pure";
+        inputs[inputs.indexOf(input)] = Inputs.Pure(schema.serialize(inputValue));
+        return;
+      }
+      if (typeof inputValue !== "string")
+        throw new Error(`Expect the argument to be an object id string, got ${JSON.stringify(inputValue, null, 2)}`);
+      arg.type = "object";
+      const unresolvedObject = input.UnresolvedPure ? {
+        $kind: "UnresolvedObject",
+        UnresolvedObject: { objectId: inputValue }
+      } : input;
+      inputs[arg.Input] = unresolvedObject;
+    });
+  });
+}
+function isUsedAsMutable(transactionData, index) {
+  let usedAsMutable = false;
+  transactionData.getInputUses(index, (arg, tx) => {
+    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
+      const argIndex = tx.MoveCall.arguments.indexOf(arg);
+      usedAsMutable = tx.MoveCall._argumentTypes[argIndex].reference !== "immutable" || usedAsMutable;
+    }
+    if (tx.$kind === "MakeMoveVec" || tx.$kind === "MergeCoins" || tx.$kind === "SplitCoins" || tx.$kind === "TransferObjects")
+      usedAsMutable = true;
+  });
+  return usedAsMutable;
+}
+function isUsedAsReceiving(transactionData, index) {
+  let usedAsReceiving = false;
+  transactionData.getInputUses(index, (arg, tx) => {
+    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
+      const argIndex = tx.MoveCall.arguments.indexOf(arg);
+      usedAsReceiving = isReceivingType(tx.MoveCall._argumentTypes[argIndex]) || usedAsReceiving;
+    }
+  });
+  return usedAsReceiving;
+}
+var RECEIVING_TYPE = "0x0000000000000000000000000000000000000000000000000000000000000002::transfer::Receiving";
+function isReceivingType(type) {
+  if (type.body.$kind !== "datatype")
+    return false;
+  return type.body.datatype.typeName === RECEIVING_TYPE;
+}
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/resolve.mjs
+function needsTransactionResolution(data, options) {
+  if (data.inputs.some((input) => {
+    return input.UnresolvedObject || input.UnresolvedPure;
+  }))
+    return true;
+  if (!options.onlyTransactionKind) {
+    if (!data.gasData.price || !data.gasData.budget || !data.gasData.payment)
+      return true;
+    if (data.gasData.payment.length === 0 && !data.expiration)
+      return true;
+  }
+  return false;
+}
+async function resolveTransactionPlugin(transactionData, options, next) {
+  normalizeRawArguments(transactionData);
+  if (!needsTransactionResolution(transactionData, options)) {
+    await validate(transactionData);
+    return next();
+  }
+  return (getClient2(options).core?.resolveTransactionPlugin() ?? coreClientResolveTransactionPlugin)(transactionData, options, async () => {
+    await validate(transactionData);
+    await next();
+  });
+}
+function validate(transactionData) {
+  transactionData.inputs.forEach((input, index) => {
+    if (input.$kind !== "Object" && input.$kind !== "Pure" && input.$kind !== "FundsWithdrawal")
+      throw new Error(`Input at index ${index} has not been resolved.  Expected a Pure, Object, or FundsWithdrawal input, but found ${JSON.stringify(input)}`);
+  });
+}
+function getClient2(options) {
+  if (!options.client)
+    throw new Error(`No sui client passed to Transaction#build, but transaction data was not sufficient to build offline.`);
+  return options.client;
+}
+function normalizeRawArguments(transactionData) {
+  for (const command of transactionData.commands)
+    switch (command.$kind) {
+      case "SplitCoins":
+        command.SplitCoins.amounts.forEach((amount) => {
+          normalizeRawArgument(amount, suiBcs.U64, transactionData);
+        });
+        break;
+      case "TransferObjects":
+        normalizeRawArgument(command.TransferObjects.address, suiBcs.Address, transactionData);
+        break;
+    }
+}
+function normalizeRawArgument(arg, schema, transactionData) {
+  if (arg.$kind !== "Input")
+    return;
+  const input = transactionData.inputs[arg.Input];
+  if (input.$kind !== "UnresolvedPure")
+    return;
+  transactionData.inputs[arg.Input] = Inputs.Pure(schema.serialize(input.UnresolvedPure.value));
+}
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/object.mjs
+function createObjectMethods(makeObject) {
+  function object3(value) {
+    return makeObject(value);
+  }
+  object3.system = (options) => {
+    const mutable = options?.mutable;
+    if (mutable !== void 0)
+      return object3(Inputs.SharedObjectRef({
+        objectId: SUI_SYSTEM_STATE_OBJECT_ID,
+        initialSharedVersion: 1,
+        mutable
+      }));
+    return object3({
+      $kind: "UnresolvedObject",
+      UnresolvedObject: {
+        objectId: SUI_SYSTEM_STATE_OBJECT_ID,
+        initialSharedVersion: 1
+      }
+    });
+  };
+  object3.clock = () => object3(Inputs.SharedObjectRef({
+    objectId: SUI_CLOCK_OBJECT_ID,
+    initialSharedVersion: 1,
+    mutable: false
+  }));
+  object3.random = () => object3({
+    $kind: "UnresolvedObject",
+    UnresolvedObject: {
+      objectId: SUI_RANDOM_OBJECT_ID,
+      mutable: false
+    }
+  });
+  object3.denyList = (options) => {
+    return object3({
+      $kind: "UnresolvedObject",
+      UnresolvedObject: {
+        objectId: SUI_DENY_LIST_OBJECT_ID,
+        mutable: options?.mutable
+      }
+    });
+  };
+  object3.option = ({ type, value }) => (tx) => tx.moveCall({
+    typeArguments: [type],
+    target: `${MOVE_STDLIB_ADDRESS}::option::${value === null ? "none" : "some"}`,
+    arguments: value === null ? [] : [tx.object(value)]
+  });
+  return object3;
+}
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/pure.mjs
+function createPure(makePure) {
+  function pure(typeOrSerializedValue, value) {
+    if (typeof typeOrSerializedValue === "string")
+      return makePure(pureBcsSchemaFromTypeName(typeOrSerializedValue).serialize(value));
+    if (typeOrSerializedValue instanceof Uint8Array || isSerializedBcs(typeOrSerializedValue))
+      return makePure(typeOrSerializedValue);
+    throw new Error("tx.pure must be called either a bcs type name, or a serialized bcs value");
+  }
+  pure.u8 = (value) => makePure(suiBcs.U8.serialize(value));
+  pure.u16 = (value) => makePure(suiBcs.U16.serialize(value));
+  pure.u32 = (value) => makePure(suiBcs.U32.serialize(value));
+  pure.u64 = (value) => makePure(suiBcs.U64.serialize(value));
+  pure.u128 = (value) => makePure(suiBcs.U128.serialize(value));
+  pure.u256 = (value) => makePure(suiBcs.U256.serialize(value));
+  pure.bool = (value) => makePure(suiBcs.Bool.serialize(value));
+  pure.string = (value) => makePure(suiBcs.String.serialize(value));
+  pure.address = (value) => makePure(suiBcs.Address.serialize(value));
+  pure.id = pure.address;
+  pure.vector = (type, value) => {
+    return makePure(suiBcs.vector(pureBcsSchemaFromTypeName(type)).serialize(value));
+  };
+  pure.option = (type, value) => {
+    return makePure(suiBcs.option(pureBcsSchemaFromTypeName(type)).serialize(value));
+  };
+  return pure;
+}
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/version.mjs
+var PACKAGE_VERSION = "2.9.0";
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/mvr.mjs
+var NAME_SEPARATOR2 = "/";
+var MVR_API_HEADER = { "Mvr-Source": `@mysten/sui@${PACKAGE_VERSION}` };
+function hasMvrName(nameOrType) {
+  return nameOrType.includes(NAME_SEPARATOR2) || nameOrType.includes("@") || nameOrType.includes(".sui");
+}
+function findNamesInTransaction(builder) {
+  const packages = /* @__PURE__ */ new Set();
+  const types = /* @__PURE__ */ new Set();
+  for (const command of builder.commands)
+    switch (command.$kind) {
+      case "MakeMoveVec":
+        if (command.MakeMoveVec.type)
+          getNamesFromTypeList([command.MakeMoveVec.type]).forEach((type) => {
+            types.add(type);
+          });
+        break;
+      case "MoveCall":
+        const moveCall = command.MoveCall;
+        const pkg = moveCall.package.split("::")[0];
+        if (hasMvrName(pkg)) {
+          if (!isValidNamedPackage(pkg))
+            throw new Error(`Invalid package name: ${pkg}`);
+          packages.add(pkg);
+        }
+        getNamesFromTypeList(moveCall.typeArguments ?? []).forEach((type) => {
+          types.add(type);
+        });
+        break;
+      default:
+        break;
+    }
+  return {
+    packages: [...packages],
+    types: [...types]
+  };
+}
+function replaceNames(builder, resolved) {
+  for (const command of builder.commands) {
+    if (command.MakeMoveVec?.type) {
+      if (!hasMvrName(command.MakeMoveVec.type))
+        continue;
+      if (!resolved.types[command.MakeMoveVec.type])
+        throw new Error(`No resolution found for type: ${command.MakeMoveVec.type}`);
+      command.MakeMoveVec.type = resolved.types[command.MakeMoveVec.type].type;
+    }
+    const tx = command.MoveCall;
+    if (!tx)
+      continue;
+    const nameParts = tx.package.split("::");
+    const name = nameParts[0];
+    if (hasMvrName(name) && !resolved.packages[name])
+      throw new Error(`No address found for package: ${name}`);
+    if (hasMvrName(name)) {
+      nameParts[0] = resolved.packages[name].package;
+      tx.package = nameParts.join("::");
+    }
+    const types = tx.typeArguments;
+    if (!types)
+      continue;
+    for (let i = 0; i < types.length; i++) {
+      if (!hasMvrName(types[i]))
+        continue;
+      if (!resolved.types[types[i]])
+        throw new Error(`No resolution found for type: ${types[i]}`);
+      types[i] = resolved.types[types[i]].type;
+    }
+    tx.typeArguments = types;
+  }
+}
+function getNamesFromTypeList(types) {
+  const names = /* @__PURE__ */ new Set();
+  for (const type of types)
+    if (hasMvrName(type)) {
+      if (!isValidNamedType(type))
+        throw new Error(`Invalid type with names: ${type}`);
+      names.add(type);
+    }
+  return names;
+}
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/plugins/NamedPackagesPlugin.mjs
+function namedPackagesPlugin() {
+  return async (transactionData, buildOptions, next) => {
+    const names = findNamesInTransaction(transactionData);
+    if (names.types.length === 0 && names.packages.length === 0)
+      return next();
+    if (!buildOptions.client)
+      throw new Error(`Transaction contains MVR names but no client was provided to resolve them. Please pass a client to Transaction#build()`);
+    replaceNames(transactionData, await buildOptions.client.core.mvr.resolve({
+      types: names.types,
+      packages: names.packages
+    }));
+    await next();
+  };
+}
+
+// ../node_modules/.pnpm/@mysten+sui@2.9.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Transaction.mjs
+function createTransactionResult(index, length = Infinity) {
+  const baseResult = {
+    $kind: "Result",
+    get Result() {
+      return typeof index === "function" ? index() : index;
+    }
+  };
+  const nestedResults = [];
+  const nestedResultFor = (resultIndex) => nestedResults[resultIndex] ??= {
+    $kind: "NestedResult",
+    get NestedResult() {
+      return [typeof index === "function" ? index() : index, resultIndex];
+    }
+  };
+  return new Proxy(baseResult, {
+    set() {
+      throw new Error("The transaction result is a proxy, and does not support setting properties directly");
+    },
+    get(target, property) {
+      if (property in target)
+        return Reflect.get(target, property);
+      if (property === Symbol.iterator)
+        return function* () {
+          let i = 0;
+          while (i < length) {
+            yield nestedResultFor(i);
+            i++;
+          }
+        };
+      if (typeof property === "symbol")
+        return;
+      const resultIndex = parseInt(property, 10);
+      if (Number.isNaN(resultIndex) || resultIndex < 0)
+        return;
+      return nestedResultFor(resultIndex);
+    }
+  });
+}
+var TRANSACTION_BRAND = Symbol.for("@mysten/transaction");
+function isTransaction(obj) {
+  return !!obj && typeof obj === "object" && obj[TRANSACTION_BRAND] === true;
+}
+var Transaction = class Transaction2 {
+  #serializationPlugins;
+  #buildPlugins;
+  #intentResolvers = /* @__PURE__ */ new Map();
+  #inputSection = [];
+  #commandSection = [];
+  #availableResults = /* @__PURE__ */ new Set();
+  #pendingPromises = /* @__PURE__ */ new Set();
+  #added = /* @__PURE__ */ new Map();
+  /**
+  * Converts from a serialize transaction kind (built with `build({ onlyTransactionKind: true })`) to a `Transaction` class.
+  * Supports either a byte array, or base64-encoded bytes.
+  */
+  static fromKind(serialized) {
+    const tx = new Transaction2();
+    tx.#data = TransactionDataBuilder.fromKindBytes(typeof serialized === "string" ? fromBase64(serialized) : serialized);
+    tx.#inputSection = tx.#data.inputs.slice();
+    tx.#commandSection = tx.#data.commands.slice();
+    tx.#availableResults = new Set(tx.#commandSection.map((_, i) => i));
+    return tx;
+  }
+  /**
+  * Converts from a serialized transaction format to a `Transaction` class.
+  * There are two supported serialized formats:
+  * - A string returned from `Transaction#serialize`. The serialized format must be compatible, or it will throw an error.
+  * - A byte array (or base64-encoded bytes) containing BCS transaction data.
+  */
+  static from(transaction) {
+    const newTransaction = new Transaction2();
+    if (isTransaction(transaction))
+      newTransaction.#data = TransactionDataBuilder.restore(transaction.getData());
+    else if (typeof transaction !== "string" || !transaction.startsWith("{"))
+      newTransaction.#data = TransactionDataBuilder.fromBytes(typeof transaction === "string" ? fromBase64(transaction) : transaction);
+    else
+      newTransaction.#data = TransactionDataBuilder.restore(JSON.parse(transaction));
+    newTransaction.#inputSection = newTransaction.#data.inputs.slice();
+    newTransaction.#commandSection = newTransaction.#data.commands.slice();
+    newTransaction.#availableResults = new Set(newTransaction.#commandSection.map((_, i) => i));
+    if (!newTransaction.isPreparedForSerialization({ supportedIntents: [COIN_WITH_BALANCE] }))
+      throw new Error("Transaction has unresolved intents or async thunks. Call `prepareForSerialization` before copying.");
+    if (newTransaction.#data.commands.some((cmd) => cmd.$Intent?.name === COIN_WITH_BALANCE))
+      newTransaction.addIntentResolver(COIN_WITH_BALANCE, resolveCoinBalance);
+    return newTransaction;
+  }
+  addSerializationPlugin(step) {
+    this.#serializationPlugins.push(step);
+  }
+  addBuildPlugin(step) {
+    this.#buildPlugins.push(step);
+  }
+  addIntentResolver(intent, resolver) {
+    if (this.#intentResolvers.has(intent) && this.#intentResolvers.get(intent) !== resolver)
+      throw new Error(`Intent resolver for ${intent} already exists`);
+    this.#intentResolvers.set(intent, resolver);
+  }
+  setSender(sender) {
+    this.#data.sender = sender;
+  }
+  /**
+  * Sets the sender only if it has not already been set.
+  * This is useful for sponsored transaction flows where the sender may not be the same as the signer address.
+  */
+  setSenderIfNotSet(sender) {
+    if (!this.#data.sender)
+      this.#data.sender = sender;
+  }
+  setExpiration(expiration) {
+    this.#data.expiration = expiration ? parse(TransactionExpiration2, expiration) : null;
+  }
+  setGasPrice(price) {
+    this.#data.gasData.price = String(price);
+  }
+  setGasBudget(budget) {
+    this.#data.gasData.budget = String(budget);
+  }
+  setGasBudgetIfNotSet(budget) {
+    if (this.#data.gasData.budget == null)
+      this.#data.gasData.budget = String(budget);
+  }
+  setGasOwner(owner) {
+    this.#data.gasData.owner = owner;
+  }
+  setGasPayment(payments) {
+    this.#data.gasData.payment = payments.map((payment) => parse(ObjectRefSchema, payment));
+  }
+  #data;
+  /** Get a snapshot of the transaction data, in JSON form: */
+  getData() {
+    return this.#data.snapshot();
+  }
+  get [TRANSACTION_BRAND]() {
+    return true;
+  }
+  get pure() {
+    Object.defineProperty(this, "pure", {
+      enumerable: false,
+      value: createPure((value) => {
+        if (isSerializedBcs(value))
+          return this.#addInput("pure", {
+            $kind: "Pure",
+            Pure: { bytes: value.toBase64() }
+          });
+        return this.#addInput("pure", is(NormalizedCallArg, value) ? parse(NormalizedCallArg, value) : value instanceof Uint8Array ? Inputs.Pure(value) : {
+          $kind: "UnresolvedPure",
+          UnresolvedPure: { value }
+        });
+      })
+    });
+    return this.pure;
+  }
+  constructor() {
+    this.object = createObjectMethods((value) => {
+      if (typeof value === "function")
+        return this.object(this.add(value));
+      if (typeof value === "object" && is(ArgumentSchema, value))
+        return value;
+      const id = getIdFromCallArg(value);
+      const inserted = this.#data.inputs.find((i) => id === getIdFromCallArg(i));
+      if (inserted?.Object?.SharedObject && typeof value === "object" && value.Object?.SharedObject)
+        inserted.Object.SharedObject.mutable = inserted.Object.SharedObject.mutable || value.Object.SharedObject.mutable;
+      return inserted ? {
+        $kind: "Input",
+        Input: this.#data.inputs.indexOf(inserted),
+        type: "object"
+      } : this.#addInput("object", typeof value === "string" ? {
+        $kind: "UnresolvedObject",
+        UnresolvedObject: { objectId: normalizeSuiAddress(value) }
+      } : value);
+    });
+    this.#data = new TransactionDataBuilder();
+    this.#buildPlugins = [];
+    this.#serializationPlugins = [];
+  }
+  /** Returns an argument for the gas coin, to be used in a transaction. */
+  get gas() {
+    return {
+      $kind: "GasCoin",
+      GasCoin: true
+    };
+  }
+  /**
+  * Add a new object input to the transaction using the fully-resolved object reference.
+  * If you only have an object ID, use `builder.object(id)` instead.
+  */
+  objectRef(...args) {
+    return this.object(Inputs.ObjectRef(...args));
+  }
+  /**
+  * Add a new receiving input to the transaction using the fully-resolved object reference.
+  * If you only have an object ID, use `builder.object(id)` instead.
+  */
+  receivingRef(...args) {
+    return this.object(Inputs.ReceivingRef(...args));
+  }
+  /**
+  * Add a new shared object input to the transaction using the fully-resolved shared object reference.
+  * If you only have an object ID, use `builder.object(id)` instead.
+  */
+  sharedObjectRef(...args) {
+    return this.object(Inputs.SharedObjectRef(...args));
+  }
+  #fork() {
+    const fork = new Transaction2();
+    fork.#data = this.#data;
+    fork.#serializationPlugins = this.#serializationPlugins;
+    fork.#buildPlugins = this.#buildPlugins;
+    fork.#intentResolvers = this.#intentResolvers;
+    fork.#pendingPromises = this.#pendingPromises;
+    fork.#availableResults = new Set(this.#availableResults);
+    fork.#added = this.#added;
+    this.#inputSection.push(fork.#inputSection);
+    this.#commandSection.push(fork.#commandSection);
+    return fork;
+  }
+  add(command) {
+    if (typeof command === "function") {
+      if (this.#added.has(command))
+        return this.#added.get(command);
+      const fork = this.#fork();
+      const result = command(fork);
+      if (!(result && typeof result === "object" && "then" in result)) {
+        this.#availableResults = fork.#availableResults;
+        this.#added.set(command, result);
+        return result;
+      }
+      const placeholder = this.#addCommand({
+        $kind: "$Intent",
+        $Intent: {
+          name: "AsyncTransactionThunk",
+          inputs: {},
+          data: {
+            resultIndex: this.#data.commands.length,
+            result: null
+          }
+        }
+      });
+      this.#pendingPromises.add(Promise.resolve(result).then((result$1) => {
+        placeholder.$Intent.data.result = result$1;
+      }));
+      const txResult = createTransactionResult(() => placeholder.$Intent.data.resultIndex);
+      this.#added.set(command, txResult);
+      return txResult;
+    } else
+      this.#addCommand(command);
+    return createTransactionResult(this.#data.commands.length - 1);
+  }
+  #addCommand(command) {
+    const resultIndex = this.#data.commands.length;
+    this.#commandSection.push(command);
+    this.#availableResults.add(resultIndex);
+    this.#data.commands.push(command);
+    this.#data.mapCommandArguments(resultIndex, (arg) => {
+      if (arg.$kind === "Result" && !this.#availableResults.has(arg.Result))
+        throw new Error(`Result { Result: ${arg.Result} } is not available to use in the current transaction`);
+      if (arg.$kind === "NestedResult" && !this.#availableResults.has(arg.NestedResult[0]))
+        throw new Error(`Result { NestedResult: [${arg.NestedResult[0]}, ${arg.NestedResult[1]}] } is not available to use in the current transaction`);
+      if (arg.$kind === "Input" && arg.Input >= this.#data.inputs.length)
+        throw new Error(`Input { Input: ${arg.Input} } references an input that does not exist in the current transaction`);
+      return arg;
+    });
+    return command;
+  }
+  #addInput(type, input) {
+    this.#inputSection.push(input);
+    return this.#data.addInput(type, input);
+  }
+  #normalizeTransactionArgument(arg) {
+    if (isSerializedBcs(arg))
+      return this.pure(arg);
+    return this.#resolveArgument(arg);
+  }
+  #resolveArgument(arg) {
+    if (typeof arg === "function") {
+      const resolved = this.add(arg);
+      if (typeof resolved === "function")
+        return this.#resolveArgument(resolved);
+      return parse(ArgumentSchema, resolved);
+    }
+    return parse(ArgumentSchema, arg);
+  }
+  splitCoins(coin, amounts) {
+    const command = TransactionCommands.SplitCoins(typeof coin === "string" ? this.object(coin) : this.#resolveArgument(coin), amounts.map((amount) => typeof amount === "number" || typeof amount === "bigint" || typeof amount === "string" ? this.pure.u64(amount) : this.#normalizeTransactionArgument(amount)));
+    this.#addCommand(command);
+    return createTransactionResult(this.#data.commands.length - 1, amounts.length);
+  }
+  mergeCoins(destination, sources) {
+    return this.add(TransactionCommands.MergeCoins(this.object(destination), sources.map((src) => this.object(src))));
+  }
+  publish({ modules, dependencies }) {
+    return this.add(TransactionCommands.Publish({
+      modules,
+      dependencies
+    }));
+  }
+  upgrade({ modules, dependencies, package: packageId, ticket }) {
+    return this.add(TransactionCommands.Upgrade({
+      modules,
+      dependencies,
+      package: packageId,
+      ticket: this.object(ticket)
+    }));
+  }
+  moveCall({ arguments: args, ...input }) {
+    return this.add(TransactionCommands.MoveCall({
+      ...input,
+      arguments: args?.map((arg) => this.#normalizeTransactionArgument(arg))
+    }));
+  }
+  transferObjects(objects, address) {
+    return this.add(TransactionCommands.TransferObjects(objects.map((obj) => this.object(obj)), typeof address === "string" ? this.pure.address(address) : this.#normalizeTransactionArgument(address)));
+  }
+  makeMoveVec({ type, elements }) {
+    return this.add(TransactionCommands.MakeMoveVec({
+      type,
+      elements: elements.map((obj) => this.object(obj))
+    }));
+  }
+  /**
+  * Create a FundsWithdrawal input for withdrawing Balance<T> from an address balance accumulator.
+  * This is used for gas payments from address balances.
+  *
+  * @param options.amount - The Amount to withdraw (u64).
+  * @param options.type - The balance type (e.g., "0x2::sui::SUI"). Defaults to SUI.
+  */
+  withdrawal({ amount, type }) {
+    const input = {
+      $kind: "FundsWithdrawal",
+      FundsWithdrawal: {
+        reservation: {
+          $kind: "MaxAmountU64",
+          MaxAmountU64: String(amount)
+        },
+        typeArg: {
+          $kind: "Balance",
+          Balance: type ?? "0x2::sui::SUI"
+        },
+        withdrawFrom: {
+          $kind: "Sender",
+          Sender: true
+        }
+      }
+    };
+    return this.#addInput("object", input);
+  }
+  /**
+  * @deprecated Use toJSON instead.
+  * For synchronous serialization, you can use `getData()`
+  * */
+  serialize() {
+    return JSON.stringify(serializeV1TransactionData(this.#data.snapshot()));
+  }
+  async toJSON(options = {}) {
+    await this.prepareForSerialization(options);
+    const fullyResolved = this.isFullyResolved();
+    return JSON.stringify(parse(SerializedTransactionDataV2Schema, fullyResolved ? {
+      ...this.#data.snapshot(),
+      digest: this.#data.getDigest()
+    } : this.#data.snapshot()), (_key, value) => typeof value === "bigint" ? value.toString() : value, 2);
+  }
+  /** Build the transaction to BCS bytes, and sign it with the provided keypair. */
+  async sign(options) {
+    const { signer, ...buildOptions } = options;
+    const bytes = await this.build(buildOptions);
+    return signer.signTransaction(bytes);
+  }
+  /**
+  * Checks if the transaction is prepared for serialization to JSON.
+  * This means:
+  *  - All async thunks have been fully resolved
+  *  - All transaction intents have been resolved (unless in supportedIntents)
+  *
+  * Unlike `isFullyResolved()`, this does not require the sender, gas payment,
+  * budget, or object versions to be set.
+  */
+  isPreparedForSerialization(options = {}) {
+    if (this.#pendingPromises.size > 0)
+      return false;
+    if (this.#data.commands.some((cmd) => cmd.$Intent && !options.supportedIntents?.includes(cmd.$Intent.name)))
+      return false;
+    return true;
+  }
+  /**
+  *  Ensures that:
+  *  - All objects have been fully resolved to a specific version
+  *  - All pure inputs have been serialized to bytes
+  *  - All async thunks have been fully resolved
+  *  - All transaction intents have been resolved
+  * 	- The gas payment, budget, and price have been set
+  *  - The transaction sender has been set
+  *
+  *  When true, the transaction will always be built to the same bytes and digest (unless the transaction is mutated)
+  */
+  isFullyResolved() {
+    if (!this.isPreparedForSerialization())
+      return false;
+    if (!this.#data.sender)
+      return false;
+    if (needsTransactionResolution(this.#data, {}))
+      return false;
+    return true;
+  }
+  /** Build the transaction to BCS bytes. */
+  async build(options = {}) {
+    await this.prepareForSerialization(options);
+    await this.#prepareBuild(options);
+    return this.#data.build({ onlyTransactionKind: options.onlyTransactionKind });
+  }
+  /** Derive transaction digest */
+  async getDigest(options = {}) {
+    await this.prepareForSerialization(options);
+    await this.#prepareBuild(options);
+    return this.#data.getDigest();
+  }
+  /**
+  * Prepare the transaction by validating the transaction data and resolving all inputs
+  * so that it can be built into bytes.
+  */
+  async #prepareBuild(options) {
+    if (!options.onlyTransactionKind && !this.#data.sender)
+      throw new Error("Missing transaction sender");
+    await this.#runPlugins([...this.#buildPlugins, resolveTransactionPlugin], options);
+  }
+  async #runPlugins(plugins, options) {
+    try {
+      const createNext = (i) => {
+        if (i >= plugins.length)
+          return () => {
+          };
+        const plugin = plugins[i];
+        return async () => {
+          const next = createNext(i + 1);
+          let calledNext = false;
+          let nextResolved = false;
+          await plugin(this.#data, options, async () => {
+            if (calledNext)
+              throw new Error(`next() was call multiple times in TransactionPlugin ${i}`);
+            calledNext = true;
+            await next();
+            nextResolved = true;
+          });
+          if (!calledNext)
+            throw new Error(`next() was not called in TransactionPlugin ${i}`);
+          if (!nextResolved)
+            throw new Error(`next() was not awaited in TransactionPlugin ${i}`);
+        };
+      };
+      await createNext(0)();
+    } finally {
+      this.#inputSection = this.#data.inputs.slice();
+      this.#commandSection = this.#data.commands.slice();
+      this.#availableResults = new Set(this.#commandSection.map((_, i) => i));
+    }
+  }
+  async #waitForPendingTasks() {
+    while (this.#pendingPromises.size > 0) {
+      const newPromise = Promise.all(this.#pendingPromises);
+      this.#pendingPromises.clear();
+      this.#pendingPromises.add(newPromise);
+      await newPromise;
+      this.#pendingPromises.delete(newPromise);
+    }
+  }
+  #sortCommandsAndInputs() {
+    const unorderedCommands = this.#data.commands;
+    const unorderedInputs = this.#data.inputs;
+    const orderedCommands = this.#commandSection.flat(Infinity);
+    const orderedInputs = this.#inputSection.flat(Infinity);
+    if (orderedCommands.length !== unorderedCommands.length)
+      throw new Error("Unexpected number of commands found in transaction data");
+    if (orderedInputs.length !== unorderedInputs.length)
+      throw new Error("Unexpected number of inputs found in transaction data");
+    const filteredCommands = orderedCommands.filter((cmd) => cmd.$Intent?.name !== "AsyncTransactionThunk");
+    this.#data.commands = filteredCommands;
+    this.#data.inputs = orderedInputs;
+    this.#commandSection = filteredCommands;
+    this.#inputSection = orderedInputs;
+    this.#availableResults = new Set(filteredCommands.map((_, i) => i));
+    function getOriginalIndex(index) {
+      const command = unorderedCommands[index];
+      if (command.$Intent?.name === "AsyncTransactionThunk") {
+        const result = command.$Intent.data.result;
+        if (result == null)
+          throw new Error("AsyncTransactionThunk has not been resolved");
+        return getOriginalIndex(result.Result);
+      }
+      const updated = filteredCommands.indexOf(command);
+      if (updated === -1)
+        throw new Error("Unable to find original index for command");
+      return updated;
+    }
+    this.#data.mapArguments((arg) => {
+      if (arg.$kind === "Input") {
+        const updated = orderedInputs.indexOf(unorderedInputs[arg.Input]);
+        if (updated === -1)
+          throw new Error("Input has not been resolved");
+        return {
+          ...arg,
+          Input: updated
+        };
+      } else if (arg.$kind === "Result") {
+        const updated = getOriginalIndex(arg.Result);
+        return {
+          ...arg,
+          Result: updated
+        };
+      } else if (arg.$kind === "NestedResult") {
+        const updated = getOriginalIndex(arg.NestedResult[0]);
+        return {
+          ...arg,
+          NestedResult: [updated, arg.NestedResult[1]]
+        };
+      }
+      return arg;
+    });
+    for (const [i, cmd] of unorderedCommands.entries())
+      if (cmd.$Intent?.name === "AsyncTransactionThunk")
+        try {
+          cmd.$Intent.data.resultIndex = getOriginalIndex(i);
+        } catch {
+        }
+  }
+  async prepareForSerialization(options) {
+    await this.#waitForPendingTasks();
+    this.#sortCommandsAndInputs();
+    const intents = /* @__PURE__ */ new Set();
+    for (const command of this.#data.commands)
+      if (command.$Intent)
+        intents.add(command.$Intent.name);
+    const steps = [...this.#serializationPlugins];
+    for (const intent of intents) {
+      if (options.supportedIntents?.includes(intent))
+        continue;
+      if (!this.#intentResolvers.has(intent))
+        throw new Error(`Missing intent resolver for ${intent}`);
+      steps.push(this.#intentResolvers.get(intent));
+    }
+    steps.push(namedPackagesPlugin());
+    await this.#runPlugins(steps, options);
+  }
+};
+
+// ../node_modules/.pnpm/@mysten+wallet-standard@0.20.1_@mysten+sui@2.9.0_typescript@5.9.3_/node_modules/@mysten/wallet-standard/dist/wallet.mjs
+async function signAndExecuteTransaction(wallet, input) {
+  if (wallet.features["sui:signAndExecuteTransaction"])
+    return wallet.features["sui:signAndExecuteTransaction"].signAndExecuteTransaction(input);
+  if (!wallet.features["sui:signAndExecuteTransactionBlock"])
+    throw new Error(`Provided wallet (${wallet.name}) does not support the signAndExecuteTransaction feature.`);
+  const { signAndExecuteTransactionBlock } = wallet.features["sui:signAndExecuteTransactionBlock"];
+  const transactionBlock = Transaction.from(await input.transaction.toJSON());
+  const { digest, rawEffects, rawTransaction } = await signAndExecuteTransactionBlock({
+    account: input.account,
+    chain: input.chain,
+    transactionBlock,
+    options: {
+      showRawEffects: true,
+      showRawInput: true
+    }
+  });
+  const [{ txSignatures: [signature], intentMessage: { value: bcsTransaction } }] = suiBcs.SenderSignedData.parse(fromBase64(rawTransaction));
+  return {
+    digest,
+    signature,
+    bytes: suiBcs.TransactionData.serialize(bcsTransaction).toBase64(),
+    effects: toBase64(new Uint8Array(rawEffects))
+  };
+}
+async function signTransaction(wallet, input) {
+  if (wallet.features["sui:signTransaction"])
+    return wallet.features["sui:signTransaction"].signTransaction(input);
+  if (!wallet.features["sui:signTransactionBlock"])
+    throw new Error(`Provided wallet (${wallet.name}) does not support the signTransaction feature.`);
+  const { signTransactionBlock } = wallet.features["sui:signTransactionBlock"];
+  const { transactionBlockBytes, signature } = await signTransactionBlock({
+    transactionBlock: Transaction.from(await input.transaction.toJSON()),
+    account: input.account,
+    chain: input.chain
+  });
+  return {
+    bytes: transactionBlockBytes,
+    signature
+  };
+}
+
+// ../node_modules/.pnpm/@mysten+wallet-standard@0.20.1_@mysten+sui@2.9.0_typescript@5.9.3_/node_modules/@mysten/wallet-standard/dist/features/suiSignTransaction.mjs
+var SuiSignTransaction = "sui:signTransaction";
+
+// ../node_modules/.pnpm/@mysten+wallet-standard@0.20.1_@mysten+sui@2.9.0_typescript@5.9.3_/node_modules/@mysten/wallet-standard/dist/features/suiSignAndExecuteTransaction.mjs
+var SuiSignAndExecuteTransaction = "sui:signAndExecuteTransaction";
+
+// ../node_modules/.pnpm/@wallet-standard+app@1.1.0/node_modules/@wallet-standard/app/lib/esm/wallets.js
+var __classPrivateFieldGet = function(receiver, state, kind, f) {
+  if (kind === "a" && !f)
+    throw new TypeError("Private accessor was defined without a getter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver))
+    throw new TypeError("Cannot read private member from an object whose class did not declare it");
+  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var __classPrivateFieldSet = function(receiver, state, value, kind, f) {
+  if (kind === "m")
+    throw new TypeError("Private method is not writable");
+  if (kind === "a" && !f)
+    throw new TypeError("Private accessor was defined without a setter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver))
+    throw new TypeError("Cannot write private member to an object whose class did not declare it");
+  return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
+};
+var _AppReadyEvent_detail;
+var wallets = void 0;
+var registeredWalletsSet = /* @__PURE__ */ new Set();
+function addRegisteredWallet(wallet) {
+  cachedWalletsArray = void 0;
+  registeredWalletsSet.add(wallet);
+}
+function removeRegisteredWallet(wallet) {
+  cachedWalletsArray = void 0;
+  registeredWalletsSet.delete(wallet);
+}
+var listeners = {};
+function getWallets() {
+  if (wallets)
+    return wallets;
+  wallets = Object.freeze({ register, get, on });
+  if (typeof window === "undefined")
+    return wallets;
+  const api = Object.freeze({ register });
+  try {
+    window.addEventListener("wallet-standard:register-wallet", ({ detail: callback }) => callback(api));
+  } catch (error) {
+    console.error("wallet-standard:register-wallet event listener could not be added\n", error);
+  }
+  try {
+    window.dispatchEvent(new AppReadyEvent(api));
+  } catch (error) {
+    console.error("wallet-standard:app-ready event could not be dispatched\n", error);
+  }
+  return wallets;
+}
+function register(...wallets2) {
+  wallets2 = wallets2.filter((wallet) => !registeredWalletsSet.has(wallet));
+  if (!wallets2.length)
+    return () => {
+    };
+  wallets2.forEach((wallet) => addRegisteredWallet(wallet));
+  listeners["register"]?.forEach((listener) => guard(() => listener(...wallets2)));
+  return function unregister() {
+    wallets2.forEach((wallet) => removeRegisteredWallet(wallet));
+    listeners["unregister"]?.forEach((listener) => guard(() => listener(...wallets2)));
+  };
+}
+var cachedWalletsArray;
+function get() {
+  if (!cachedWalletsArray) {
+    cachedWalletsArray = [...registeredWalletsSet];
+  }
+  return cachedWalletsArray;
+}
+function on(event, listener) {
+  listeners[event]?.push(listener) || (listeners[event] = [listener]);
+  return function off() {
+    listeners[event] = listeners[event]?.filter((existingListener) => listener !== existingListener);
+  };
+}
+function guard(callback) {
+  try {
+    callback();
+  } catch (error) {
+    console.error(error);
+  }
+}
+var AppReadyEvent = class extends Event {
+  get detail() {
+    return __classPrivateFieldGet(this, _AppReadyEvent_detail, "f");
+  }
+  get type() {
+    return "wallet-standard:app-ready";
+  }
+  constructor(api) {
+    super("wallet-standard:app-ready", {
+      bubbles: false,
+      cancelable: false,
+      composed: false
+    });
+    _AppReadyEvent_detail.set(this, void 0);
+    __classPrivateFieldSet(this, _AppReadyEvent_detail, api, "f");
+  }
+  /** @deprecated */
+  preventDefault() {
+    throw new Error("preventDefault cannot be called");
+  }
+  /** @deprecated */
+  stopImmediatePropagation() {
+    throw new Error("stopImmediatePropagation cannot be called");
+  }
+  /** @deprecated */
+  stopPropagation() {
+    throw new Error("stopPropagation cannot be called");
+  }
+};
+_AppReadyEvent_detail = /* @__PURE__ */ new WeakMap();
+
+// ../node_modules/.pnpm/@wallet-standard+features@1.1.0/node_modules/@wallet-standard/features/lib/esm/connect.js
+var StandardConnect = "standard:connect";
+
+// ../node_modules/.pnpm/@mysten+wallet-standard@0.20.1_@mysten+sui@2.9.0_typescript@5.9.3_/node_modules/@mysten/wallet-standard/dist/chains.mjs
+var SUI_DEVNET_CHAIN = "sui:devnet";
+var SUI_TESTNET_CHAIN = "sui:testnet";
+var SUI_LOCALNET_CHAIN = "sui:localnet";
+var SUI_MAINNET_CHAIN = "sui:mainnet";
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/suins.mjs
+var SUI_NS_NAME_REGEX2 = /^(?!.*(^(?!@)|[-.@])($|[-.@]))(?:[a-z0-9-]{0,63}(?:\.[a-z0-9-]{0,63})*)?@[a-z0-9-]{0,63}$/i;
+var SUI_NS_DOMAIN_REGEX2 = /^(?!.*(^|[-.])($|[-.]))(?:[a-z0-9-]{0,63}\.)+sui$/i;
+var MAX_SUI_NS_NAME_LENGTH2 = 235;
+function isValidSuiNSName2(name) {
+  if (name.length > MAX_SUI_NS_NAME_LENGTH2)
+    return false;
+  if (name.includes("@"))
+    return SUI_NS_NAME_REGEX2.test(name);
+  return SUI_NS_DOMAIN_REGEX2.test(name);
+}
+function normalizeSuiNSName(name, format = "at") {
+  const lowerCase = name.toLowerCase();
+  let parts;
+  if (lowerCase.includes("@")) {
+    if (!SUI_NS_NAME_REGEX2.test(lowerCase))
+      throw new Error(`Invalid SuiNS name ${name}`);
+    const [labels, domain] = lowerCase.split("@");
+    parts = [...labels ? labels.split(".") : [], domain];
+  } else {
+    if (!SUI_NS_DOMAIN_REGEX2.test(lowerCase))
+      throw new Error(`Invalid SuiNS name ${name}`);
+    parts = lowerCase.split(".").slice(0, -1);
+  }
+  if (format === "dot")
+    return `${parts.join(".")}.sui`;
+  return `${parts.slice(0, -1).join(".")}@${parts[parts.length - 1]}`;
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/move-registry.mjs
+var NAME_PATTERN2 = /^([a-z0-9]+(?:-[a-z0-9]+)*)$/;
+var VERSION_REGEX2 = /^\d+$/;
+var MAX_APP_SIZE2 = 64;
+var NAME_SEPARATOR3 = "/";
+var isValidNamedPackage2 = (name) => {
+  const parts = name.split(NAME_SEPARATOR3);
+  if (parts.length < 2 || parts.length > 3)
+    return false;
+  const [org, app, version] = parts;
+  if (version !== void 0 && !VERSION_REGEX2.test(version))
+    return false;
+  if (!isValidSuiNSName2(org))
+    return false;
+  return NAME_PATTERN2.test(app) && app.length < MAX_APP_SIZE2;
+};
+var isValidNamedType2 = (type) => {
+  const splitType = type.split(/::|<|>|,/);
+  for (const t of splitType)
+    if (t.includes(NAME_SEPARATOR3) && !isValidNamedPackage2(t))
+      return false;
+  return isValidStructTag2(type);
+};
+
+// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/uleb.mjs
+function ulebEncode2(num) {
+  let bigNum = BigInt(num);
+  const arr = [];
+  let len = 0;
+  if (bigNum === 0n)
+    return [0];
+  while (bigNum > 0) {
+    arr[len] = Number(bigNum & 127n);
+    bigNum >>= 7n;
+    if (bigNum > 0n)
+      arr[len] |= 128;
+    len += 1;
+  }
+  return arr;
+}
+function ulebDecode2(arr) {
+  let total = 0n;
+  let shift = 0n;
+  let len = 0;
+  while (true) {
+    if (len >= arr.length)
+      throw new Error("ULEB decode error: buffer overflow");
+    const byte = arr[len];
+    len += 1;
+    total += BigInt(byte & 127) << shift;
+    if ((byte & 128) === 0)
+      break;
+    shift += 7n;
+  }
+  if (total > BigInt(Number.MAX_SAFE_INTEGER))
+    throw new Error("ULEB decode error: value exceeds MAX_SAFE_INTEGER");
+  return {
+    value: Number(total),
+    length: len
+  };
+}
+
+// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/reader.mjs
+var BcsReader2 = class {
+  /**
+  * @param {Uint8Array} data Data to use as a buffer.
+  */
+  constructor(data) {
+    this.bytePosition = 0;
+    this.dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  }
+  /**
+  * Shift current cursor position by `bytes`.
+  *
+  * @param {Number} bytes Number of bytes to
+  * @returns {this} Self for possible chaining.
+  */
+  shift(bytes) {
+    this.bytePosition += bytes;
+    return this;
+  }
+  /**
+  * Read U8 value from the buffer and shift cursor by 1.
+  * @returns
+  */
+  read8() {
+    const value = this.dataView.getUint8(this.bytePosition);
+    this.shift(1);
+    return value;
+  }
+  /**
+  * Read U16 value from the buffer and shift cursor by 2.
+  * @returns
+  */
+  read16() {
+    const value = this.dataView.getUint16(this.bytePosition, true);
+    this.shift(2);
+    return value;
+  }
+  /**
+  * Read U32 value from the buffer and shift cursor by 4.
+  * @returns
+  */
+  read32() {
+    const value = this.dataView.getUint32(this.bytePosition, true);
+    this.shift(4);
+    return value;
+  }
+  /**
+  * Read U64 value from the buffer and shift cursor by 8.
+  * @returns
+  */
+  read64() {
+    const value1 = this.read32();
+    const result = this.read32().toString(16) + value1.toString(16).padStart(8, "0");
+    return BigInt("0x" + result).toString(10);
+  }
+  /**
+  * Read U128 value from the buffer and shift cursor by 16.
+  */
+  read128() {
+    const value1 = BigInt(this.read64());
+    const result = BigInt(this.read64()).toString(16) + value1.toString(16).padStart(16, "0");
+    return BigInt("0x" + result).toString(10);
+  }
+  /**
+  * Read U128 value from the buffer and shift cursor by 32.
+  * @returns
+  */
+  read256() {
+    const value1 = BigInt(this.read128());
+    const result = BigInt(this.read128()).toString(16) + value1.toString(16).padStart(32, "0");
+    return BigInt("0x" + result).toString(10);
+  }
+  /**
+  * Read `num` number of bytes from the buffer and shift cursor by `num`.
+  * @param num Number of bytes to read.
+  */
+  readBytes(num) {
+    const start = this.bytePosition + this.dataView.byteOffset;
+    const value = new Uint8Array(this.dataView.buffer, start, num);
+    this.shift(num);
+    return value;
+  }
+  /**
+  * Read ULEB value - an integer of varying size. Used for enum indexes and
+  * vector lengths.
+  * @returns {Number} The ULEB value.
+  */
+  readULEB() {
+    const start = this.bytePosition + this.dataView.byteOffset;
+    const { value, length } = ulebDecode2(new Uint8Array(this.dataView.buffer, start));
+    this.shift(length);
+    return value;
+  }
+  /**
+  * Read a BCS vector: read a length and then apply function `cb` X times
+  * where X is the length of the vector, defined as ULEB in BCS bytes.
+  * @param cb Callback to process elements of vector.
+  * @returns {Array<Any>} Array of the resulting values, returned by callback.
+  */
+  readVec(cb) {
+    const length = this.readULEB();
+    const result = [];
+    for (let i = 0; i < length; i++)
+      result.push(cb(this, i, length));
+    return result;
+  }
+};
+
+// node_modules/.pnpm/@scure+base@2.0.0/node_modules/@scure/base/index.js
+function isBytes3(a) {
+  return a instanceof Uint8Array || ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array";
+}
+function isArrayOf2(isString, arr) {
+  if (!Array.isArray(arr))
+    return false;
+  if (arr.length === 0)
+    return true;
+  if (isString) {
+    return arr.every((item) => typeof item === "string");
+  } else {
+    return arr.every((item) => Number.isSafeInteger(item));
+  }
+}
+function astr2(label, input) {
+  if (typeof input !== "string")
+    throw new Error(`${label}: string expected`);
+  return true;
+}
+function anumber3(n) {
+  if (!Number.isSafeInteger(n))
+    throw new Error(`invalid integer: ${n}`);
+}
+function aArr2(input) {
+  if (!Array.isArray(input))
+    throw new Error("array expected");
+}
+function astrArr2(label, input) {
+  if (!isArrayOf2(true, input))
+    throw new Error(`${label}: array of strings expected`);
+}
+function anumArr2(label, input) {
+  if (!isArrayOf2(false, input))
+    throw new Error(`${label}: array of numbers expected`);
+}
+// @__NO_SIDE_EFFECTS__
+function chain2(...args) {
+  const id = (a) => a;
+  const wrap = (a, b) => (c) => a(b(c));
+  const encode = args.map((x) => x.encode).reduceRight(wrap, id);
+  const decode = args.map((x) => x.decode).reduce(wrap, id);
+  return { encode, decode };
+}
+// @__NO_SIDE_EFFECTS__
+function alphabet2(letters) {
+  const lettersA = typeof letters === "string" ? letters.split("") : letters;
+  const len = lettersA.length;
+  astrArr2("alphabet", lettersA);
+  const indexes = new Map(lettersA.map((l, i) => [l, i]));
+  return {
+    encode: (digits) => {
+      aArr2(digits);
+      return digits.map((i) => {
+        if (!Number.isSafeInteger(i) || i < 0 || i >= len)
+          throw new Error(`alphabet.encode: digit index outside alphabet "${i}". Allowed: ${letters}`);
+        return lettersA[i];
+      });
+    },
+    decode: (input) => {
+      aArr2(input);
+      return input.map((letter) => {
+        astr2("alphabet.decode", letter);
+        const i = indexes.get(letter);
+        if (i === void 0)
+          throw new Error(`Unknown letter: "${letter}". Allowed: ${letters}`);
+        return i;
+      });
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function join2(separator = "") {
+  astr2("join", separator);
+  return {
+    encode: (from) => {
+      astrArr2("join.decode", from);
+      return from.join(separator);
+    },
+    decode: (to) => {
+      astr2("join.decode", to);
+      return to.split(separator);
+    }
+  };
+}
+function convertRadix2(data, from, to) {
+  if (from < 2)
+    throw new Error(`convertRadix: invalid from=${from}, base cannot be less than 2`);
+  if (to < 2)
+    throw new Error(`convertRadix: invalid to=${to}, base cannot be less than 2`);
+  aArr2(data);
+  if (!data.length)
+    return [];
+  let pos = 0;
+  const res = [];
+  const digits = Array.from(data, (d) => {
+    anumber3(d);
+    if (d < 0 || d >= from)
+      throw new Error(`invalid integer: ${d}`);
+    return d;
+  });
+  const dlen = digits.length;
+  while (true) {
+    let carry = 0;
+    let done = true;
+    for (let i = pos; i < dlen; i++) {
+      const digit = digits[i];
+      const fromCarry = from * carry;
+      const digitBase = fromCarry + digit;
+      if (!Number.isSafeInteger(digitBase) || fromCarry / from !== carry || digitBase - digit !== fromCarry) {
+        throw new Error("convertRadix: carry overflow");
+      }
+      const div = digitBase / to;
+      carry = digitBase % to;
+      const rounded = Math.floor(div);
+      digits[i] = rounded;
+      if (!Number.isSafeInteger(rounded) || rounded * to + carry !== digitBase)
+        throw new Error("convertRadix: carry overflow");
+      if (!done)
+        continue;
+      else if (!rounded)
+        pos = i;
+      else
+        done = false;
+    }
+    res.push(carry);
+    if (done)
+      break;
+  }
+  for (let i = 0; i < data.length - 1 && data[i] === 0; i++)
+    res.push(0);
+  return res.reverse();
+}
+// @__NO_SIDE_EFFECTS__
+function radix2(num) {
+  anumber3(num);
+  const _256 = 2 ** 8;
+  return {
+    encode: (bytes) => {
+      if (!isBytes3(bytes))
+        throw new Error("radix.encode input should be Uint8Array");
+      return convertRadix2(Array.from(bytes), _256, num);
+    },
+    decode: (digits) => {
+      anumArr2("radix.decode", digits);
+      return Uint8Array.from(convertRadix2(digits, num, _256));
+    }
+  };
+}
+var genBase582 = /* @__NO_SIDE_EFFECTS__ */ (abc) => /* @__PURE__ */ chain2(/* @__PURE__ */ radix2(58), /* @__PURE__ */ alphabet2(abc), /* @__PURE__ */ join2(""));
+var base582 = /* @__PURE__ */ genBase582("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
+
+// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/b58.mjs
+var toBase582 = (buffer) => base582.encode(buffer);
+var fromBase582 = (str) => base582.decode(str);
+
+// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/b64.mjs
+function fromBase642(base64String3) {
+  return Uint8Array.from(atob(base64String3), (char) => char.charCodeAt(0));
+}
+var CHUNK_SIZE2 = 8192;
+function toBase642(bytes) {
+  if (bytes.length < CHUNK_SIZE2)
+    return btoa(String.fromCharCode(...bytes));
+  let output = "";
+  for (var i = 0; i < bytes.length; i += CHUNK_SIZE2) {
+    const chunk3 = bytes.slice(i, i + CHUNK_SIZE2);
+    output += String.fromCharCode(...chunk3);
+  }
+  return btoa(output);
+}
+
+// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/hex.mjs
+function fromHex2(hexStr) {
+  const normalized = hexStr.startsWith("0x") ? hexStr.slice(2) : hexStr;
+  const padded = normalized.length % 2 === 0 ? normalized : `0${normalized}`;
+  const intArr = padded.match(/[0-9a-fA-F]{2}/g)?.map((byte) => parseInt(byte, 16)) ?? [];
+  if (intArr.length !== padded.length / 2)
+    throw new Error(`Invalid hex string ${hexStr}`);
+  return Uint8Array.from(intArr);
+}
+function toHex2(bytes) {
+  return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
+}
+
+// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/chunk.mjs
+function chunk2(array3, size) {
+  return Array.from({ length: Math.ceil(array3.length / size) }, (_, i) => {
+    return array3.slice(i * size, (i + 1) * size);
+  });
+}
+
+// node_modules/.pnpm/@mysten+utils@0.3.1/node_modules/@mysten/utils/dist/dataloader.mjs
+var DataLoader = class {
+  constructor(batchLoadFn, options) {
+    if (typeof batchLoadFn !== "function")
+      throw new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but got: ${batchLoadFn}.`);
+    this._batchLoadFn = batchLoadFn;
+    this._maxBatchSize = getValidMaxBatchSize(options);
+    this._batchScheduleFn = getValidBatchScheduleFn(options);
+    this._cacheKeyFn = getValidCacheKeyFn(options);
+    this._cacheMap = getValidCacheMap(options);
+    this._batch = null;
+    this.name = getValidName(options);
+  }
+  /**
+  * Loads a key, returning a `Promise` for the value represented by that key.
+  */
+  load(key) {
+    if (key === null || key === void 0)
+      throw new TypeError(`The loader.load() function must be called with a value, but got: ${String(key)}.`);
+    const batch = getCurrentBatch(this);
+    const cacheMap = this._cacheMap;
+    let cacheKey;
+    if (cacheMap) {
+      cacheKey = this._cacheKeyFn(key);
+      const cachedPromise = cacheMap.get(cacheKey);
+      if (cachedPromise) {
+        const cacheHits = batch.cacheHits || (batch.cacheHits = []);
+        return new Promise((resolve) => {
+          cacheHits.push(() => {
+            resolve(cachedPromise);
+          });
+        });
+      }
+    }
+    batch.keys.push(key);
+    const promise = new Promise((resolve, reject) => {
+      batch.callbacks.push({
+        resolve,
+        reject
+      });
+    });
+    if (cacheMap)
+      cacheMap.set(cacheKey, promise);
+    return promise;
+  }
+  /**
+  * Loads multiple keys, promising an array of values:
+  *
+  *     var [ a, b ] = await myLoader.loadMany([ 'a', 'b' ]);
+  *
+  * This is similar to the more verbose:
+  *
+  *     var [ a, b ] = await Promise.all([
+  *       myLoader.load('a'),
+  *       myLoader.load('b')
+  *     ]);
+  *
+  * However it is different in the case where any load fails. Where
+  * Promise.all() would reject, loadMany() always resolves, however each result
+  * is either a value or an Error instance.
+  *
+  *     var [ a, b, c ] = await myLoader.loadMany([ 'a', 'b', 'badkey' ]);
+  *     // c instanceof Error
+  *
+  */
+  loadMany(keys) {
+    if (!isArrayLike(keys))
+      throw new TypeError(`The loader.loadMany() function must be called with Array<key>, but got: ${keys}.`);
+    const loadPromises = [];
+    for (let i = 0; i < keys.length; i++)
+      loadPromises.push(this.load(keys[i]).catch((error) => error));
+    return Promise.all(loadPromises);
+  }
+  /**
+  * Clears the value at `key` from the cache, if it exists. Returns itself for
+  * method chaining.
+  */
+  clear(key) {
+    const cacheMap = this._cacheMap;
+    if (cacheMap) {
+      const cacheKey = this._cacheKeyFn(key);
+      cacheMap.delete(cacheKey);
+    }
+    return this;
+  }
+  /**
+  * Clears the entire cache. To be used when some event results in unknown
+  * invalidations across this particular `DataLoader`. Returns itself for
+  * method chaining.
+  */
+  clearAll() {
+    const cacheMap = this._cacheMap;
+    if (cacheMap)
+      cacheMap.clear();
+    return this;
+  }
+  /**
+  * Adds the provided key and value to the cache. If the key already
+  * exists, no change is made. Returns itself for method chaining.
+  *
+  * To prime the cache with an error at a key, provide an Error instance.
+  */
+  prime(key, value) {
+    const cacheMap = this._cacheMap;
+    if (cacheMap) {
+      const cacheKey = this._cacheKeyFn(key);
+      if (cacheMap.get(cacheKey) === void 0) {
+        let promise;
+        if (value instanceof Error) {
+          promise = Promise.reject(value);
+          promise.catch(() => {
+          });
+        } else
+          promise = Promise.resolve(value);
+        cacheMap.set(cacheKey, promise);
+      }
+    }
+    return this;
+  }
+};
+var enqueuePostPromiseJob = typeof process === "object" && typeof process.nextTick === "function" ? function(fn) {
+  if (!resolvedPromise)
+    resolvedPromise = Promise.resolve();
+  resolvedPromise.then(() => {
+    process.nextTick(fn);
+  });
+} : typeof setImmediate === "function" ? function(fn) {
+  setImmediate(fn);
+} : function(fn) {
+  setTimeout(fn);
+};
+var resolvedPromise;
+function getCurrentBatch(loader) {
+  const existingBatch = loader._batch;
+  if (existingBatch !== null && !existingBatch.hasDispatched && existingBatch.keys.length < loader._maxBatchSize)
+    return existingBatch;
+  const newBatch = {
+    hasDispatched: false,
+    keys: [],
+    callbacks: []
+  };
+  loader._batch = newBatch;
+  loader._batchScheduleFn(() => {
+    dispatchBatch(loader, newBatch);
+  });
+  return newBatch;
+}
+function dispatchBatch(loader, batch) {
+  batch.hasDispatched = true;
+  if (batch.keys.length === 0) {
+    resolveCacheHits(batch);
+    return;
+  }
+  let batchPromise;
+  try {
+    batchPromise = loader._batchLoadFn(batch.keys);
+  } catch (e) {
+    return failedDispatch(loader, batch, /* @__PURE__ */ new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but the function errored synchronously: ${String(e)}.`));
+  }
+  if (!batchPromise || typeof batchPromise.then !== "function")
+    return failedDispatch(loader, batch, /* @__PURE__ */ new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but the function did not return a Promise: ${String(batchPromise)}.`));
+  Promise.resolve(batchPromise).then((values) => {
+    if (!isArrayLike(values))
+      throw new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but the function did not return a Promise of an Array: ${String(values)}.`);
+    if (values.length !== batch.keys.length)
+      throw new TypeError(`DataLoader must be constructed with a function which accepts Array<key> and returns Promise<Array<value>>, but the function did not return a Promise of an Array of the same length as the Array of keys.
+
+Keys:
+${String(batch.keys)}
+
+Values:
+${String(values)}`);
+    resolveCacheHits(batch);
+    for (let i = 0; i < batch.callbacks.length; i++) {
+      const value = values[i];
+      if (value instanceof Error)
+        batch.callbacks[i].reject(value);
+      else
+        batch.callbacks[i].resolve(value);
+    }
+  }).catch((error) => {
+    failedDispatch(loader, batch, error);
+  });
+}
+function failedDispatch(loader, batch, error) {
+  resolveCacheHits(batch);
+  for (let i = 0; i < batch.keys.length; i++) {
+    loader.clear(batch.keys[i]);
+    batch.callbacks[i].reject(error);
+  }
+}
+function resolveCacheHits(batch) {
+  if (batch.cacheHits)
+    for (let i = 0; i < batch.cacheHits.length; i++)
+      batch.cacheHits[i]();
+}
+function getValidMaxBatchSize(options) {
+  if (!(!options || options.batch !== false))
+    return 1;
+  const maxBatchSize = options && options.maxBatchSize;
+  if (maxBatchSize === void 0)
+    return Infinity;
+  if (typeof maxBatchSize !== "number" || maxBatchSize < 1)
+    throw new TypeError(`maxBatchSize must be a positive number: ${maxBatchSize}`);
+  return maxBatchSize;
+}
+function getValidBatchScheduleFn(options) {
+  const batchScheduleFn = options && options.batchScheduleFn;
+  if (batchScheduleFn === void 0)
+    return enqueuePostPromiseJob;
+  if (typeof batchScheduleFn !== "function")
+    throw new TypeError(`batchScheduleFn must be a function: ${batchScheduleFn}`);
+  return batchScheduleFn;
+}
+function getValidCacheKeyFn(options) {
+  const cacheKeyFn = options && options.cacheKeyFn;
+  if (cacheKeyFn === void 0)
+    return (key) => key;
+  if (typeof cacheKeyFn !== "function")
+    throw new TypeError(`cacheKeyFn must be a function: ${cacheKeyFn}`);
+  return cacheKeyFn;
+}
+function getValidCacheMap(options) {
+  if (!(!options || options.cache !== false))
+    return null;
+  const cacheMap = options && options.cacheMap;
+  if (cacheMap === void 0)
+    return /* @__PURE__ */ new Map();
+  if (cacheMap !== null) {
+    const missingFunctions = [
+      "get",
+      "set",
+      "delete",
+      "clear"
+    ].filter((fnName) => cacheMap && typeof cacheMap[fnName] !== "function");
+    if (missingFunctions.length !== 0)
+      throw new TypeError("Custom cacheMap missing methods: " + missingFunctions.join(", "));
+  }
+  return cacheMap;
+}
+function getValidName(options) {
+  if (options && options.name)
+    return options.name;
+  return null;
+}
+function isArrayLike(x) {
+  return typeof x === "object" && x !== null && "length" in x && typeof x.length === "number" && (x.length === 0 || x.length > 0 && Object.prototype.hasOwnProperty.call(x, x.length - 1));
+}
+
+// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/utils.mjs
+function encodeStr2(data, encoding) {
+  switch (encoding) {
+    case "base58":
+      return toBase582(data);
+    case "base64":
+      return toBase642(data);
+    case "hex":
+      return toHex2(data);
+    default:
+      throw new Error("Unsupported encoding, supported values are: base64, hex");
+  }
+}
+function splitGenericParameters2(str, genericSeparators = ["<", ">"]) {
+  const [left, right] = genericSeparators;
+  const tok = [];
+  let word = "";
+  let nestedAngleBrackets = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    if (char === left)
+      nestedAngleBrackets++;
+    if (char === right)
+      nestedAngleBrackets--;
+    if (nestedAngleBrackets === 0 && char === ",") {
+      tok.push(word.trim());
+      word = "";
+      continue;
+    }
+    word += char;
+  }
+  tok.push(word.trim());
+  return tok;
+}
+
+// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/writer.mjs
+var BcsWriter2 = class {
+  constructor({ initialSize = 1024, maxSize = Infinity, allocateSize = 1024 } = {}) {
+    this.bytePosition = 0;
+    this.size = initialSize;
+    this.maxSize = maxSize;
+    this.allocateSize = allocateSize;
+    this.dataView = new DataView(new ArrayBuffer(initialSize));
+  }
+  ensureSizeOrGrow(bytes) {
+    const requiredSize = this.bytePosition + bytes;
+    if (requiredSize > this.size) {
+      const nextSize = Math.min(this.maxSize, Math.max(this.size + requiredSize, this.size + this.allocateSize));
+      if (requiredSize > nextSize)
+        throw new Error(`Attempting to serialize to BCS, but buffer does not have enough size. Allocated size: ${this.size}, Max size: ${this.maxSize}, Required size: ${requiredSize}`);
+      this.size = nextSize;
+      const nextBuffer = new ArrayBuffer(this.size);
+      new Uint8Array(nextBuffer).set(new Uint8Array(this.dataView.buffer));
+      this.dataView = new DataView(nextBuffer);
+    }
+  }
+  /**
+  * Shift current cursor position by `bytes`.
+  *
+  * @param {Number} bytes Number of bytes to
+  * @returns {this} Self for possible chaining.
+  */
+  shift(bytes) {
+    this.bytePosition += bytes;
+    return this;
+  }
+  /**
+  * Write a U8 value into a buffer and shift cursor position by 1.
+  * @param {Number} value Value to write.
+  * @returns {this}
+  */
+  write8(value) {
+    this.ensureSizeOrGrow(1);
+    this.dataView.setUint8(this.bytePosition, Number(value));
+    return this.shift(1);
+  }
+  /**
+  * Write a U8 value into a buffer and shift cursor position by 1.
+  * @param {Number} value Value to write.
+  * @returns {this}
+  */
+  writeBytes(bytes) {
+    this.ensureSizeOrGrow(bytes.length);
+    for (let i = 0; i < bytes.length; i++)
+      this.dataView.setUint8(this.bytePosition + i, bytes[i]);
+    return this.shift(bytes.length);
+  }
+  /**
+  * Write a U16 value into a buffer and shift cursor position by 2.
+  * @param {Number} value Value to write.
+  * @returns {this}
+  */
+  write16(value) {
+    this.ensureSizeOrGrow(2);
+    this.dataView.setUint16(this.bytePosition, Number(value), true);
+    return this.shift(2);
+  }
+  /**
+  * Write a U32 value into a buffer and shift cursor position by 4.
+  * @param {Number} value Value to write.
+  * @returns {this}
+  */
+  write32(value) {
+    this.ensureSizeOrGrow(4);
+    this.dataView.setUint32(this.bytePosition, Number(value), true);
+    return this.shift(4);
+  }
+  /**
+  * Write a U64 value into a buffer and shift cursor position by 8.
+  * @param {bigint} value Value to write.
+  * @returns {this}
+  */
+  write64(value) {
+    toLittleEndian2(BigInt(value), 8).forEach((el) => this.write8(el));
+    return this;
+  }
+  /**
+  * Write a U128 value into a buffer and shift cursor position by 16.
+  *
+  * @param {bigint} value Value to write.
+  * @returns {this}
+  */
+  write128(value) {
+    toLittleEndian2(BigInt(value), 16).forEach((el) => this.write8(el));
+    return this;
+  }
+  /**
+  * Write a U256 value into a buffer and shift cursor position by 16.
+  *
+  * @param {bigint} value Value to write.
+  * @returns {this}
+  */
+  write256(value) {
+    toLittleEndian2(BigInt(value), 32).forEach((el) => this.write8(el));
+    return this;
+  }
+  /**
+  * Write a ULEB value into a buffer and shift cursor position by number of bytes
+  * written.
+  * @param {Number} value Value to write.
+  * @returns {this}
+  */
+  writeULEB(value) {
+    ulebEncode2(value).forEach((el) => this.write8(el));
+    return this;
+  }
+  /**
+  * Write a vector into a buffer by first writing the vector length and then calling
+  * a callback on each passed value.
+  *
+  * @param {Array<Any>} vector Array of elements to write.
+  * @param {WriteVecCb} cb Callback to call on each element of the vector.
+  * @returns {this}
+  */
+  writeVec(vector3, cb) {
+    this.writeULEB(vector3.length);
+    Array.from(vector3).forEach((el, i) => cb(this, el, i, vector3.length));
+    return this;
+  }
+  /**
+  * Adds support for iterations over the object.
+  * @returns {Uint8Array}
+  */
+  *[Symbol.iterator]() {
+    for (let i = 0; i < this.bytePosition; i++)
+      yield this.dataView.getUint8(i);
+    return this.toBytes();
+  }
+  /**
+  * Get underlying buffer taking only value bytes (in case initial buffer size was bigger).
+  * @returns {Uint8Array} Resulting bcs.
+  */
+  toBytes() {
+    return new Uint8Array(this.dataView.buffer.slice(0, this.bytePosition));
+  }
+  /**
+  * Represent data as 'hex' or 'base64'
+  * @param encoding Encoding to use: 'base64' or 'hex'
+  */
+  toString(encoding) {
+    return encodeStr2(this.toBytes(), encoding);
+  }
+};
+function toLittleEndian2(bigint3, size) {
+  const result = new Uint8Array(size);
+  let i = 0;
+  while (bigint3 > 0) {
+    result[i] = Number(bigint3 % BigInt(256));
+    bigint3 = bigint3 / BigInt(256);
+    i += 1;
+  }
+  return result;
+}
+
+// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/bcs-type.mjs
+var BcsType3 = class BcsType4 {
+  #write;
+  #serialize;
+  constructor(options) {
+    this.name = options.name;
+    this.read = options.read;
+    this.serializedSize = options.serializedSize ?? (() => null);
+    this.#write = options.write;
+    this.#serialize = options.serialize ?? ((value, options$1) => {
+      const writer = new BcsWriter2({
+        initialSize: this.serializedSize(value) ?? void 0,
+        ...options$1
+      });
+      this.#write(value, writer);
+      return writer.toBytes();
+    });
+    this.validate = options.validate ?? (() => {
+    });
+  }
+  write(value, writer) {
+    this.validate(value);
+    this.#write(value, writer);
+  }
+  serialize(value, options) {
+    this.validate(value);
+    return new SerializedBcs2(this, this.#serialize(value, options));
+  }
+  parse(bytes) {
+    const reader = new BcsReader2(bytes);
+    return this.read(reader);
+  }
+  fromHex(hex) {
+    return this.parse(fromHex2(hex));
+  }
+  fromBase58(b64) {
+    return this.parse(fromBase582(b64));
+  }
+  fromBase64(b64) {
+    return this.parse(fromBase642(b64));
+  }
+  transform({ name, input, output, validate: validate3 }) {
+    return new BcsType4({
+      name: name ?? this.name,
+      read: (reader) => output ? output(this.read(reader)) : this.read(reader),
+      write: (value, writer) => this.#write(input ? input(value) : value, writer),
+      serializedSize: (value) => this.serializedSize(input ? input(value) : value),
+      serialize: (value, options) => this.#serialize(input ? input(value) : value, options),
+      validate: (value) => {
+        validate3?.(value);
+        this.validate(input ? input(value) : value);
+      }
+    });
+  }
+};
+var SERIALIZED_BCS_BRAND2 = Symbol.for("@mysten/serialized-bcs");
+function isSerializedBcs2(obj) {
+  return !!obj && typeof obj === "object" && obj[SERIALIZED_BCS_BRAND2] === true;
+}
+var SerializedBcs2 = class {
+  #schema;
+  #bytes;
+  get [SERIALIZED_BCS_BRAND2]() {
+    return true;
+  }
+  constructor(schema, bytes) {
+    this.#schema = schema;
+    this.#bytes = bytes;
+  }
+  toBytes() {
+    return this.#bytes;
+  }
+  toHex() {
+    return toHex2(this.#bytes);
+  }
+  toBase64() {
+    return toBase642(this.#bytes);
+  }
+  toBase58() {
+    return toBase582(this.#bytes);
+  }
+  parse() {
+    return this.#schema.parse(this.#bytes);
+  }
+};
+function fixedSizeBcsType2({ size, ...options }) {
+  return new BcsType3({
+    ...options,
+    serializedSize: () => size
+  });
+}
+function uIntBcsType2({ readMethod, writeMethod, ...options }) {
+  return fixedSizeBcsType2({
+    ...options,
+    read: (reader) => reader[readMethod](),
+    write: (value, writer) => writer[writeMethod](value),
+    validate: (value) => {
+      if (value < 0 || value > options.maxValue)
+        throw new TypeError(`Invalid ${options.name} value: ${value}. Expected value in range 0-${options.maxValue}`);
+      options.validate?.(value);
+    }
+  });
+}
+function bigUIntBcsType2({ readMethod, writeMethod, ...options }) {
+  return fixedSizeBcsType2({
+    ...options,
+    read: (reader) => reader[readMethod](),
+    write: (value, writer) => writer[writeMethod](BigInt(value)),
+    validate: (val) => {
+      const value = BigInt(val);
+      if (value < 0 || value > options.maxValue)
+        throw new TypeError(`Invalid ${options.name} value: ${value}. Expected value in range 0-${options.maxValue}`);
+      options.validate?.(value);
+    }
+  });
+}
+function dynamicSizeBcsType2({ serialize, ...options }) {
+  const type = new BcsType3({
+    ...options,
+    serialize,
+    write: (value, writer) => {
+      for (const byte of type.serialize(value).toBytes())
+        writer.write8(byte);
+    }
+  });
+  return type;
+}
+function stringLikeBcsType2({ toBytes, fromBytes, ...options }) {
+  return new BcsType3({
+    ...options,
+    read: (reader) => {
+      const length = reader.readULEB();
+      return fromBytes(reader.readBytes(length));
+    },
+    write: (hex, writer) => {
+      const bytes = toBytes(hex);
+      writer.writeULEB(bytes.length);
+      for (let i = 0; i < bytes.length; i++)
+        writer.write8(bytes[i]);
+    },
+    serialize: (value) => {
+      const bytes = toBytes(value);
+      const size = ulebEncode2(bytes.length);
+      const result = new Uint8Array(size.length + bytes.length);
+      result.set(size, 0);
+      result.set(bytes, size.length);
+      return result;
+    },
+    validate: (value) => {
+      if (typeof value !== "string")
+        throw new TypeError(`Invalid ${options.name} value: ${value}. Expected string`);
+      options.validate?.(value);
+    }
+  });
+}
+function lazyBcsType2(cb) {
+  let lazyType = null;
+  function getType() {
+    if (!lazyType)
+      lazyType = cb();
+    return lazyType;
+  }
+  return new BcsType3({
+    name: "lazy",
+    read: (data) => getType().read(data),
+    serializedSize: (value) => getType().serializedSize(value),
+    write: (value, writer) => getType().write(value, writer),
+    serialize: (value, options) => getType().serialize(value, options).toBytes()
+  });
+}
+var BcsStruct2 = class extends BcsType3 {
+  constructor({ name, fields, ...options }) {
+    const canonicalOrder = Object.entries(fields);
+    super({
+      name,
+      serializedSize: (values) => {
+        let total = 0;
+        for (const [field, type] of canonicalOrder) {
+          const size = type.serializedSize(values[field]);
+          if (size == null)
+            return null;
+          total += size;
+        }
+        return total;
+      },
+      read: (reader) => {
+        const result = {};
+        for (const [field, type] of canonicalOrder)
+          result[field] = type.read(reader);
+        return result;
+      },
+      write: (value, writer) => {
+        for (const [field, type] of canonicalOrder)
+          type.write(value[field], writer);
+      },
+      ...options,
+      validate: (value) => {
+        options?.validate?.(value);
+        if (typeof value !== "object" || value == null)
+          throw new TypeError(`Expected object, found ${typeof value}`);
+      }
+    });
+  }
+};
+var BcsEnum2 = class extends BcsType3 {
+  constructor({ fields, ...options }) {
+    const canonicalOrder = Object.entries(fields);
+    super({
+      read: (reader) => {
+        const index = reader.readULEB();
+        const enumEntry = canonicalOrder[index];
+        if (!enumEntry)
+          throw new TypeError(`Unknown value ${index} for enum ${options.name}`);
+        const [kind, type] = enumEntry;
+        return {
+          [kind]: type?.read(reader) ?? true,
+          $kind: kind
+        };
+      },
+      write: (value, writer) => {
+        const [name, val] = Object.entries(value).filter(([name$1]) => Object.hasOwn(fields, name$1))[0];
+        for (let i = 0; i < canonicalOrder.length; i++) {
+          const [optionName, optionType] = canonicalOrder[i];
+          if (optionName === name) {
+            writer.writeULEB(i);
+            optionType?.write(val, writer);
+            return;
+          }
+        }
+      },
+      ...options,
+      validate: (value) => {
+        options?.validate?.(value);
+        if (typeof value !== "object" || value == null)
+          throw new TypeError(`Expected object, found ${typeof value}`);
+        const keys = Object.keys(value).filter((k) => value[k] !== void 0 && Object.hasOwn(fields, k));
+        if (keys.length !== 1)
+          throw new TypeError(`Expected object with one key, but found ${keys.length} for type ${options.name}}`);
+        const [variant] = keys;
+        if (!Object.hasOwn(fields, variant))
+          throw new TypeError(`Invalid enum variant ${variant}`);
+      }
+    });
+  }
+};
+var BcsTuple2 = class extends BcsType3 {
+  constructor({ fields, name, ...options }) {
+    super({
+      name: name ?? `(${fields.map((t) => t.name).join(", ")})`,
+      serializedSize: (values) => {
+        let total = 0;
+        for (let i = 0; i < fields.length; i++) {
+          const size = fields[i].serializedSize(values[i]);
+          if (size == null)
+            return null;
+          total += size;
+        }
+        return total;
+      },
+      read: (reader) => {
+        const result = [];
+        for (const field of fields)
+          result.push(field.read(reader));
+        return result;
+      },
+      write: (value, writer) => {
+        for (let i = 0; i < fields.length; i++)
+          fields[i].write(value[i], writer);
+      },
+      ...options,
+      validate: (value) => {
+        options?.validate?.(value);
+        if (!Array.isArray(value))
+          throw new TypeError(`Expected array, found ${typeof value}`);
+        if (value.length !== fields.length)
+          throw new TypeError(`Expected array of length ${fields.length}, found ${value.length}`);
+      }
+    });
+  }
+};
+
+// node_modules/.pnpm/@mysten+bcs@2.0.2/node_modules/@mysten/bcs/dist/bcs.mjs
+function fixedArray2(size, type, options) {
+  return new BcsType3({
+    read: (reader) => {
+      const result = new Array(size);
+      for (let i = 0; i < size; i++)
+        result[i] = type.read(reader);
+      return result;
+    },
+    write: (value, writer) => {
+      for (const item of value)
+        type.write(item, writer);
+    },
+    ...options,
+    name: options?.name ?? `${type.name}[${size}]`,
+    validate: (value) => {
+      options?.validate?.(value);
+      if (!value || typeof value !== "object" || !("length" in value))
+        throw new TypeError(`Expected array, found ${typeof value}`);
+      if (value.length !== size)
+        throw new TypeError(`Expected array of length ${size}, found ${value.length}`);
+    }
+  });
+}
+function option2(type) {
+  return bcs2.enum(`Option<${type.name}>`, {
+    None: null,
+    Some: type
+  }).transform({
+    input: (value) => {
+      if (value == null)
+        return { None: true };
+      return { Some: value };
+    },
+    output: (value) => {
+      if (value.$kind === "Some")
+        return value.Some;
+      return null;
+    }
+  });
+}
+function vector2(type, options) {
+  return new BcsType3({
+    read: (reader) => {
+      const length = reader.readULEB();
+      const result = new Array(length);
+      for (let i = 0; i < length; i++)
+        result[i] = type.read(reader);
+      return result;
+    },
+    write: (value, writer) => {
+      writer.writeULEB(value.length);
+      for (const item of value)
+        type.write(item, writer);
+    },
+    ...options,
+    name: options?.name ?? `vector<${type.name}>`,
+    validate: (value) => {
+      options?.validate?.(value);
+      if (!value || typeof value !== "object" || !("length" in value))
+        throw new TypeError(`Expected array, found ${typeof value}`);
+    }
+  });
+}
+function compareBcsBytes2(a, b) {
+  for (let i = 0; i < Math.min(a.length, b.length); i++)
+    if (a[i] !== b[i])
+      return a[i] - b[i];
+  return a.length - b.length;
+}
+function map2(keyType, valueType) {
+  return new BcsType3({
+    name: `Map<${keyType.name}, ${valueType.name}>`,
+    read: (reader) => {
+      const length = reader.readULEB();
+      const result = /* @__PURE__ */ new Map();
+      for (let i = 0; i < length; i++)
+        result.set(keyType.read(reader), valueType.read(reader));
+      return result;
+    },
+    write: (value, writer) => {
+      const entries = [...value.entries()].map(([key, val]) => [keyType.serialize(key).toBytes(), val]);
+      entries.sort(([a], [b]) => compareBcsBytes2(a, b));
+      writer.writeULEB(entries.length);
+      for (const [keyBytes, val] of entries) {
+        writer.writeBytes(keyBytes);
+        valueType.write(val, writer);
+      }
+    }
+  });
+}
+var bcs2 = {
+  u8(options) {
+    return uIntBcsType2({
+      readMethod: "read8",
+      writeMethod: "write8",
+      size: 1,
+      maxValue: 2 ** 8 - 1,
+      ...options,
+      name: options?.name ?? "u8"
+    });
+  },
+  u16(options) {
+    return uIntBcsType2({
+      readMethod: "read16",
+      writeMethod: "write16",
+      size: 2,
+      maxValue: 2 ** 16 - 1,
+      ...options,
+      name: options?.name ?? "u16"
+    });
+  },
+  u32(options) {
+    return uIntBcsType2({
+      readMethod: "read32",
+      writeMethod: "write32",
+      size: 4,
+      maxValue: 2 ** 32 - 1,
+      ...options,
+      name: options?.name ?? "u32"
+    });
+  },
+  u64(options) {
+    return bigUIntBcsType2({
+      readMethod: "read64",
+      writeMethod: "write64",
+      size: 8,
+      maxValue: 2n ** 64n - 1n,
+      ...options,
+      name: options?.name ?? "u64"
+    });
+  },
+  u128(options) {
+    return bigUIntBcsType2({
+      readMethod: "read128",
+      writeMethod: "write128",
+      size: 16,
+      maxValue: 2n ** 128n - 1n,
+      ...options,
+      name: options?.name ?? "u128"
+    });
+  },
+  u256(options) {
+    return bigUIntBcsType2({
+      readMethod: "read256",
+      writeMethod: "write256",
+      size: 32,
+      maxValue: 2n ** 256n - 1n,
+      ...options,
+      name: options?.name ?? "u256"
+    });
+  },
+  bool(options) {
+    return fixedSizeBcsType2({
+      size: 1,
+      read: (reader) => reader.read8() === 1,
+      write: (value, writer) => writer.write8(value ? 1 : 0),
+      ...options,
+      name: options?.name ?? "bool",
+      validate: (value) => {
+        options?.validate?.(value);
+        if (typeof value !== "boolean")
+          throw new TypeError(`Expected boolean, found ${typeof value}`);
+      }
+    });
+  },
+  uleb128(options) {
+    return dynamicSizeBcsType2({
+      read: (reader) => reader.readULEB(),
+      serialize: (value) => {
+        return Uint8Array.from(ulebEncode2(value));
+      },
+      ...options,
+      name: options?.name ?? "uleb128"
+    });
+  },
+  bytes(size, options) {
+    return fixedSizeBcsType2({
+      size,
+      read: (reader) => reader.readBytes(size),
+      write: (value, writer) => {
+        writer.writeBytes(new Uint8Array(value));
+      },
+      ...options,
+      name: options?.name ?? `bytes[${size}]`,
+      validate: (value) => {
+        options?.validate?.(value);
+        if (!value || typeof value !== "object" || !("length" in value))
+          throw new TypeError(`Expected array, found ${typeof value}`);
+        if (value.length !== size)
+          throw new TypeError(`Expected array of length ${size}, found ${value.length}`);
+      }
+    });
+  },
+  byteVector(options) {
+    return new BcsType3({
+      read: (reader) => {
+        const length = reader.readULEB();
+        return reader.readBytes(length);
+      },
+      write: (value, writer) => {
+        const array3 = new Uint8Array(value);
+        writer.writeULEB(array3.length);
+        writer.writeBytes(array3);
+      },
+      ...options,
+      name: options?.name ?? "vector<u8>",
+      serializedSize: (value) => {
+        const length = "length" in value ? value.length : null;
+        return length == null ? null : ulebEncode2(length).length + length;
+      },
+      validate: (value) => {
+        options?.validate?.(value);
+        if (!value || typeof value !== "object" || !("length" in value))
+          throw new TypeError(`Expected array, found ${typeof value}`);
+      }
+    });
+  },
+  string(options) {
+    return stringLikeBcsType2({
+      toBytes: (value) => new TextEncoder().encode(value),
+      fromBytes: (bytes) => new TextDecoder().decode(bytes),
+      ...options,
+      name: options?.name ?? "string"
+    });
+  },
+  fixedArray: fixedArray2,
+  option: option2,
+  vector: vector2,
+  tuple(fields, options) {
+    return new BcsTuple2({
+      fields,
+      ...options
+    });
+  },
+  struct(name, fields, options) {
+    return new BcsStruct2({
+      name,
+      fields,
+      ...options
+    });
+  },
+  enum(name, fields, options) {
+    return new BcsEnum2({
+      name,
+      fields,
+      ...options
+    });
+  },
+  map: map2,
+  lazy(cb) {
+    return lazyBcsType2(cb);
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/sui-types.mjs
+var TX_DIGEST_LENGTH = 32;
+function isValidTransactionDigest(value) {
+  try {
+    return fromBase582(value).length === TX_DIGEST_LENGTH;
+  } catch {
+    return false;
+  }
+}
+var SUI_ADDRESS_LENGTH2 = 32;
+function isValidSuiAddress2(value) {
+  return isHex2(value) && getHexByteLength2(value) === SUI_ADDRESS_LENGTH2;
+}
+function isValidSuiObjectId(value) {
+  return isValidSuiAddress2(value);
+}
+var MOVE_IDENTIFIER_REGEX2 = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+function isValidMoveIdentifier2(name) {
+  return MOVE_IDENTIFIER_REGEX2.test(name);
+}
+var PRIMITIVE_TYPE_TAGS2 = [
+  "bool",
+  "u8",
+  "u16",
+  "u32",
+  "u64",
+  "u128",
+  "u256",
+  "address",
+  "signer"
+];
+var VECTOR_TYPE_REGEX2 = /^vector<(.+)>$/;
+function isValidTypeTag2(type) {
+  if (PRIMITIVE_TYPE_TAGS2.includes(type))
+    return true;
+  const vectorMatch = type.match(VECTOR_TYPE_REGEX2);
+  if (vectorMatch)
+    return isValidTypeTag2(vectorMatch[1]);
+  if (type.includes("::"))
+    return isValidStructTag2(type);
+  return false;
+}
+function isValidParsedStructTag2(tag) {
+  if (!isValidSuiAddress2(tag.address) && !isValidNamedPackage2(tag.address))
+    return false;
+  if (!isValidMoveIdentifier2(tag.module) || !isValidMoveIdentifier2(tag.name))
+    return false;
+  return tag.typeParams.every((param) => {
+    if (typeof param === "string")
+      return isValidTypeTag2(param);
+    return isValidParsedStructTag2(param);
+  });
+}
+function isValidStructTag2(type) {
+  try {
+    return isValidParsedStructTag2(parseStructTag2(type));
+  } catch {
+    return false;
+  }
+}
+function parseTypeTag2(type) {
+  if (type.startsWith("vector<")) {
+    if (!type.endsWith(">"))
+      throw new Error(`Invalid type tag: ${type}`);
+    const inner = type.slice(7, -1);
+    if (!inner)
+      throw new Error(`Invalid type tag: ${type}`);
+    const parsed = parseTypeTag2(inner);
+    if (typeof parsed === "string")
+      return `vector<${parsed}>`;
+    return `vector<${normalizeStructTag2(parsed)}>`;
+  }
+  if (!type.includes("::"))
+    return type;
+  return parseStructTag2(type);
+}
+function parseStructTag2(type) {
+  const parts = type.split("::");
+  if (parts.length < 3)
+    throw new Error(`Invalid struct tag: ${type}`);
+  const [address, module] = parts;
+  const isMvrPackage = isValidNamedPackage2(address);
+  const rest = type.slice(address.length + module.length + 4);
+  const name = rest.includes("<") ? rest.slice(0, rest.indexOf("<")) : rest;
+  const typeParams = rest.includes("<") ? splitGenericParameters2(rest.slice(rest.indexOf("<") + 1, rest.lastIndexOf(">"))).map((typeParam) => parseTypeTag2(typeParam.trim())) : [];
+  return {
+    address: isMvrPackage ? address : normalizeSuiAddress2(address),
+    module,
+    name,
+    typeParams
+  };
+}
+function normalizeStructTag2(type) {
+  const { address, module, name, typeParams } = typeof type === "string" ? parseStructTag2(type) : type;
+  return `${address}::${module}::${name}${typeParams?.length > 0 ? `<${typeParams.map((typeParam) => typeof typeParam === "string" ? typeParam : normalizeStructTag2(typeParam)).join(",")}>` : ""}`;
+}
+function normalizeSuiAddress2(value, forceAdd0x = false) {
+  let address = value.toLowerCase();
+  if (!forceAdd0x && address.startsWith("0x"))
+    address = address.slice(2);
+  return `0x${address.padStart(SUI_ADDRESS_LENGTH2 * 2, "0")}`;
+}
+function normalizeSuiObjectId2(value, forceAdd0x = false) {
+  return normalizeSuiAddress2(value, forceAdd0x);
+}
+function isHex2(value) {
+  return /^(0x|0X)?[a-fA-F0-9]+$/.test(value) && value.length % 2 === 0;
+}
+function getHexByteLength2(value) {
+  return /^(0x|0X)/.test(value) ? (value.length - 2) / 2 : value.length / 2;
+}
+
+// node_modules/.pnpm/valibot@1.2.0_typescript@5.9.3/node_modules/valibot/dist/index.mjs
+var store$42;
+// @__NO_SIDE_EFFECTS__
+function getGlobalConfig2(config$1) {
+  return {
+    lang: config$1?.lang ?? store$42?.lang,
+    message: config$1?.message,
+    abortEarly: config$1?.abortEarly ?? store$42?.abortEarly,
+    abortPipeEarly: config$1?.abortPipeEarly ?? store$42?.abortPipeEarly
+  };
+}
+var store$32;
+// @__NO_SIDE_EFFECTS__
+function getGlobalMessage2(lang) {
+  return store$32?.get(lang);
+}
+var store$22;
+// @__NO_SIDE_EFFECTS__
+function getSchemaMessage2(lang) {
+  return store$22?.get(lang);
+}
+var store$12;
+// @__NO_SIDE_EFFECTS__
+function getSpecificMessage2(reference, lang) {
+  return store$12?.get(reference)?.get(lang);
+}
+// @__NO_SIDE_EFFECTS__
+function _stringify2(input) {
+  const type = typeof input;
+  if (type === "string")
+    return `"${input}"`;
+  if (type === "number" || type === "bigint" || type === "boolean")
+    return `${input}`;
+  if (type === "object" || type === "function")
+    return (input && Object.getPrototypeOf(input)?.constructor?.name) ?? "null";
+  return type;
+}
+function _addIssue2(context, label, dataset, config$1, other) {
+  const input = other && "input" in other ? other.input : dataset.value;
+  const expected = other?.expected ?? context.expects ?? null;
+  const received = other?.received ?? /* @__PURE__ */ _stringify2(input);
+  const issue = {
+    kind: context.kind,
+    type: context.type,
+    input,
+    expected,
+    received,
+    message: `Invalid ${label}: ${expected ? `Expected ${expected} but r` : "R"}eceived ${received}`,
+    requirement: context.requirement,
+    path: other?.path,
+    issues: other?.issues,
+    lang: config$1.lang,
+    abortEarly: config$1.abortEarly,
+    abortPipeEarly: config$1.abortPipeEarly
+  };
+  const isSchema = context.kind === "schema";
+  const message$1 = other?.message ?? context.message ?? /* @__PURE__ */ getSpecificMessage2(context.reference, issue.lang) ?? (isSchema ? /* @__PURE__ */ getSchemaMessage2(issue.lang) : null) ?? config$1.message ?? /* @__PURE__ */ getGlobalMessage2(issue.lang);
+  if (message$1 !== void 0)
+    issue.message = typeof message$1 === "function" ? message$1(issue) : message$1;
+  if (isSchema)
+    dataset.typed = false;
+  if (dataset.issues)
+    dataset.issues.push(issue);
+  else
+    dataset.issues = [issue];
+}
+// @__NO_SIDE_EFFECTS__
+function _getStandardProps2(context) {
+  return {
+    version: 1,
+    vendor: "valibot",
+    validate(value$1) {
+      return context["~run"]({ value: value$1 }, /* @__PURE__ */ getGlobalConfig2());
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function _isValidObjectKey2(object$1, key) {
+  return Object.hasOwn(object$1, key) && key !== "__proto__" && key !== "prototype" && key !== "constructor";
+}
+// @__NO_SIDE_EFFECTS__
+function _joinExpects2(values$1, separator) {
+  const list = [...new Set(values$1)];
+  if (list.length > 1)
+    return `(${list.join(` ${separator} `)})`;
+  return list[0] ?? "never";
+}
+var ValiError2 = class extends Error {
+  /**
+  * Creates a Valibot error with useful information.
+  *
+  * @param issues The error issues.
+  */
+  constructor(issues) {
+    super(issues[0].message);
+    this.name = "ValiError";
+    this.issues = issues;
+  }
+};
+// @__NO_SIDE_EFFECTS__
+function check2(requirement, message$1) {
+  return {
+    kind: "validation",
+    type: "check",
+    reference: check2,
+    async: false,
+    expects: null,
+    requirement,
+    message: message$1,
+    "~run"(dataset, config$1) {
+      if (dataset.typed && !this.requirement(dataset.value))
+        _addIssue2(this, "input", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function integer2(message$1) {
+  return {
+    kind: "validation",
+    type: "integer",
+    reference: integer2,
+    async: false,
+    expects: null,
+    requirement: Number.isInteger,
+    message: message$1,
+    "~run"(dataset, config$1) {
+      if (dataset.typed && !this.requirement(dataset.value))
+        _addIssue2(this, "integer", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function transform2(operation) {
+  return {
+    kind: "transformation",
+    type: "transform",
+    reference: transform2,
+    async: false,
+    operation,
+    "~run"(dataset) {
+      dataset.value = this.operation(dataset.value);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function getFallback2(schema, dataset, config$1) {
+  return typeof schema.fallback === "function" ? schema.fallback(dataset, config$1) : schema.fallback;
+}
+// @__NO_SIDE_EFFECTS__
+function getDefault2(schema, dataset, config$1) {
+  return typeof schema.default === "function" ? schema.default(dataset, config$1) : schema.default;
+}
+// @__NO_SIDE_EFFECTS__
+function is2(schema, input) {
+  return !schema["~run"]({ value: input }, { abortEarly: true }).issues;
+}
+// @__NO_SIDE_EFFECTS__
+function array2(item, message$1) {
+  return {
+    kind: "schema",
+    type: "array",
+    reference: array2,
+    expects: "Array",
+    async: false,
+    item,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      const input = dataset.value;
+      if (Array.isArray(input)) {
+        dataset.typed = true;
+        dataset.value = [];
+        for (let key = 0; key < input.length; key++) {
+          const value$1 = input[key];
+          const itemDataset = this.item["~run"]({ value: value$1 }, config$1);
+          if (itemDataset.issues) {
+            const pathItem = {
+              type: "array",
+              origin: "value",
+              input,
+              key,
+              value: value$1
+            };
+            for (const issue of itemDataset.issues) {
+              if (issue.path)
+                issue.path.unshift(pathItem);
+              else
+                issue.path = [pathItem];
+              dataset.issues?.push(issue);
+            }
+            if (!dataset.issues)
+              dataset.issues = itemDataset.issues;
+            if (config$1.abortEarly) {
+              dataset.typed = false;
+              break;
+            }
+          }
+          if (!itemDataset.typed)
+            dataset.typed = false;
+          dataset.value.push(itemDataset.value);
+        }
+      } else
+        _addIssue2(this, "type", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function bigint2(message$1) {
+  return {
+    kind: "schema",
+    type: "bigint",
+    reference: bigint2,
+    expects: "bigint",
+    async: false,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      if (typeof dataset.value === "bigint")
+        dataset.typed = true;
+      else
+        _addIssue2(this, "type", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function boolean2(message$1) {
+  return {
+    kind: "schema",
+    type: "boolean",
+    reference: boolean2,
+    expects: "boolean",
+    async: false,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      if (typeof dataset.value === "boolean")
+        dataset.typed = true;
+      else
+        _addIssue2(this, "type", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function lazy2(getter) {
+  return {
+    kind: "schema",
+    type: "lazy",
+    reference: lazy2,
+    expects: "unknown",
+    async: false,
+    getter,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      return this.getter(dataset.value)["~run"](dataset, config$1);
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function literal2(literal_, message$1) {
+  return {
+    kind: "schema",
+    type: "literal",
+    reference: literal2,
+    expects: /* @__PURE__ */ _stringify2(literal_),
+    async: false,
+    literal: literal_,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      if (dataset.value === this.literal)
+        dataset.typed = true;
+      else
+        _addIssue2(this, "type", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function nullable2(wrapped, default_) {
+  return {
+    kind: "schema",
+    type: "nullable",
+    reference: nullable2,
+    expects: `(${wrapped.expects} | null)`,
+    async: false,
+    wrapped,
+    default: default_,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      if (dataset.value === null) {
+        if (this.default !== void 0)
+          dataset.value = /* @__PURE__ */ getDefault2(this, dataset, config$1);
+        if (dataset.value === null) {
+          dataset.typed = true;
+          return dataset;
+        }
+      }
+      return this.wrapped["~run"](dataset, config$1);
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function nullish2(wrapped, default_) {
+  return {
+    kind: "schema",
+    type: "nullish",
+    reference: nullish2,
+    expects: `(${wrapped.expects} | null | undefined)`,
+    async: false,
+    wrapped,
+    default: default_,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      if (dataset.value === null || dataset.value === void 0) {
+        if (this.default !== void 0)
+          dataset.value = /* @__PURE__ */ getDefault2(this, dataset, config$1);
+        if (dataset.value === null || dataset.value === void 0) {
+          dataset.typed = true;
+          return dataset;
+        }
+      }
+      return this.wrapped["~run"](dataset, config$1);
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function number2(message$1) {
+  return {
+    kind: "schema",
+    type: "number",
+    reference: number2,
+    expects: "number",
+    async: false,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      if (typeof dataset.value === "number" && !isNaN(dataset.value))
+        dataset.typed = true;
+      else
+        _addIssue2(this, "type", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function object2(entries$1, message$1) {
+  return {
+    kind: "schema",
+    type: "object",
+    reference: object2,
+    expects: "Object",
+    async: false,
+    entries: entries$1,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      const input = dataset.value;
+      if (input && typeof input === "object") {
+        dataset.typed = true;
+        dataset.value = {};
+        for (const key in this.entries) {
+          const valueSchema = this.entries[key];
+          if (key in input || (valueSchema.type === "exact_optional" || valueSchema.type === "optional" || valueSchema.type === "nullish") && valueSchema.default !== void 0) {
+            const value$1 = key in input ? input[key] : /* @__PURE__ */ getDefault2(valueSchema);
+            const valueDataset = valueSchema["~run"]({ value: value$1 }, config$1);
+            if (valueDataset.issues) {
+              const pathItem = {
+                type: "object",
+                origin: "value",
+                input,
+                key,
+                value: value$1
+              };
+              for (const issue of valueDataset.issues) {
+                if (issue.path)
+                  issue.path.unshift(pathItem);
+                else
+                  issue.path = [pathItem];
+                dataset.issues?.push(issue);
+              }
+              if (!dataset.issues)
+                dataset.issues = valueDataset.issues;
+              if (config$1.abortEarly) {
+                dataset.typed = false;
+                break;
+              }
+            }
+            if (!valueDataset.typed)
+              dataset.typed = false;
+            dataset.value[key] = valueDataset.value;
+          } else if (valueSchema.fallback !== void 0)
+            dataset.value[key] = /* @__PURE__ */ getFallback2(valueSchema);
+          else if (valueSchema.type !== "exact_optional" && valueSchema.type !== "optional" && valueSchema.type !== "nullish") {
+            _addIssue2(this, "key", dataset, config$1, {
+              input: void 0,
+              expected: `"${key}"`,
+              path: [{
+                type: "object",
+                origin: "key",
+                input,
+                key,
+                value: input[key]
+              }]
+            });
+            if (config$1.abortEarly)
+              break;
+          }
+        }
+      } else
+        _addIssue2(this, "type", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function optional2(wrapped, default_) {
+  return {
+    kind: "schema",
+    type: "optional",
+    reference: optional2,
+    expects: `(${wrapped.expects} | undefined)`,
+    async: false,
+    wrapped,
+    default: default_,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      if (dataset.value === void 0) {
+        if (this.default !== void 0)
+          dataset.value = /* @__PURE__ */ getDefault2(this, dataset, config$1);
+        if (dataset.value === void 0) {
+          dataset.typed = true;
+          return dataset;
+        }
+      }
+      return this.wrapped["~run"](dataset, config$1);
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function record2(key, value$1, message$1) {
+  return {
+    kind: "schema",
+    type: "record",
+    reference: record2,
+    expects: "Object",
+    async: false,
+    key,
+    value: value$1,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      const input = dataset.value;
+      if (input && typeof input === "object") {
+        dataset.typed = true;
+        dataset.value = {};
+        for (const entryKey in input)
+          if (/* @__PURE__ */ _isValidObjectKey2(input, entryKey)) {
+            const entryValue = input[entryKey];
+            const keyDataset = this.key["~run"]({ value: entryKey }, config$1);
+            if (keyDataset.issues) {
+              const pathItem = {
+                type: "object",
+                origin: "key",
+                input,
+                key: entryKey,
+                value: entryValue
+              };
+              for (const issue of keyDataset.issues) {
+                issue.path = [pathItem];
+                dataset.issues?.push(issue);
+              }
+              if (!dataset.issues)
+                dataset.issues = keyDataset.issues;
+              if (config$1.abortEarly) {
+                dataset.typed = false;
+                break;
+              }
+            }
+            const valueDataset = this.value["~run"]({ value: entryValue }, config$1);
+            if (valueDataset.issues) {
+              const pathItem = {
+                type: "object",
+                origin: "value",
+                input,
+                key: entryKey,
+                value: entryValue
+              };
+              for (const issue of valueDataset.issues) {
+                if (issue.path)
+                  issue.path.unshift(pathItem);
+                else
+                  issue.path = [pathItem];
+                dataset.issues?.push(issue);
+              }
+              if (!dataset.issues)
+                dataset.issues = valueDataset.issues;
+              if (config$1.abortEarly) {
+                dataset.typed = false;
+                break;
+              }
+            }
+            if (!keyDataset.typed || !valueDataset.typed)
+              dataset.typed = false;
+            if (keyDataset.typed)
+              dataset.value[keyDataset.value] = valueDataset.value;
+          }
+      } else
+        _addIssue2(this, "type", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function string2(message$1) {
+  return {
+    kind: "schema",
+    type: "string",
+    reference: string2,
+    expects: "string",
+    async: false,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      if (typeof dataset.value === "string")
+        dataset.typed = true;
+      else
+        _addIssue2(this, "type", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function tuple2(items, message$1) {
+  return {
+    kind: "schema",
+    type: "tuple",
+    reference: tuple2,
+    expects: "Array",
+    async: false,
+    items,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      const input = dataset.value;
+      if (Array.isArray(input)) {
+        dataset.typed = true;
+        dataset.value = [];
+        for (let key = 0; key < this.items.length; key++) {
+          const value$1 = input[key];
+          const itemDataset = this.items[key]["~run"]({ value: value$1 }, config$1);
+          if (itemDataset.issues) {
+            const pathItem = {
+              type: "array",
+              origin: "value",
+              input,
+              key,
+              value: value$1
+            };
+            for (const issue of itemDataset.issues) {
+              if (issue.path)
+                issue.path.unshift(pathItem);
+              else
+                issue.path = [pathItem];
+              dataset.issues?.push(issue);
+            }
+            if (!dataset.issues)
+              dataset.issues = itemDataset.issues;
+            if (config$1.abortEarly) {
+              dataset.typed = false;
+              break;
+            }
+          }
+          if (!itemDataset.typed)
+            dataset.typed = false;
+          dataset.value.push(itemDataset.value);
+        }
+      } else
+        _addIssue2(this, "type", dataset, config$1);
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function _subIssues2(datasets) {
+  let issues;
+  if (datasets)
+    for (const dataset of datasets)
+      if (issues)
+        issues.push(...dataset.issues);
+      else
+        issues = dataset.issues;
+  return issues;
+}
+// @__NO_SIDE_EFFECTS__
+function union2(options, message$1) {
+  return {
+    kind: "schema",
+    type: "union",
+    reference: union2,
+    expects: /* @__PURE__ */ _joinExpects2(options.map((option3) => option3.expects), "|"),
+    async: false,
+    options,
+    message: message$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      let validDataset;
+      let typedDatasets;
+      let untypedDatasets;
+      for (const schema of this.options) {
+        const optionDataset = schema["~run"]({ value: dataset.value }, config$1);
+        if (optionDataset.typed)
+          if (optionDataset.issues)
+            if (typedDatasets)
+              typedDatasets.push(optionDataset);
+            else
+              typedDatasets = [optionDataset];
+          else {
+            validDataset = optionDataset;
+            break;
+          }
+        else if (untypedDatasets)
+          untypedDatasets.push(optionDataset);
+        else
+          untypedDatasets = [optionDataset];
+      }
+      if (validDataset)
+        return validDataset;
+      if (typedDatasets) {
+        if (typedDatasets.length === 1)
+          return typedDatasets[0];
+        _addIssue2(this, "type", dataset, config$1, { issues: /* @__PURE__ */ _subIssues2(typedDatasets) });
+        dataset.typed = true;
+      } else if (untypedDatasets?.length === 1)
+        return untypedDatasets[0];
+      else
+        _addIssue2(this, "type", dataset, config$1, { issues: /* @__PURE__ */ _subIssues2(untypedDatasets) });
+      return dataset;
+    }
+  };
+}
+// @__NO_SIDE_EFFECTS__
+function unknown2() {
+  return {
+    kind: "schema",
+    type: "unknown",
+    reference: unknown2,
+    expects: "unknown",
+    async: false,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset) {
+      dataset.typed = true;
+      return dataset;
+    }
+  };
+}
+function parse2(schema, input, config$1) {
+  const dataset = schema["~run"]({ value: input }, /* @__PURE__ */ getGlobalConfig2(config$1));
+  if (dataset.issues)
+    throw new ValiError2(dataset.issues);
+  return dataset.value;
+}
+// @__NO_SIDE_EFFECTS__
+function pipe2(...pipe$1) {
+  return {
+    ...pipe$1[0],
+    pipe: pipe$1,
+    get "~standard"() {
+      return /* @__PURE__ */ _getStandardProps2(this);
+    },
+    "~run"(dataset, config$1) {
+      for (const item of pipe$1)
+        if (item.kind !== "metadata") {
+          if (dataset.issues && (item.kind === "schema" || item.kind === "transformation")) {
+            dataset.typed = false;
+            break;
+          }
+          if (!dataset.issues || !config$1.abortEarly && !config$1.abortPipeEarly)
+            dataset = item["~run"](dataset, config$1);
+        }
+      return dataset;
+    }
+  };
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/internal.mjs
+function safeEnum2(options) {
+  return union2(Object.keys(options).map((key) => withKind2(key, object2({ [key]: options[key] }))));
+}
+function withKind2(key, schema) {
+  return pipe2(object2({
+    ...schema.entries,
+    $kind: optional2(literal2(key))
+  }), transform2((value) => ({
+    ...value,
+    $kind: key
+  })));
+}
+var SuiAddress2 = pipe2(string2(), transform2((value) => normalizeSuiAddress2(value)), check2(isValidSuiAddress2));
+var ObjectID2 = SuiAddress2;
+var BCSBytes2 = string2();
+var JsonU642 = pipe2(union2([string2(), pipe2(number2(), integer2())]), check2((val) => {
+  try {
+    BigInt(val);
+    return BigInt(val) >= 0 && BigInt(val) <= 18446744073709551615n;
+  } catch {
+    return false;
+  }
+}, "Invalid u64"));
+var U322 = pipe2(number2(), integer2(), check2((val) => val >= 0 && val < 2 ** 32, "Invalid u32"));
+var ObjectRefSchema2 = object2({
+  objectId: SuiAddress2,
+  version: JsonU642,
+  digest: string2()
+});
+var ArgumentSchema2 = union2([
+  withKind2("GasCoin", object2({ GasCoin: literal2(true) })),
+  withKind2("Input", object2({
+    Input: pipe2(number2(), integer2()),
+    type: optional2(union2([
+      literal2("pure"),
+      literal2("object"),
+      literal2("withdrawal")
+    ]))
+  })),
+  withKind2("Result", object2({ Result: pipe2(number2(), integer2()) })),
+  withKind2("NestedResult", object2({ NestedResult: tuple2([pipe2(number2(), integer2()), pipe2(number2(), integer2())]) }))
+]);
+var GasDataSchema2 = object2({
+  budget: nullable2(JsonU642),
+  price: nullable2(JsonU642),
+  owner: nullable2(SuiAddress2),
+  payment: nullable2(array2(ObjectRefSchema2))
+});
+var StructTagSchema2 = object2({
+  address: string2(),
+  module: string2(),
+  name: string2(),
+  typeParams: array2(string2())
+});
+var OpenSignatureBodySchema2 = union2([
+  object2({ $kind: literal2("address") }),
+  object2({ $kind: literal2("bool") }),
+  object2({ $kind: literal2("u8") }),
+  object2({ $kind: literal2("u16") }),
+  object2({ $kind: literal2("u32") }),
+  object2({ $kind: literal2("u64") }),
+  object2({ $kind: literal2("u128") }),
+  object2({ $kind: literal2("u256") }),
+  object2({ $kind: literal2("unknown") }),
+  object2({
+    $kind: literal2("vector"),
+    vector: lazy2(() => OpenSignatureBodySchema2)
+  }),
+  object2({
+    $kind: literal2("datatype"),
+    datatype: object2({
+      typeName: string2(),
+      typeParameters: array2(lazy2(() => OpenSignatureBodySchema2))
+    })
+  }),
+  object2({
+    $kind: literal2("typeParameter"),
+    index: pipe2(number2(), integer2())
+  })
+]);
+var OpenSignatureSchema2 = object2({
+  reference: nullable2(union2([
+    literal2("mutable"),
+    literal2("immutable"),
+    literal2("unknown")
+  ])),
+  body: OpenSignatureBodySchema2
+});
+var ProgrammableMoveCallSchema2 = object2({
+  package: ObjectID2,
+  module: string2(),
+  function: string2(),
+  typeArguments: array2(string2()),
+  arguments: array2(ArgumentSchema2),
+  _argumentTypes: optional2(nullable2(array2(OpenSignatureSchema2)))
+});
+var $Intent3 = object2({
+  name: string2(),
+  inputs: record2(string2(), union2([ArgumentSchema2, array2(ArgumentSchema2)])),
+  data: record2(string2(), unknown2())
+});
+var CommandSchema2 = safeEnum2({
+  MoveCall: ProgrammableMoveCallSchema2,
+  TransferObjects: object2({
+    objects: array2(ArgumentSchema2),
+    address: ArgumentSchema2
+  }),
+  SplitCoins: object2({
+    coin: ArgumentSchema2,
+    amounts: array2(ArgumentSchema2)
+  }),
+  MergeCoins: object2({
+    destination: ArgumentSchema2,
+    sources: array2(ArgumentSchema2)
+  }),
+  Publish: object2({
+    modules: array2(BCSBytes2),
+    dependencies: array2(ObjectID2)
+  }),
+  MakeMoveVec: object2({
+    type: nullable2(string2()),
+    elements: array2(ArgumentSchema2)
+  }),
+  Upgrade: object2({
+    modules: array2(BCSBytes2),
+    dependencies: array2(ObjectID2),
+    package: ObjectID2,
+    ticket: ArgumentSchema2
+  }),
+  $Intent: $Intent3
+});
+var ObjectArgSchema2 = safeEnum2({
+  ImmOrOwnedObject: ObjectRefSchema2,
+  SharedObject: object2({
+    objectId: ObjectID2,
+    initialSharedVersion: JsonU642,
+    mutable: boolean2()
+  }),
+  Receiving: ObjectRefSchema2
+});
+var ReservationSchema2 = safeEnum2({ MaxAmountU64: JsonU642 });
+var WithdrawalTypeArgSchema2 = safeEnum2({ Balance: string2() });
+var WithdrawFromSchema2 = safeEnum2({
+  Sender: literal2(true),
+  Sponsor: literal2(true)
+});
+var FundsWithdrawalArgSchema2 = object2({
+  reservation: ReservationSchema2,
+  typeArg: WithdrawalTypeArgSchema2,
+  withdrawFrom: WithdrawFromSchema2
+});
+var CallArgSchema2 = safeEnum2({
+  Object: ObjectArgSchema2,
+  Pure: object2({ bytes: BCSBytes2 }),
+  UnresolvedPure: object2({ value: unknown2() }),
+  UnresolvedObject: object2({
+    objectId: ObjectID2,
+    version: optional2(nullable2(JsonU642)),
+    digest: optional2(nullable2(string2())),
+    initialSharedVersion: optional2(nullable2(JsonU642)),
+    mutable: optional2(nullable2(boolean2()))
+  }),
+  FundsWithdrawal: FundsWithdrawalArgSchema2
+});
+var NormalizedCallArg3 = safeEnum2({
+  Object: ObjectArgSchema2,
+  Pure: object2({ bytes: BCSBytes2 })
+});
+var ValidDuringSchema2 = object2({
+  minEpoch: nullable2(JsonU642),
+  maxEpoch: nullable2(JsonU642),
+  minTimestamp: nullable2(JsonU642),
+  maxTimestamp: nullable2(JsonU642),
+  chain: string2(),
+  nonce: U322
+});
+var TransactionExpiration5 = safeEnum2({
+  None: literal2(true),
+  Epoch: JsonU642,
+  ValidDuring: ValidDuringSchema2
+});
+var TransactionDataSchema2 = object2({
+  version: literal2(2),
+  sender: nullish2(SuiAddress2),
+  expiration: nullish2(TransactionExpiration5),
+  gasData: GasDataSchema2,
+  inputs: array2(CallArgSchema2),
+  commands: array2(CommandSchema2)
+});
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/utils.mjs
+function getIdFromCallArg2(arg) {
+  if (typeof arg === "string")
+    return normalizeSuiAddress2(arg);
+  if (arg.Object) {
+    if (arg.Object.ImmOrOwnedObject)
+      return normalizeSuiAddress2(arg.Object.ImmOrOwnedObject.objectId);
+    if (arg.Object.Receiving)
+      return normalizeSuiAddress2(arg.Object.Receiving.objectId);
+    return normalizeSuiAddress2(arg.Object.SharedObject.objectId);
+  }
+  if (arg.UnresolvedObject)
+    return normalizeSuiAddress2(arg.UnresolvedObject.objectId);
+}
+function remapCommandArguments2(command, inputMapping, commandMapping) {
+  const remapArg = (arg) => {
+    switch (arg.$kind) {
+      case "Input": {
+        const newInputIndex = inputMapping.get(arg.Input);
+        if (newInputIndex === void 0)
+          throw new Error(`Input ${arg.Input} not found in input mapping`);
+        return {
+          ...arg,
+          Input: newInputIndex
+        };
+      }
+      case "Result": {
+        const newCommandIndex = commandMapping.get(arg.Result);
+        if (newCommandIndex !== void 0)
+          return {
+            ...arg,
+            Result: newCommandIndex
+          };
+        return arg;
+      }
+      case "NestedResult": {
+        const newCommandIndex = commandMapping.get(arg.NestedResult[0]);
+        if (newCommandIndex !== void 0)
+          return {
+            ...arg,
+            NestedResult: [newCommandIndex, arg.NestedResult[1]]
+          };
+        return arg;
+      }
+      default:
+        return arg;
+    }
+  };
+  switch (command.$kind) {
+    case "MoveCall":
+      command.MoveCall.arguments = command.MoveCall.arguments.map(remapArg);
+      break;
+    case "TransferObjects":
+      command.TransferObjects.objects = command.TransferObjects.objects.map(remapArg);
+      command.TransferObjects.address = remapArg(command.TransferObjects.address);
+      break;
+    case "SplitCoins":
+      command.SplitCoins.coin = remapArg(command.SplitCoins.coin);
+      command.SplitCoins.amounts = command.SplitCoins.amounts.map(remapArg);
+      break;
+    case "MergeCoins":
+      command.MergeCoins.destination = remapArg(command.MergeCoins.destination);
+      command.MergeCoins.sources = command.MergeCoins.sources.map(remapArg);
+      break;
+    case "MakeMoveVec":
+      command.MakeMoveVec.elements = command.MakeMoveVec.elements.map(remapArg);
+      break;
+    case "Upgrade":
+      command.Upgrade.ticket = remapArg(command.Upgrade.ticket);
+      break;
+    case "$Intent": {
+      const inputs = command.$Intent.inputs;
+      command.$Intent.inputs = {};
+      for (const [key, value] of Object.entries(inputs))
+        command.$Intent.inputs[key] = Array.isArray(value) ? value.map(remapArg) : remapArg(value);
+      break;
+    }
+    case "Publish":
+      break;
+  }
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/type-tag-serializer.mjs
+var VECTOR_REGEX2 = /^vector<(.+)>$/;
+var STRUCT_REGEX2 = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;
+var TypeTagSerializer3 = class TypeTagSerializer4 {
+  static parseFromStr(str, normalizeAddress = false) {
+    if (str === "address")
+      return { address: null };
+    else if (str === "bool")
+      return { bool: null };
+    else if (str === "u8")
+      return { u8: null };
+    else if (str === "u16")
+      return { u16: null };
+    else if (str === "u32")
+      return { u32: null };
+    else if (str === "u64")
+      return { u64: null };
+    else if (str === "u128")
+      return { u128: null };
+    else if (str === "u256")
+      return { u256: null };
+    else if (str === "signer")
+      return { signer: null };
+    const vectorMatch = str.match(VECTOR_REGEX2);
+    if (vectorMatch)
+      return { vector: TypeTagSerializer4.parseFromStr(vectorMatch[1], normalizeAddress) };
+    const structMatch = str.match(STRUCT_REGEX2);
+    if (structMatch)
+      return { struct: {
+        address: normalizeAddress ? normalizeSuiAddress2(structMatch[1]) : structMatch[1],
+        module: structMatch[2],
+        name: structMatch[3],
+        typeParams: structMatch[5] === void 0 ? [] : TypeTagSerializer4.parseStructTypeArgs(structMatch[5], normalizeAddress)
+      } };
+    throw new Error(`Encountered unexpected token when parsing type args for ${str}`);
+  }
+  static parseStructTypeArgs(str, normalizeAddress = false) {
+    return splitGenericParameters2(str).map((tok) => TypeTagSerializer4.parseFromStr(tok, normalizeAddress));
+  }
+  static tagToString(tag) {
+    if ("bool" in tag)
+      return "bool";
+    if ("u8" in tag)
+      return "u8";
+    if ("u16" in tag)
+      return "u16";
+    if ("u32" in tag)
+      return "u32";
+    if ("u64" in tag)
+      return "u64";
+    if ("u128" in tag)
+      return "u128";
+    if ("u256" in tag)
+      return "u256";
+    if ("address" in tag)
+      return "address";
+    if ("signer" in tag)
+      return "signer";
+    if ("vector" in tag)
+      return `vector<${TypeTagSerializer4.tagToString(tag.vector)}>`;
+    if ("struct" in tag) {
+      const struct = tag.struct;
+      const typeParams = struct.typeParams.map(TypeTagSerializer4.tagToString).join(", ");
+      return `${struct.address}::${struct.module}::${struct.name}${typeParams ? `<${typeParams}>` : ""}`;
+    }
+    throw new Error("Invalid TypeTag");
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/bcs.mjs
+function unsafe_u642(options) {
+  return bcs2.u64({
+    name: "unsafe_u64",
+    ...options
+  }).transform({
+    input: (val) => val,
+    output: (val) => Number(val)
+  });
+}
+function optionEnum2(type) {
+  return bcs2.enum("Option", {
+    None: null,
+    Some: type
+  });
+}
+var Address2 = bcs2.bytes(SUI_ADDRESS_LENGTH2).transform({
+  validate: (val) => {
+    const address = typeof val === "string" ? val : toHex2(val);
+    if (!address || !isValidSuiAddress2(normalizeSuiAddress2(address)))
+      throw new Error(`Invalid Sui address ${address}`);
+  },
+  input: (val) => typeof val === "string" ? fromHex2(normalizeSuiAddress2(val)) : val,
+  output: (val) => normalizeSuiAddress2(toHex2(val))
+});
+var ObjectDigest2 = bcs2.byteVector().transform({
+  name: "ObjectDigest",
+  input: (value) => fromBase582(value),
+  output: (value) => toBase582(new Uint8Array(value)),
+  validate: (value) => {
+    if (fromBase582(value).length !== 32)
+      throw new Error("ObjectDigest must be 32 bytes");
+  }
+});
+var SuiObjectRef2 = bcs2.struct("SuiObjectRef", {
+  objectId: Address2,
+  version: bcs2.u64(),
+  digest: ObjectDigest2
+});
+var SharedObjectRef2 = bcs2.struct("SharedObjectRef", {
+  objectId: Address2,
+  initialSharedVersion: bcs2.u64(),
+  mutable: bcs2.bool()
+});
+var ObjectArg3 = bcs2.enum("ObjectArg", {
+  ImmOrOwnedObject: SuiObjectRef2,
+  SharedObject: SharedObjectRef2,
+  Receiving: SuiObjectRef2
+});
+var Owner2 = bcs2.enum("Owner", {
+  AddressOwner: Address2,
+  ObjectOwner: Address2,
+  Shared: bcs2.struct("Shared", { initialSharedVersion: bcs2.u64() }),
+  Immutable: null,
+  ConsensusAddressOwner: bcs2.struct("ConsensusAddressOwner", {
+    startVersion: bcs2.u64(),
+    owner: Address2
+  })
+});
+var Reservation2 = bcs2.enum("Reservation", { MaxAmountU64: bcs2.u64() });
+var WithdrawalType2 = bcs2.enum("WithdrawalType", { Balance: bcs2.lazy(() => TypeTag3) });
+var WithdrawFrom2 = bcs2.enum("WithdrawFrom", {
+  Sender: null,
+  Sponsor: null
+});
+var FundsWithdrawal2 = bcs2.struct("FundsWithdrawal", {
+  reservation: Reservation2,
+  typeArg: WithdrawalType2,
+  withdrawFrom: WithdrawFrom2
+});
+var CallArg3 = bcs2.enum("CallArg", {
+  Pure: bcs2.struct("Pure", { bytes: bcs2.byteVector().transform({
+    input: (val) => typeof val === "string" ? fromBase642(val) : val,
+    output: (val) => toBase642(new Uint8Array(val))
+  }) }),
+  Object: ObjectArg3,
+  FundsWithdrawal: FundsWithdrawal2
+});
+var InnerTypeTag2 = bcs2.enum("TypeTag", {
+  bool: null,
+  u8: null,
+  u64: null,
+  u128: null,
+  address: null,
+  signer: null,
+  vector: bcs2.lazy(() => InnerTypeTag2),
+  struct: bcs2.lazy(() => StructTag3),
+  u16: null,
+  u32: null,
+  u256: null
+});
+var TypeTag3 = InnerTypeTag2.transform({
+  input: (typeTag) => typeof typeTag === "string" ? TypeTagSerializer3.parseFromStr(typeTag, true) : typeTag,
+  output: (typeTag) => TypeTagSerializer3.tagToString(typeTag)
+});
+var Argument3 = bcs2.enum("Argument", {
+  GasCoin: null,
+  Input: bcs2.u16(),
+  Result: bcs2.u16(),
+  NestedResult: bcs2.tuple([bcs2.u16(), bcs2.u16()])
+});
+var ProgrammableMoveCall3 = bcs2.struct("ProgrammableMoveCall", {
+  package: Address2,
+  module: bcs2.string(),
+  function: bcs2.string(),
+  typeArguments: bcs2.vector(TypeTag3),
+  arguments: bcs2.vector(Argument3)
+});
+var Command3 = bcs2.enum("Command", {
+  MoveCall: ProgrammableMoveCall3,
+  TransferObjects: bcs2.struct("TransferObjects", {
+    objects: bcs2.vector(Argument3),
+    address: Argument3
+  }),
+  SplitCoins: bcs2.struct("SplitCoins", {
+    coin: Argument3,
+    amounts: bcs2.vector(Argument3)
+  }),
+  MergeCoins: bcs2.struct("MergeCoins", {
+    destination: Argument3,
+    sources: bcs2.vector(Argument3)
+  }),
+  Publish: bcs2.struct("Publish", {
+    modules: bcs2.vector(bcs2.byteVector().transform({
+      input: (val) => typeof val === "string" ? fromBase642(val) : val,
+      output: (val) => toBase642(new Uint8Array(val))
+    })),
+    dependencies: bcs2.vector(Address2)
+  }),
+  MakeMoveVec: bcs2.struct("MakeMoveVec", {
+    type: optionEnum2(TypeTag3).transform({
+      input: (val) => val === null ? { None: true } : { Some: val },
+      output: (val) => val.Some ?? null
+    }),
+    elements: bcs2.vector(Argument3)
+  }),
+  Upgrade: bcs2.struct("Upgrade", {
+    modules: bcs2.vector(bcs2.byteVector().transform({
+      input: (val) => typeof val === "string" ? fromBase642(val) : val,
+      output: (val) => toBase642(new Uint8Array(val))
+    })),
+    dependencies: bcs2.vector(Address2),
+    package: Address2,
+    ticket: Argument3
+  })
+});
+var ProgrammableTransaction2 = bcs2.struct("ProgrammableTransaction", {
+  inputs: bcs2.vector(CallArg3),
+  commands: bcs2.vector(Command3)
+});
+var TransactionKind2 = bcs2.enum("TransactionKind", {
+  ProgrammableTransaction: ProgrammableTransaction2,
+  ChangeEpoch: null,
+  Genesis: null,
+  ConsensusCommitPrologue: null
+});
+var ValidDuring2 = bcs2.struct("ValidDuring", {
+  minEpoch: bcs2.option(bcs2.u64()),
+  maxEpoch: bcs2.option(bcs2.u64()),
+  minTimestamp: bcs2.option(bcs2.u64()),
+  maxTimestamp: bcs2.option(bcs2.u64()),
+  chain: ObjectDigest2,
+  nonce: bcs2.u32()
+});
+var TransactionExpiration6 = bcs2.enum("TransactionExpiration", {
+  None: null,
+  Epoch: unsafe_u642(),
+  ValidDuring: ValidDuring2
+});
+var StructTag3 = bcs2.struct("StructTag", {
+  address: Address2,
+  module: bcs2.string(),
+  name: bcs2.string(),
+  typeParams: bcs2.vector(InnerTypeTag2)
+});
+var GasData3 = bcs2.struct("GasData", {
+  payment: bcs2.vector(SuiObjectRef2),
+  owner: Address2,
+  price: bcs2.u64(),
+  budget: bcs2.u64()
+});
+var TransactionDataV12 = bcs2.struct("TransactionDataV1", {
+  kind: TransactionKind2,
+  sender: Address2,
+  gasData: GasData3,
+  expiration: TransactionExpiration6
+});
+var TransactionData2 = bcs2.enum("TransactionData", { V1: TransactionDataV12 });
+var IntentScope2 = bcs2.enum("IntentScope", {
+  TransactionData: null,
+  TransactionEffects: null,
+  CheckpointSummary: null,
+  PersonalMessage: null
+});
+var IntentVersion2 = bcs2.enum("IntentVersion", { V0: null });
+var AppId2 = bcs2.enum("AppId", { Sui: null });
+var Intent2 = bcs2.struct("Intent", {
+  scope: IntentScope2,
+  version: IntentVersion2,
+  appId: AppId2
+});
+function IntentMessage2(T) {
+  return bcs2.struct(`IntentMessage<${T.name}>`, {
+    intent: Intent2,
+    value: T
+  });
+}
+var CompressedSignature2 = bcs2.enum("CompressedSignature", {
+  ED25519: bcs2.bytes(64),
+  Secp256k1: bcs2.bytes(64),
+  Secp256r1: bcs2.bytes(64),
+  ZkLogin: bcs2.byteVector(),
+  Passkey: bcs2.byteVector()
+});
+var PublicKey2 = bcs2.enum("PublicKey", {
+  ED25519: bcs2.bytes(32),
+  Secp256k1: bcs2.bytes(33),
+  Secp256r1: bcs2.bytes(33),
+  ZkLogin: bcs2.byteVector(),
+  Passkey: bcs2.bytes(33)
+});
+var MultiSigPkMap2 = bcs2.struct("MultiSigPkMap", {
+  pubKey: PublicKey2,
+  weight: bcs2.u8()
+});
+var MultiSigPublicKey2 = bcs2.struct("MultiSigPublicKey", {
+  pk_map: bcs2.vector(MultiSigPkMap2),
+  threshold: bcs2.u16()
+});
+var MultiSig2 = bcs2.struct("MultiSig", {
+  sigs: bcs2.vector(CompressedSignature2),
+  bitmap: bcs2.u16(),
+  multisig_pk: MultiSigPublicKey2
+});
+var base64String2 = bcs2.byteVector().transform({
+  input: (val) => typeof val === "string" ? fromBase642(val) : val,
+  output: (val) => toBase642(new Uint8Array(val))
+});
+var SenderSignedTransaction2 = bcs2.struct("SenderSignedTransaction", {
+  intentMessage: IntentMessage2(TransactionData2),
+  txSignatures: bcs2.vector(base64String2)
+});
+var SenderSignedData2 = bcs2.vector(SenderSignedTransaction2, { name: "SenderSignedData" });
+var PasskeyAuthenticator2 = bcs2.struct("PasskeyAuthenticator", {
+  authenticatorData: bcs2.byteVector(),
+  clientDataJson: bcs2.string(),
+  userSignature: bcs2.byteVector()
+});
+var MoveObjectType2 = bcs2.enum("MoveObjectType", {
+  Other: StructTag3,
+  GasCoin: null,
+  StakedSui: null,
+  Coin: TypeTag3,
+  AccumulatorBalanceWrapper: null
+});
+var TypeOrigin2 = bcs2.struct("TypeOrigin", {
+  moduleName: bcs2.string(),
+  datatypeName: bcs2.string(),
+  package: Address2
+});
+var UpgradeInfo2 = bcs2.struct("UpgradeInfo", {
+  upgradedId: Address2,
+  upgradedVersion: bcs2.u64()
+});
+var MovePackage2 = bcs2.struct("MovePackage", {
+  id: Address2,
+  version: bcs2.u64(),
+  moduleMap: bcs2.map(bcs2.string(), bcs2.byteVector()),
+  typeOriginTable: bcs2.vector(TypeOrigin2),
+  linkageTable: bcs2.map(Address2, UpgradeInfo2)
+});
+var MoveObject2 = bcs2.struct("MoveObject", {
+  type: MoveObjectType2,
+  hasPublicTransfer: bcs2.bool(),
+  version: bcs2.u64(),
+  contents: bcs2.byteVector()
+});
+var Data2 = bcs2.enum("Data", {
+  Move: MoveObject2,
+  Package: MovePackage2
+});
+var ObjectInner2 = bcs2.struct("ObjectInner", {
+  data: Data2,
+  owner: Owner2,
+  previousTransaction: ObjectDigest2,
+  storageRebate: bcs2.u64()
+});
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/effects.mjs
+var PackageUpgradeError2 = bcs2.enum("PackageUpgradeError", {
+  UnableToFetchPackage: bcs2.struct("UnableToFetchPackage", { packageId: Address2 }),
+  NotAPackage: bcs2.struct("NotAPackage", { objectId: Address2 }),
+  IncompatibleUpgrade: null,
+  DigestDoesNotMatch: bcs2.struct("DigestDoesNotMatch", { digest: bcs2.byteVector() }),
+  UnknownUpgradePolicy: bcs2.struct("UnknownUpgradePolicy", { policy: bcs2.u8() }),
+  PackageIDDoesNotMatch: bcs2.struct("PackageIDDoesNotMatch", {
+    packageId: Address2,
+    ticketId: Address2
+  })
+});
+var ModuleId2 = bcs2.struct("ModuleId", {
+  address: Address2,
+  name: bcs2.string()
+});
+var MoveLocation2 = bcs2.struct("MoveLocation", {
+  module: ModuleId2,
+  function: bcs2.u16(),
+  instruction: bcs2.u16(),
+  functionName: bcs2.option(bcs2.string())
+});
+var CommandArgumentError2 = bcs2.enum("CommandArgumentError", {
+  TypeMismatch: null,
+  InvalidBCSBytes: null,
+  InvalidUsageOfPureArg: null,
+  InvalidArgumentToPrivateEntryFunction: null,
+  IndexOutOfBounds: bcs2.struct("IndexOutOfBounds", { idx: bcs2.u16() }),
+  SecondaryIndexOutOfBounds: bcs2.struct("SecondaryIndexOutOfBounds", {
+    resultIdx: bcs2.u16(),
+    secondaryIdx: bcs2.u16()
+  }),
+  InvalidResultArity: bcs2.struct("InvalidResultArity", { resultIdx: bcs2.u16() }),
+  InvalidGasCoinUsage: null,
+  InvalidValueUsage: null,
+  InvalidObjectByValue: null,
+  InvalidObjectByMutRef: null,
+  SharedObjectOperationNotAllowed: null,
+  InvalidArgumentArity: null,
+  InvalidTransferObject: null,
+  InvalidMakeMoveVecNonObjectArgument: null,
+  ArgumentWithoutValue: null,
+  CannotMoveBorrowedValue: null,
+  CannotWriteToExtendedReference: null,
+  InvalidReferenceArgument: null
+});
+var TypeArgumentError2 = bcs2.enum("TypeArgumentError", {
+  TypeNotFound: null,
+  ConstraintNotSatisfied: null
+});
+var ExecutionFailureStatus2 = bcs2.enum("ExecutionFailureStatus", {
+  InsufficientGas: null,
+  InvalidGasObject: null,
+  InvariantViolation: null,
+  FeatureNotYetSupported: null,
+  MoveObjectTooBig: bcs2.struct("MoveObjectTooBig", {
+    objectSize: bcs2.u64(),
+    maxObjectSize: bcs2.u64()
+  }),
+  MovePackageTooBig: bcs2.struct("MovePackageTooBig", {
+    objectSize: bcs2.u64(),
+    maxObjectSize: bcs2.u64()
+  }),
+  CircularObjectOwnership: bcs2.struct("CircularObjectOwnership", { object: Address2 }),
+  InsufficientCoinBalance: null,
+  CoinBalanceOverflow: null,
+  PublishErrorNonZeroAddress: null,
+  SuiMoveVerificationError: null,
+  MovePrimitiveRuntimeError: bcs2.option(MoveLocation2),
+  MoveAbort: bcs2.tuple([MoveLocation2, bcs2.u64()]),
+  VMVerificationOrDeserializationError: null,
+  VMInvariantViolation: null,
+  FunctionNotFound: null,
+  ArityMismatch: null,
+  TypeArityMismatch: null,
+  NonEntryFunctionInvoked: null,
+  CommandArgumentError: bcs2.struct("CommandArgumentError", {
+    argIdx: bcs2.u16(),
+    kind: CommandArgumentError2
+  }),
+  TypeArgumentError: bcs2.struct("TypeArgumentError", {
+    argumentIdx: bcs2.u16(),
+    kind: TypeArgumentError2
+  }),
+  UnusedValueWithoutDrop: bcs2.struct("UnusedValueWithoutDrop", {
+    resultIdx: bcs2.u16(),
+    secondaryIdx: bcs2.u16()
+  }),
+  InvalidPublicFunctionReturnType: bcs2.struct("InvalidPublicFunctionReturnType", { idx: bcs2.u16() }),
+  InvalidTransferObject: null,
+  EffectsTooLarge: bcs2.struct("EffectsTooLarge", {
+    currentSize: bcs2.u64(),
+    maxSize: bcs2.u64()
+  }),
+  PublishUpgradeMissingDependency: null,
+  PublishUpgradeDependencyDowngrade: null,
+  PackageUpgradeError: bcs2.struct("PackageUpgradeError", { upgradeError: PackageUpgradeError2 }),
+  WrittenObjectsTooLarge: bcs2.struct("WrittenObjectsTooLarge", {
+    currentSize: bcs2.u64(),
+    maxSize: bcs2.u64()
+  }),
+  CertificateDenied: null,
+  SuiMoveVerificationTimedout: null,
+  SharedObjectOperationNotAllowed: null,
+  InputObjectDeleted: null,
+  ExecutionCancelledDueToSharedObjectCongestion: bcs2.struct("ExecutionCancelledDueToSharedObjectCongestion", { congested_objects: bcs2.vector(Address2) }),
+  AddressDeniedForCoin: bcs2.struct("AddressDeniedForCoin", {
+    address: Address2,
+    coinType: bcs2.string()
+  }),
+  CoinTypeGlobalPause: bcs2.struct("CoinTypeGlobalPause", { coinType: bcs2.string() }),
+  ExecutionCancelledDueToRandomnessUnavailable: null,
+  MoveVectorElemTooBig: bcs2.struct("MoveVectorElemTooBig", {
+    valueSize: bcs2.u64(),
+    maxScaledSize: bcs2.u64()
+  }),
+  MoveRawValueTooBig: bcs2.struct("MoveRawValueTooBig", {
+    valueSize: bcs2.u64(),
+    maxScaledSize: bcs2.u64()
+  }),
+  InvalidLinkage: null,
+  InsufficientBalanceForWithdraw: null,
+  NonExclusiveWriteInputObjectModified: bcs2.struct("NonExclusiveWriteInputObjectModified", { id: Address2 })
+});
+var ExecutionStatus2 = bcs2.enum("ExecutionStatus", {
+  Success: null,
+  Failure: bcs2.struct("Failure", {
+    error: ExecutionFailureStatus2,
+    command: bcs2.option(bcs2.u64())
+  })
+});
+var GasCostSummary2 = bcs2.struct("GasCostSummary", {
+  computationCost: bcs2.u64(),
+  storageCost: bcs2.u64(),
+  storageRebate: bcs2.u64(),
+  nonRefundableStorageFee: bcs2.u64()
+});
+var TransactionEffectsV12 = bcs2.struct("TransactionEffectsV1", {
+  status: ExecutionStatus2,
+  executedEpoch: bcs2.u64(),
+  gasUsed: GasCostSummary2,
+  modifiedAtVersions: bcs2.vector(bcs2.tuple([Address2, bcs2.u64()])),
+  sharedObjects: bcs2.vector(SuiObjectRef2),
+  transactionDigest: ObjectDigest2,
+  created: bcs2.vector(bcs2.tuple([SuiObjectRef2, Owner2])),
+  mutated: bcs2.vector(bcs2.tuple([SuiObjectRef2, Owner2])),
+  unwrapped: bcs2.vector(bcs2.tuple([SuiObjectRef2, Owner2])),
+  deleted: bcs2.vector(SuiObjectRef2),
+  unwrappedThenDeleted: bcs2.vector(SuiObjectRef2),
+  wrapped: bcs2.vector(SuiObjectRef2),
+  gasObject: bcs2.tuple([SuiObjectRef2, Owner2]),
+  eventsDigest: bcs2.option(ObjectDigest2),
+  dependencies: bcs2.vector(ObjectDigest2)
+});
+var VersionDigest2 = bcs2.tuple([bcs2.u64(), ObjectDigest2]);
+var ObjectIn2 = bcs2.enum("ObjectIn", {
+  NotExist: null,
+  Exist: bcs2.tuple([VersionDigest2, Owner2])
+});
+var AccumulatorAddress2 = bcs2.struct("AccumulatorAddress", {
+  address: Address2,
+  ty: TypeTag3
+});
+var AccumulatorOperation2 = bcs2.enum("AccumulatorOperation", {
+  Merge: null,
+  Split: null
+});
+var AccumulatorValue2 = bcs2.enum("AccumulatorValue", {
+  Integer: bcs2.u64(),
+  IntegerTuple: bcs2.tuple([bcs2.u64(), bcs2.u64()]),
+  EventDigest: bcs2.vector(bcs2.tuple([bcs2.u64(), ObjectDigest2]))
+});
+var AccumulatorWriteV12 = bcs2.struct("AccumulatorWriteV1", {
+  address: AccumulatorAddress2,
+  operation: AccumulatorOperation2,
+  value: AccumulatorValue2
+});
+var ObjectOut2 = bcs2.enum("ObjectOut", {
+  NotExist: null,
+  ObjectWrite: bcs2.tuple([ObjectDigest2, Owner2]),
+  PackageWrite: VersionDigest2,
+  AccumulatorWriteV1: AccumulatorWriteV12
+});
+var IDOperation2 = bcs2.enum("IDOperation", {
+  None: null,
+  Created: null,
+  Deleted: null
+});
+var EffectsObjectChange2 = bcs2.struct("EffectsObjectChange", {
+  inputState: ObjectIn2,
+  outputState: ObjectOut2,
+  idOperation: IDOperation2
+});
+var UnchangedConsensusKind2 = bcs2.enum("UnchangedConsensusKind", {
+  ReadOnlyRoot: VersionDigest2,
+  MutateConsensusStreamEnded: bcs2.u64(),
+  ReadConsensusStreamEnded: bcs2.u64(),
+  Cancelled: bcs2.u64(),
+  PerEpochConfig: null
+});
+var TransactionEffectsV22 = bcs2.struct("TransactionEffectsV2", {
+  status: ExecutionStatus2,
+  executedEpoch: bcs2.u64(),
+  gasUsed: GasCostSummary2,
+  transactionDigest: ObjectDigest2,
+  gasObjectIndex: bcs2.option(bcs2.u32()),
+  eventsDigest: bcs2.option(ObjectDigest2),
+  dependencies: bcs2.vector(ObjectDigest2),
+  lamportVersion: bcs2.u64(),
+  changedObjects: bcs2.vector(bcs2.tuple([Address2, EffectsObjectChange2])),
+  unchangedConsensusObjects: bcs2.vector(bcs2.tuple([Address2, UnchangedConsensusKind2])),
+  auxDataDigest: bcs2.option(ObjectDigest2)
+});
+var TransactionEffects2 = bcs2.enum("TransactionEffects", {
+  V1: TransactionEffectsV12,
+  V2: TransactionEffectsV22
+});
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/pure.mjs
+function pureBcsSchemaFromTypeName2(name) {
+  switch (name) {
+    case "u8":
+      return bcs2.u8();
+    case "u16":
+      return bcs2.u16();
+    case "u32":
+      return bcs2.u32();
+    case "u64":
+      return bcs2.u64();
+    case "u128":
+      return bcs2.u128();
+    case "u256":
+      return bcs2.u256();
+    case "bool":
+      return bcs2.bool();
+    case "string":
+      return bcs2.string();
+    case "id":
+    case "address":
+      return Address2;
+  }
+  const generic = name.match(/^(vector|option)<(.+)>$/);
+  if (generic) {
+    const [kind, inner] = generic.slice(1);
+    if (kind === "vector")
+      return bcs2.vector(pureBcsSchemaFromTypeName2(inner));
+    else
+      return bcs2.option(pureBcsSchemaFromTypeName2(inner));
+  }
+  throw new Error(`Invalid Pure type name: ${name}`);
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/bcs/index.mjs
+var suiBcs2 = {
+  ...bcs2,
+  U8: bcs2.u8(),
+  U16: bcs2.u16(),
+  U32: bcs2.u32(),
+  U64: bcs2.u64(),
+  U128: bcs2.u128(),
+  U256: bcs2.u256(),
+  ULEB128: bcs2.uleb128(),
+  Bool: bcs2.bool(),
+  String: bcs2.string(),
+  Address: Address2,
+  AppId: AppId2,
+  Argument: Argument3,
+  CallArg: CallArg3,
+  Command: Command3,
+  CompressedSignature: CompressedSignature2,
+  Data: Data2,
+  GasData: GasData3,
+  Intent: Intent2,
+  IntentMessage: IntentMessage2,
+  IntentScope: IntentScope2,
+  IntentVersion: IntentVersion2,
+  MoveObject: MoveObject2,
+  MoveObjectType: MoveObjectType2,
+  MovePackage: MovePackage2,
+  MultiSig: MultiSig2,
+  MultiSigPkMap: MultiSigPkMap2,
+  MultiSigPublicKey: MultiSigPublicKey2,
+  Object: ObjectInner2,
+  ObjectArg: ObjectArg3,
+  ObjectDigest: ObjectDigest2,
+  Owner: Owner2,
+  PasskeyAuthenticator: PasskeyAuthenticator2,
+  ProgrammableMoveCall: ProgrammableMoveCall3,
+  ProgrammableTransaction: ProgrammableTransaction2,
+  PublicKey: PublicKey2,
+  SenderSignedData: SenderSignedData2,
+  SenderSignedTransaction: SenderSignedTransaction2,
+  SharedObjectRef: SharedObjectRef2,
+  StructTag: StructTag3,
+  SuiObjectRef: SuiObjectRef2,
+  TransactionData: TransactionData2,
+  TransactionDataV1: TransactionDataV12,
+  TransactionEffects: TransactionEffects2,
+  TransactionExpiration: TransactionExpiration6,
+  TransactionKind: TransactionKind2,
+  TypeOrigin: TypeOrigin2,
+  TypeTag: TypeTag3,
+  UpgradeInfo: UpgradeInfo2
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/v1.mjs
+var ObjectRef2 = object2({
+  digest: string2(),
+  objectId: string2(),
+  version: union2([
+    pipe2(number2(), integer2()),
+    string2(),
+    bigint2()
+  ])
+});
+var ObjectArg4 = safeEnum2({
+  ImmOrOwned: ObjectRef2,
+  Shared: object2({
+    objectId: ObjectID2,
+    initialSharedVersion: JsonU642,
+    mutable: boolean2()
+  }),
+  Receiving: ObjectRef2
+});
+var NormalizedCallArg4 = safeEnum2({
+  Object: ObjectArg4,
+  Pure: array2(pipe2(number2(), integer2()))
+});
+var TransactionInput2 = union2([object2({
+  kind: literal2("Input"),
+  index: pipe2(number2(), integer2()),
+  value: unknown2(),
+  type: optional2(literal2("object"))
+}), object2({
+  kind: literal2("Input"),
+  index: pipe2(number2(), integer2()),
+  value: unknown2(),
+  type: literal2("pure")
+})]);
+var TransactionExpiration7 = union2([object2({ Epoch: pipe2(number2(), integer2()) }), object2({ None: nullable2(literal2(true)) })]);
+var StringEncodedBigint2 = pipe2(union2([
+  number2(),
+  string2(),
+  bigint2()
+]), check2((val) => {
+  if (![
+    "string",
+    "number",
+    "bigint"
+  ].includes(typeof val))
+    return false;
+  try {
+    BigInt(val);
+    return true;
+  } catch {
+    return false;
+  }
+}));
+var TypeTag4 = union2([
+  object2({ bool: nullable2(literal2(true)) }),
+  object2({ u8: nullable2(literal2(true)) }),
+  object2({ u64: nullable2(literal2(true)) }),
+  object2({ u128: nullable2(literal2(true)) }),
+  object2({ address: nullable2(literal2(true)) }),
+  object2({ signer: nullable2(literal2(true)) }),
+  object2({ vector: lazy2(() => TypeTag4) }),
+  object2({ struct: lazy2(() => StructTag4) }),
+  object2({ u16: nullable2(literal2(true)) }),
+  object2({ u32: nullable2(literal2(true)) }),
+  object2({ u256: nullable2(literal2(true)) })
+]);
+var StructTag4 = object2({
+  address: string2(),
+  module: string2(),
+  name: string2(),
+  typeParams: array2(TypeTag4)
+});
+var GasConfig2 = object2({
+  budget: optional2(StringEncodedBigint2),
+  price: optional2(StringEncodedBigint2),
+  payment: optional2(array2(ObjectRef2)),
+  owner: optional2(string2())
+});
+var TransactionArgumentTypes2 = [
+  TransactionInput2,
+  object2({ kind: literal2("GasCoin") }),
+  object2({
+    kind: literal2("Result"),
+    index: pipe2(number2(), integer2())
+  }),
+  object2({
+    kind: literal2("NestedResult"),
+    index: pipe2(number2(), integer2()),
+    resultIndex: pipe2(number2(), integer2())
+  })
+];
+var TransactionArgument2 = union2([...TransactionArgumentTypes2]);
+var MoveCallTransaction2 = object2({
+  kind: literal2("MoveCall"),
+  target: pipe2(string2(), check2((target) => target.split("::").length === 3)),
+  typeArguments: array2(string2()),
+  arguments: array2(TransactionArgument2)
+});
+var TransferObjectsTransaction2 = object2({
+  kind: literal2("TransferObjects"),
+  objects: array2(TransactionArgument2),
+  address: TransactionArgument2
+});
+var SplitCoinsTransaction2 = object2({
+  kind: literal2("SplitCoins"),
+  coin: TransactionArgument2,
+  amounts: array2(TransactionArgument2)
+});
+var MergeCoinsTransaction2 = object2({
+  kind: literal2("MergeCoins"),
+  destination: TransactionArgument2,
+  sources: array2(TransactionArgument2)
+});
+var MakeMoveVecTransaction2 = object2({
+  kind: literal2("MakeMoveVec"),
+  type: union2([object2({ Some: TypeTag4 }), object2({ None: nullable2(literal2(true)) })]),
+  objects: array2(TransactionArgument2)
+});
+var TransactionType2 = union2([...[
+  MoveCallTransaction2,
+  TransferObjectsTransaction2,
+  SplitCoinsTransaction2,
+  MergeCoinsTransaction2,
+  object2({
+    kind: literal2("Publish"),
+    modules: array2(array2(pipe2(number2(), integer2()))),
+    dependencies: array2(string2())
+  }),
+  object2({
+    kind: literal2("Upgrade"),
+    modules: array2(array2(pipe2(number2(), integer2()))),
+    dependencies: array2(string2()),
+    packageId: string2(),
+    ticket: TransactionArgument2
+  }),
+  MakeMoveVecTransaction2
+]]);
+var SerializedTransactionDataV12 = object2({
+  version: literal2(1),
+  sender: optional2(string2()),
+  expiration: nullish2(TransactionExpiration7),
+  gasConfig: GasConfig2,
+  inputs: array2(TransactionInput2),
+  transactions: array2(TransactionType2)
+});
+function serializeV1TransactionData2(transactionData) {
+  const inputs = transactionData.inputs.map((input, index) => {
+    if (input.Object)
+      return {
+        kind: "Input",
+        index,
+        value: { Object: input.Object.ImmOrOwnedObject ? { ImmOrOwned: input.Object.ImmOrOwnedObject } : input.Object.Receiving ? { Receiving: {
+          digest: input.Object.Receiving.digest,
+          version: input.Object.Receiving.version,
+          objectId: input.Object.Receiving.objectId
+        } } : { Shared: {
+          mutable: input.Object.SharedObject.mutable,
+          initialSharedVersion: input.Object.SharedObject.initialSharedVersion,
+          objectId: input.Object.SharedObject.objectId
+        } } },
+        type: "object"
+      };
+    if (input.Pure)
+      return {
+        kind: "Input",
+        index,
+        value: { Pure: Array.from(fromBase642(input.Pure.bytes)) },
+        type: "pure"
+      };
+    if (input.UnresolvedPure)
+      return {
+        kind: "Input",
+        type: "pure",
+        index,
+        value: input.UnresolvedPure.value
+      };
+    if (input.UnresolvedObject)
+      return {
+        kind: "Input",
+        type: "object",
+        index,
+        value: input.UnresolvedObject.objectId
+      };
+    throw new Error("Invalid input");
+  });
+  return {
+    version: 1,
+    sender: transactionData.sender ?? void 0,
+    expiration: transactionData.expiration?.$kind === "Epoch" ? { Epoch: Number(transactionData.expiration.Epoch) } : transactionData.expiration ? { None: true } : null,
+    gasConfig: {
+      owner: transactionData.gasData.owner ?? void 0,
+      budget: transactionData.gasData.budget ?? void 0,
+      price: transactionData.gasData.price ?? void 0,
+      payment: transactionData.gasData.payment ?? void 0
+    },
+    inputs,
+    transactions: transactionData.commands.map((command) => {
+      if (command.MakeMoveVec)
+        return {
+          kind: "MakeMoveVec",
+          type: command.MakeMoveVec.type === null ? { None: true } : { Some: TypeTagSerializer3.parseFromStr(command.MakeMoveVec.type) },
+          objects: command.MakeMoveVec.elements.map((arg) => convertTransactionArgument2(arg, inputs))
+        };
+      if (command.MergeCoins)
+        return {
+          kind: "MergeCoins",
+          destination: convertTransactionArgument2(command.MergeCoins.destination, inputs),
+          sources: command.MergeCoins.sources.map((arg) => convertTransactionArgument2(arg, inputs))
+        };
+      if (command.MoveCall)
+        return {
+          kind: "MoveCall",
+          target: `${command.MoveCall.package}::${command.MoveCall.module}::${command.MoveCall.function}`,
+          typeArguments: command.MoveCall.typeArguments,
+          arguments: command.MoveCall.arguments.map((arg) => convertTransactionArgument2(arg, inputs))
+        };
+      if (command.Publish)
+        return {
+          kind: "Publish",
+          modules: command.Publish.modules.map((mod) => Array.from(fromBase642(mod))),
+          dependencies: command.Publish.dependencies
+        };
+      if (command.SplitCoins)
+        return {
+          kind: "SplitCoins",
+          coin: convertTransactionArgument2(command.SplitCoins.coin, inputs),
+          amounts: command.SplitCoins.amounts.map((arg) => convertTransactionArgument2(arg, inputs))
+        };
+      if (command.TransferObjects)
+        return {
+          kind: "TransferObjects",
+          objects: command.TransferObjects.objects.map((arg) => convertTransactionArgument2(arg, inputs)),
+          address: convertTransactionArgument2(command.TransferObjects.address, inputs)
+        };
+      if (command.Upgrade)
+        return {
+          kind: "Upgrade",
+          modules: command.Upgrade.modules.map((mod) => Array.from(fromBase642(mod))),
+          dependencies: command.Upgrade.dependencies,
+          packageId: command.Upgrade.package,
+          ticket: convertTransactionArgument2(command.Upgrade.ticket, inputs)
+        };
+      throw new Error(`Unknown transaction ${Object.keys(command)}`);
+    })
+  };
+}
+function convertTransactionArgument2(arg, inputs) {
+  if (arg.$kind === "GasCoin")
+    return { kind: "GasCoin" };
+  if (arg.$kind === "Result")
+    return {
+      kind: "Result",
+      index: arg.Result
+    };
+  if (arg.$kind === "NestedResult")
+    return {
+      kind: "NestedResult",
+      index: arg.NestedResult[0],
+      resultIndex: arg.NestedResult[1]
+    };
+  if (arg.$kind === "Input")
+    return inputs[arg.Input];
+  throw new Error(`Invalid argument ${Object.keys(arg)}`);
+}
+function transactionDataFromV12(data) {
+  return parse2(TransactionDataSchema2, {
+    version: 2,
+    sender: data.sender ?? null,
+    expiration: data.expiration ? "Epoch" in data.expiration ? { Epoch: data.expiration.Epoch } : { None: true } : null,
+    gasData: {
+      owner: data.gasConfig.owner ?? null,
+      budget: data.gasConfig.budget?.toString() ?? null,
+      price: data.gasConfig.price?.toString() ?? null,
+      payment: data.gasConfig.payment?.map((ref) => ({
+        digest: ref.digest,
+        objectId: ref.objectId,
+        version: ref.version.toString()
+      })) ?? null
+    },
+    inputs: data.inputs.map((input) => {
+      if (input.kind === "Input") {
+        if (is2(NormalizedCallArg4, input.value)) {
+          const value = parse2(NormalizedCallArg4, input.value);
+          if (value.Object) {
+            if (value.Object.ImmOrOwned)
+              return { Object: { ImmOrOwnedObject: {
+                objectId: value.Object.ImmOrOwned.objectId,
+                version: String(value.Object.ImmOrOwned.version),
+                digest: value.Object.ImmOrOwned.digest
+              } } };
+            if (value.Object.Shared)
+              return { Object: { SharedObject: {
+                mutable: value.Object.Shared.mutable ?? null,
+                initialSharedVersion: value.Object.Shared.initialSharedVersion,
+                objectId: value.Object.Shared.objectId
+              } } };
+            if (value.Object.Receiving)
+              return { Object: { Receiving: {
+                digest: value.Object.Receiving.digest,
+                version: String(value.Object.Receiving.version),
+                objectId: value.Object.Receiving.objectId
+              } } };
+            throw new Error("Invalid object input");
+          }
+          return { Pure: { bytes: toBase642(new Uint8Array(value.Pure)) } };
+        }
+        if (input.type === "object")
+          return { UnresolvedObject: { objectId: input.value } };
+        return { UnresolvedPure: { value: input.value } };
+      }
+      throw new Error("Invalid input");
+    }),
+    commands: data.transactions.map((transaction) => {
+      switch (transaction.kind) {
+        case "MakeMoveVec":
+          return { MakeMoveVec: {
+            type: "Some" in transaction.type ? TypeTagSerializer3.tagToString(transaction.type.Some) : null,
+            elements: transaction.objects.map((arg) => parseV1TransactionArgument2(arg))
+          } };
+        case "MergeCoins":
+          return { MergeCoins: {
+            destination: parseV1TransactionArgument2(transaction.destination),
+            sources: transaction.sources.map((arg) => parseV1TransactionArgument2(arg))
+          } };
+        case "MoveCall": {
+          const [pkg, mod, fn] = transaction.target.split("::");
+          return { MoveCall: {
+            package: pkg,
+            module: mod,
+            function: fn,
+            typeArguments: transaction.typeArguments,
+            arguments: transaction.arguments.map((arg) => parseV1TransactionArgument2(arg))
+          } };
+        }
+        case "Publish":
+          return { Publish: {
+            modules: transaction.modules.map((mod) => toBase642(Uint8Array.from(mod))),
+            dependencies: transaction.dependencies
+          } };
+        case "SplitCoins":
+          return { SplitCoins: {
+            coin: parseV1TransactionArgument2(transaction.coin),
+            amounts: transaction.amounts.map((arg) => parseV1TransactionArgument2(arg))
+          } };
+        case "TransferObjects":
+          return { TransferObjects: {
+            objects: transaction.objects.map((arg) => parseV1TransactionArgument2(arg)),
+            address: parseV1TransactionArgument2(transaction.address)
+          } };
+        case "Upgrade":
+          return { Upgrade: {
+            modules: transaction.modules.map((mod) => toBase642(Uint8Array.from(mod))),
+            dependencies: transaction.dependencies,
+            package: transaction.packageId,
+            ticket: parseV1TransactionArgument2(transaction.ticket)
+          } };
+      }
+      throw new Error(`Unknown transaction ${Object.keys(transaction)}`);
+    })
+  });
+}
+function parseV1TransactionArgument2(arg) {
+  switch (arg.kind) {
+    case "GasCoin":
+      return { GasCoin: true };
+    case "Result":
+      return { Result: arg.index };
+    case "NestedResult":
+      return { NestedResult: [arg.index, arg.resultIndex] };
+    case "Input":
+      return { Input: arg.index };
+  }
+}
+
+// node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/utils.js
+function isBytes4(a) {
+  return a instanceof Uint8Array || ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array";
+}
+function anumber4(n, title = "") {
+  if (!Number.isSafeInteger(n) || n < 0) {
+    const prefix = title && `"${title}" `;
+    throw new Error(`${prefix}expected integer >= 0, got ${n}`);
+  }
+}
+function abytes2(value, length, title = "") {
+  const bytes = isBytes4(value);
+  const len = value?.length;
+  const needsLen = length !== void 0;
+  if (!bytes || needsLen && len !== length) {
+    const prefix = title && `"${title}" `;
+    const ofLen = needsLen ? ` of length ${length}` : "";
+    const got = bytes ? `length=${len}` : `type=${typeof value}`;
+    throw new Error(prefix + "expected Uint8Array" + ofLen + ", got " + got);
+  }
+  return value;
+}
+function aexists2(instance, checkFinished = true) {
+  if (instance.destroyed)
+    throw new Error("Hash instance has been destroyed");
+  if (checkFinished && instance.finished)
+    throw new Error("Hash#digest() has already been called");
+}
+function aoutput2(out, instance) {
+  abytes2(out, void 0, "digestInto() output");
+  const min = instance.outputLen;
+  if (out.length < min) {
+    throw new Error('"digestInto() output" expected to be of length >=' + min);
+  }
+}
+function u322(arr) {
+  return new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
+}
+function clean2(...arrays) {
+  for (let i = 0; i < arrays.length; i++) {
+    arrays[i].fill(0);
+  }
+}
+var isLE2 = /* @__PURE__ */ (() => new Uint8Array(new Uint32Array([287454020]).buffer)[0] === 68)();
+function byteSwap2(word) {
+  return word << 24 & 4278190080 | word << 8 & 16711680 | word >>> 8 & 65280 | word >>> 24 & 255;
+}
+var swap8IfBE2 = isLE2 ? (n) => n : (n) => byteSwap2(n);
+function byteSwap322(arr) {
+  for (let i = 0; i < arr.length; i++) {
+    arr[i] = byteSwap2(arr[i]);
+  }
+  return arr;
+}
+var swap32IfBE2 = isLE2 ? (u) => u : byteSwap322;
+function createHasher2(hashCons, info = {}) {
+  const hashC = (msg, opts) => hashCons(opts).update(msg).digest();
+  const tmp = hashCons(void 0);
+  hashC.outputLen = tmp.outputLen;
+  hashC.blockLen = tmp.blockLen;
+  hashC.create = (opts) => hashCons(opts);
+  Object.assign(hashC, info);
+  return Object.freeze(hashC);
+}
+
+// node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/_blake.js
+var BSIGMA2 = /* @__PURE__ */ Uint8Array.from([
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  14,
+  10,
+  4,
+  8,
+  9,
+  15,
+  13,
+  6,
+  1,
+  12,
+  0,
+  2,
+  11,
+  7,
+  5,
+  3,
+  11,
+  8,
+  12,
+  0,
+  5,
+  2,
+  15,
+  13,
+  10,
+  14,
+  3,
+  6,
+  7,
+  1,
+  9,
+  4,
+  7,
+  9,
+  3,
+  1,
+  13,
+  12,
+  11,
+  14,
+  2,
+  6,
+  5,
+  10,
+  4,
+  0,
+  15,
+  8,
+  9,
+  0,
+  5,
+  7,
+  2,
+  4,
+  10,
+  15,
+  14,
+  1,
+  11,
+  12,
+  6,
+  8,
+  3,
+  13,
+  2,
+  12,
+  6,
+  10,
+  0,
+  11,
+  8,
+  3,
+  4,
+  13,
+  7,
+  5,
+  15,
+  14,
+  1,
+  9,
+  12,
+  5,
+  1,
+  15,
+  14,
+  13,
+  4,
+  10,
+  0,
+  7,
+  6,
+  3,
+  9,
+  2,
+  8,
+  11,
+  13,
+  11,
+  7,
+  14,
+  12,
+  1,
+  3,
+  9,
+  5,
+  0,
+  15,
+  4,
+  8,
+  6,
+  2,
+  10,
+  6,
+  15,
+  14,
+  9,
+  11,
+  3,
+  0,
+  8,
+  12,
+  2,
+  13,
+  7,
+  1,
+  4,
+  10,
+  5,
+  10,
+  2,
+  8,
+  4,
+  7,
+  6,
+  1,
+  5,
+  15,
+  11,
+  9,
+  14,
+  3,
+  12,
+  13,
+  0,
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  14,
+  10,
+  4,
+  8,
+  9,
+  15,
+  13,
+  6,
+  1,
+  12,
+  0,
+  2,
+  11,
+  7,
+  5,
+  3,
+  // Blake1, unused in others
+  11,
+  8,
+  12,
+  0,
+  5,
+  2,
+  15,
+  13,
+  10,
+  14,
+  3,
+  6,
+  7,
+  1,
+  9,
+  4,
+  7,
+  9,
+  3,
+  1,
+  13,
+  12,
+  11,
+  14,
+  2,
+  6,
+  5,
+  10,
+  4,
+  0,
+  15,
+  8,
+  9,
+  0,
+  5,
+  7,
+  2,
+  4,
+  10,
+  15,
+  14,
+  1,
+  11,
+  12,
+  6,
+  8,
+  3,
+  13,
+  2,
+  12,
+  6,
+  10,
+  0,
+  11,
+  8,
+  3,
+  4,
+  13,
+  7,
+  5,
+  15,
+  14,
+  1,
+  9
+]);
+
+// node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/_u64.js
+var U32_MASK642 = /* @__PURE__ */ BigInt(2 ** 32 - 1);
+var _32n2 = /* @__PURE__ */ BigInt(32);
+function fromBig2(n, le = false) {
+  if (le)
+    return { h: Number(n & U32_MASK642), l: Number(n >> _32n2 & U32_MASK642) };
+  return { h: Number(n >> _32n2 & U32_MASK642) | 0, l: Number(n & U32_MASK642) | 0 };
+}
+var rotrSH2 = (h, l, s) => h >>> s | l << 32 - s;
+var rotrSL2 = (h, l, s) => h << 32 - s | l >>> s;
+var rotrBH2 = (h, l, s) => h << 64 - s | l >>> s - 32;
+var rotrBL2 = (h, l, s) => h >>> s - 32 | l << 64 - s;
+var rotr32H2 = (_h, l) => l;
+var rotr32L2 = (h, _l) => h;
+function add2(Ah, Al, Bh, Bl) {
+  const l = (Al >>> 0) + (Bl >>> 0);
+  return { h: Ah + Bh + (l / 2 ** 32 | 0) | 0, l: l | 0 };
+}
+var add3L2 = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
+var add3H2 = (low, Ah, Bh, Ch) => Ah + Bh + Ch + (low / 2 ** 32 | 0) | 0;
+
+// node_modules/.pnpm/@noble+hashes@2.0.1/node_modules/@noble/hashes/blake2.js
+var B2B_IV2 = /* @__PURE__ */ Uint32Array.from([
+  4089235720,
+  1779033703,
+  2227873595,
+  3144134277,
+  4271175723,
+  1013904242,
+  1595750129,
+  2773480762,
+  2917565137,
+  1359893119,
+  725511199,
+  2600822924,
+  4215389547,
+  528734635,
+  327033209,
+  1541459225
+]);
+var BBUF2 = /* @__PURE__ */ new Uint32Array(32);
+function G1b2(a, b, c, d, msg, x) {
+  const Xl = msg[x], Xh = msg[x + 1];
+  let Al = BBUF2[2 * a], Ah = BBUF2[2 * a + 1];
+  let Bl = BBUF2[2 * b], Bh = BBUF2[2 * b + 1];
+  let Cl = BBUF2[2 * c], Ch = BBUF2[2 * c + 1];
+  let Dl = BBUF2[2 * d], Dh = BBUF2[2 * d + 1];
+  let ll = add3L2(Al, Bl, Xl);
+  Ah = add3H2(ll, Ah, Bh, Xh);
+  Al = ll | 0;
+  ({ Dh, Dl } = { Dh: Dh ^ Ah, Dl: Dl ^ Al });
+  ({ Dh, Dl } = { Dh: rotr32H2(Dh, Dl), Dl: rotr32L2(Dh, Dl) });
+  ({ h: Ch, l: Cl } = add2(Ch, Cl, Dh, Dl));
+  ({ Bh, Bl } = { Bh: Bh ^ Ch, Bl: Bl ^ Cl });
+  ({ Bh, Bl } = { Bh: rotrSH2(Bh, Bl, 24), Bl: rotrSL2(Bh, Bl, 24) });
+  BBUF2[2 * a] = Al, BBUF2[2 * a + 1] = Ah;
+  BBUF2[2 * b] = Bl, BBUF2[2 * b + 1] = Bh;
+  BBUF2[2 * c] = Cl, BBUF2[2 * c + 1] = Ch;
+  BBUF2[2 * d] = Dl, BBUF2[2 * d + 1] = Dh;
+}
+function G2b2(a, b, c, d, msg, x) {
+  const Xl = msg[x], Xh = msg[x + 1];
+  let Al = BBUF2[2 * a], Ah = BBUF2[2 * a + 1];
+  let Bl = BBUF2[2 * b], Bh = BBUF2[2 * b + 1];
+  let Cl = BBUF2[2 * c], Ch = BBUF2[2 * c + 1];
+  let Dl = BBUF2[2 * d], Dh = BBUF2[2 * d + 1];
+  let ll = add3L2(Al, Bl, Xl);
+  Ah = add3H2(ll, Ah, Bh, Xh);
+  Al = ll | 0;
+  ({ Dh, Dl } = { Dh: Dh ^ Ah, Dl: Dl ^ Al });
+  ({ Dh, Dl } = { Dh: rotrSH2(Dh, Dl, 16), Dl: rotrSL2(Dh, Dl, 16) });
+  ({ h: Ch, l: Cl } = add2(Ch, Cl, Dh, Dl));
+  ({ Bh, Bl } = { Bh: Bh ^ Ch, Bl: Bl ^ Cl });
+  ({ Bh, Bl } = { Bh: rotrBH2(Bh, Bl, 63), Bl: rotrBL2(Bh, Bl, 63) });
+  BBUF2[2 * a] = Al, BBUF2[2 * a + 1] = Ah;
+  BBUF2[2 * b] = Bl, BBUF2[2 * b + 1] = Bh;
+  BBUF2[2 * c] = Cl, BBUF2[2 * c + 1] = Ch;
+  BBUF2[2 * d] = Dl, BBUF2[2 * d + 1] = Dh;
+}
+function checkBlake2Opts2(outputLen, opts = {}, keyLen, saltLen, persLen) {
+  anumber4(keyLen);
+  if (outputLen < 0 || outputLen > keyLen)
+    throw new Error("outputLen bigger than keyLen");
+  const { key, salt, personalization } = opts;
+  if (key !== void 0 && (key.length < 1 || key.length > keyLen))
+    throw new Error('"key" expected to be undefined or of length=1..' + keyLen);
+  if (salt !== void 0)
+    abytes2(salt, saltLen, "salt");
+  if (personalization !== void 0)
+    abytes2(personalization, persLen, "personalization");
+}
+var _BLAKE22 = class {
+  buffer;
+  buffer32;
+  finished = false;
+  destroyed = false;
+  length = 0;
+  pos = 0;
+  blockLen;
+  outputLen;
+  constructor(blockLen, outputLen) {
+    anumber4(blockLen);
+    anumber4(outputLen);
+    this.blockLen = blockLen;
+    this.outputLen = outputLen;
+    this.buffer = new Uint8Array(blockLen);
+    this.buffer32 = u322(this.buffer);
+  }
+  update(data) {
+    aexists2(this);
+    abytes2(data);
+    const { blockLen, buffer, buffer32 } = this;
+    const len = data.length;
+    const offset = data.byteOffset;
+    const buf = data.buffer;
+    for (let pos = 0; pos < len; ) {
+      if (this.pos === blockLen) {
+        swap32IfBE2(buffer32);
+        this.compress(buffer32, 0, false);
+        swap32IfBE2(buffer32);
+        this.pos = 0;
+      }
+      const take = Math.min(blockLen - this.pos, len - pos);
+      const dataOffset = offset + pos;
+      if (take === blockLen && !(dataOffset % 4) && pos + take < len) {
+        const data32 = new Uint32Array(buf, dataOffset, Math.floor((len - pos) / 4));
+        swap32IfBE2(data32);
+        for (let pos32 = 0; pos + blockLen < len; pos32 += buffer32.length, pos += blockLen) {
+          this.length += blockLen;
+          this.compress(data32, pos32, false);
+        }
+        swap32IfBE2(data32);
+        continue;
+      }
+      buffer.set(data.subarray(pos, pos + take), this.pos);
+      this.pos += take;
+      this.length += take;
+      pos += take;
+    }
+    return this;
+  }
+  digestInto(out) {
+    aexists2(this);
+    aoutput2(out, this);
+    const { pos, buffer32 } = this;
+    this.finished = true;
+    clean2(this.buffer.subarray(pos));
+    swap32IfBE2(buffer32);
+    this.compress(buffer32, 0, true);
+    swap32IfBE2(buffer32);
+    const out32 = u322(out);
+    this.get().forEach((v, i) => out32[i] = swap8IfBE2(v));
+  }
+  digest() {
+    const { buffer, outputLen } = this;
+    this.digestInto(buffer);
+    const res = buffer.slice(0, outputLen);
+    this.destroy();
+    return res;
+  }
+  _cloneInto(to) {
+    const { buffer, length, finished, destroyed, outputLen, pos } = this;
+    to ||= new this.constructor({ dkLen: outputLen });
+    to.set(...this.get());
+    to.buffer.set(buffer);
+    to.destroyed = destroyed;
+    to.finished = finished;
+    to.length = length;
+    to.pos = pos;
+    to.outputLen = outputLen;
+    return to;
+  }
+  clone() {
+    return this._cloneInto();
+  }
+};
+var _BLAKE2b2 = class extends _BLAKE22 {
+  // Same as SHA-512, but LE
+  v0l = B2B_IV2[0] | 0;
+  v0h = B2B_IV2[1] | 0;
+  v1l = B2B_IV2[2] | 0;
+  v1h = B2B_IV2[3] | 0;
+  v2l = B2B_IV2[4] | 0;
+  v2h = B2B_IV2[5] | 0;
+  v3l = B2B_IV2[6] | 0;
+  v3h = B2B_IV2[7] | 0;
+  v4l = B2B_IV2[8] | 0;
+  v4h = B2B_IV2[9] | 0;
+  v5l = B2B_IV2[10] | 0;
+  v5h = B2B_IV2[11] | 0;
+  v6l = B2B_IV2[12] | 0;
+  v6h = B2B_IV2[13] | 0;
+  v7l = B2B_IV2[14] | 0;
+  v7h = B2B_IV2[15] | 0;
+  constructor(opts = {}) {
+    const olen = opts.dkLen === void 0 ? 64 : opts.dkLen;
+    super(128, olen);
+    checkBlake2Opts2(olen, opts, 64, 16, 16);
+    let { key, personalization, salt } = opts;
+    let keyLength = 0;
+    if (key !== void 0) {
+      abytes2(key, void 0, "key");
+      keyLength = key.length;
+    }
+    this.v0l ^= this.outputLen | keyLength << 8 | 1 << 16 | 1 << 24;
+    if (salt !== void 0) {
+      abytes2(salt, void 0, "salt");
+      const slt = u322(salt);
+      this.v4l ^= swap8IfBE2(slt[0]);
+      this.v4h ^= swap8IfBE2(slt[1]);
+      this.v5l ^= swap8IfBE2(slt[2]);
+      this.v5h ^= swap8IfBE2(slt[3]);
+    }
+    if (personalization !== void 0) {
+      abytes2(personalization, void 0, "personalization");
+      const pers = u322(personalization);
+      this.v6l ^= swap8IfBE2(pers[0]);
+      this.v6h ^= swap8IfBE2(pers[1]);
+      this.v7l ^= swap8IfBE2(pers[2]);
+      this.v7h ^= swap8IfBE2(pers[3]);
+    }
+    if (key !== void 0) {
+      const tmp = new Uint8Array(this.blockLen);
+      tmp.set(key);
+      this.update(tmp);
+    }
+  }
+  // prettier-ignore
+  get() {
+    let { v0l, v0h, v1l, v1h, v2l, v2h, v3l, v3h, v4l, v4h, v5l, v5h, v6l, v6h, v7l, v7h } = this;
+    return [v0l, v0h, v1l, v1h, v2l, v2h, v3l, v3h, v4l, v4h, v5l, v5h, v6l, v6h, v7l, v7h];
+  }
+  // prettier-ignore
+  set(v0l, v0h, v1l, v1h, v2l, v2h, v3l, v3h, v4l, v4h, v5l, v5h, v6l, v6h, v7l, v7h) {
+    this.v0l = v0l | 0;
+    this.v0h = v0h | 0;
+    this.v1l = v1l | 0;
+    this.v1h = v1h | 0;
+    this.v2l = v2l | 0;
+    this.v2h = v2h | 0;
+    this.v3l = v3l | 0;
+    this.v3h = v3h | 0;
+    this.v4l = v4l | 0;
+    this.v4h = v4h | 0;
+    this.v5l = v5l | 0;
+    this.v5h = v5h | 0;
+    this.v6l = v6l | 0;
+    this.v6h = v6h | 0;
+    this.v7l = v7l | 0;
+    this.v7h = v7h | 0;
+  }
+  compress(msg, offset, isLast) {
+    this.get().forEach((v, i) => BBUF2[i] = v);
+    BBUF2.set(B2B_IV2, 16);
+    let { h, l } = fromBig2(BigInt(this.length));
+    BBUF2[24] = B2B_IV2[8] ^ l;
+    BBUF2[25] = B2B_IV2[9] ^ h;
+    if (isLast) {
+      BBUF2[28] = ~BBUF2[28];
+      BBUF2[29] = ~BBUF2[29];
+    }
+    let j = 0;
+    const s = BSIGMA2;
+    for (let i = 0; i < 12; i++) {
+      G1b2(0, 4, 8, 12, msg, offset + 2 * s[j++]);
+      G2b2(0, 4, 8, 12, msg, offset + 2 * s[j++]);
+      G1b2(1, 5, 9, 13, msg, offset + 2 * s[j++]);
+      G2b2(1, 5, 9, 13, msg, offset + 2 * s[j++]);
+      G1b2(2, 6, 10, 14, msg, offset + 2 * s[j++]);
+      G2b2(2, 6, 10, 14, msg, offset + 2 * s[j++]);
+      G1b2(3, 7, 11, 15, msg, offset + 2 * s[j++]);
+      G2b2(3, 7, 11, 15, msg, offset + 2 * s[j++]);
+      G1b2(0, 5, 10, 15, msg, offset + 2 * s[j++]);
+      G2b2(0, 5, 10, 15, msg, offset + 2 * s[j++]);
+      G1b2(1, 6, 11, 12, msg, offset + 2 * s[j++]);
+      G2b2(1, 6, 11, 12, msg, offset + 2 * s[j++]);
+      G1b2(2, 7, 8, 13, msg, offset + 2 * s[j++]);
+      G2b2(2, 7, 8, 13, msg, offset + 2 * s[j++]);
+      G1b2(3, 4, 9, 14, msg, offset + 2 * s[j++]);
+      G2b2(3, 4, 9, 14, msg, offset + 2 * s[j++]);
+    }
+    this.v0l ^= BBUF2[0] ^ BBUF2[16];
+    this.v0h ^= BBUF2[1] ^ BBUF2[17];
+    this.v1l ^= BBUF2[2] ^ BBUF2[18];
+    this.v1h ^= BBUF2[3] ^ BBUF2[19];
+    this.v2l ^= BBUF2[4] ^ BBUF2[20];
+    this.v2h ^= BBUF2[5] ^ BBUF2[21];
+    this.v3l ^= BBUF2[6] ^ BBUF2[22];
+    this.v3h ^= BBUF2[7] ^ BBUF2[23];
+    this.v4l ^= BBUF2[8] ^ BBUF2[24];
+    this.v4h ^= BBUF2[9] ^ BBUF2[25];
+    this.v5l ^= BBUF2[10] ^ BBUF2[26];
+    this.v5h ^= BBUF2[11] ^ BBUF2[27];
+    this.v6l ^= BBUF2[12] ^ BBUF2[28];
+    this.v6h ^= BBUF2[13] ^ BBUF2[29];
+    this.v7l ^= BBUF2[14] ^ BBUF2[30];
+    this.v7h ^= BBUF2[15] ^ BBUF2[31];
+    clean2(BBUF2);
+  }
+  destroy() {
+    this.destroyed = true;
+    clean2(this.buffer32);
+    this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  }
+};
+var blake2b2 = /* @__PURE__ */ createHasher2((opts) => new _BLAKE2b2(opts));
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/hash.mjs
+function hashTypedData2(typeTag, data) {
+  const typeTagBytes = Array.from(`${typeTag}::`).map((e) => e.charCodeAt(0));
+  const dataWithTag = new Uint8Array(typeTagBytes.length + data.length);
+  dataWithTag.set(typeTagBytes);
+  dataWithTag.set(data, typeTagBytes.length);
+  return blake2b2(dataWithTag, { dkLen: 32 });
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/TransactionData.mjs
+function prepareSuiAddress2(address) {
+  return normalizeSuiAddress2(address).replace("0x", "");
+}
+var TransactionDataBuilder3 = class TransactionDataBuilder4 {
+  static fromKindBytes(bytes) {
+    const programmableTx = suiBcs2.TransactionKind.parse(bytes).ProgrammableTransaction;
+    if (!programmableTx)
+      throw new Error("Unable to deserialize from bytes.");
+    return TransactionDataBuilder4.restore({
+      version: 2,
+      sender: null,
+      expiration: null,
+      gasData: {
+        budget: null,
+        owner: null,
+        payment: null,
+        price: null
+      },
+      inputs: programmableTx.inputs,
+      commands: programmableTx.commands
+    });
+  }
+  static fromBytes(bytes) {
+    const data = suiBcs2.TransactionData.parse(bytes)?.V1;
+    const programmableTx = data.kind.ProgrammableTransaction;
+    if (!data || !programmableTx)
+      throw new Error("Unable to deserialize from bytes.");
+    return TransactionDataBuilder4.restore({
+      version: 2,
+      sender: data.sender,
+      expiration: data.expiration,
+      gasData: data.gasData,
+      inputs: programmableTx.inputs,
+      commands: programmableTx.commands
+    });
+  }
+  static restore(data) {
+    if (data.version === 2)
+      return new TransactionDataBuilder4(parse2(TransactionDataSchema2, data));
+    else
+      return new TransactionDataBuilder4(parse2(TransactionDataSchema2, transactionDataFromV12(data)));
+  }
+  /**
+  * Generate transaction digest.
+  *
+  * @param bytes BCS serialized transaction data
+  * @returns transaction digest.
+  */
+  static getDigestFromBytes(bytes) {
+    return toBase582(hashTypedData2("TransactionData", bytes));
+  }
+  constructor(clone) {
+    this.version = 2;
+    this.sender = clone?.sender ?? null;
+    this.expiration = clone?.expiration ?? null;
+    this.inputs = clone?.inputs ?? [];
+    this.commands = clone?.commands ?? [];
+    this.gasData = clone?.gasData ?? {
+      budget: null,
+      price: null,
+      owner: null,
+      payment: null
+    };
+  }
+  build({ maxSizeBytes = Infinity, overrides, onlyTransactionKind } = {}) {
+    const inputs = this.inputs;
+    const commands = this.commands;
+    const kind = { ProgrammableTransaction: {
+      inputs,
+      commands
+    } };
+    if (onlyTransactionKind)
+      return suiBcs2.TransactionKind.serialize(kind, { maxSize: maxSizeBytes }).toBytes();
+    const expiration = overrides?.expiration ?? this.expiration;
+    const sender = overrides?.sender ?? this.sender;
+    const gasData = {
+      ...this.gasData,
+      ...overrides?.gasData
+    };
+    if (!sender)
+      throw new Error("Missing transaction sender");
+    if (!gasData.budget)
+      throw new Error("Missing gas budget");
+    if (!gasData.payment)
+      throw new Error("Missing gas payment");
+    if (!gasData.price)
+      throw new Error("Missing gas price");
+    const transactionData = {
+      sender: prepareSuiAddress2(sender),
+      expiration: expiration ? expiration : { None: true },
+      gasData: {
+        payment: gasData.payment,
+        owner: prepareSuiAddress2(this.gasData.owner ?? sender),
+        price: BigInt(gasData.price),
+        budget: BigInt(gasData.budget)
+      },
+      kind: { ProgrammableTransaction: {
+        inputs,
+        commands
+      } }
+    };
+    return suiBcs2.TransactionData.serialize({ V1: transactionData }, { maxSize: maxSizeBytes }).toBytes();
+  }
+  addInput(type, arg) {
+    const index = this.inputs.length;
+    this.inputs.push(arg);
+    return {
+      Input: index,
+      type,
+      $kind: "Input"
+    };
+  }
+  getInputUses(index, fn) {
+    this.mapArguments((arg, command) => {
+      if (arg.$kind === "Input" && arg.Input === index)
+        fn(arg, command);
+      return arg;
+    });
+  }
+  mapCommandArguments(index, fn) {
+    const command = this.commands[index];
+    switch (command.$kind) {
+      case "MoveCall":
+        command.MoveCall.arguments = command.MoveCall.arguments.map((arg) => fn(arg, command, index));
+        break;
+      case "TransferObjects":
+        command.TransferObjects.objects = command.TransferObjects.objects.map((arg) => fn(arg, command, index));
+        command.TransferObjects.address = fn(command.TransferObjects.address, command, index);
+        break;
+      case "SplitCoins":
+        command.SplitCoins.coin = fn(command.SplitCoins.coin, command, index);
+        command.SplitCoins.amounts = command.SplitCoins.amounts.map((arg) => fn(arg, command, index));
+        break;
+      case "MergeCoins":
+        command.MergeCoins.destination = fn(command.MergeCoins.destination, command, index);
+        command.MergeCoins.sources = command.MergeCoins.sources.map((arg) => fn(arg, command, index));
+        break;
+      case "MakeMoveVec":
+        command.MakeMoveVec.elements = command.MakeMoveVec.elements.map((arg) => fn(arg, command, index));
+        break;
+      case "Upgrade":
+        command.Upgrade.ticket = fn(command.Upgrade.ticket, command, index);
+        break;
+      case "$Intent":
+        const inputs = command.$Intent.inputs;
+        command.$Intent.inputs = {};
+        for (const [key, value] of Object.entries(inputs))
+          command.$Intent.inputs[key] = Array.isArray(value) ? value.map((arg) => fn(arg, command, index)) : fn(value, command, index);
+        break;
+      case "Publish":
+        break;
+      default:
+        throw new Error(`Unexpected transaction kind: ${command.$kind}`);
+    }
+  }
+  mapArguments(fn) {
+    for (const commandIndex of this.commands.keys())
+      this.mapCommandArguments(commandIndex, fn);
+  }
+  replaceCommand(index, replacement, resultIndex = index) {
+    if (!Array.isArray(replacement)) {
+      this.commands[index] = replacement;
+      return;
+    }
+    const sizeDiff = replacement.length - 1;
+    this.commands.splice(index, 1, ...structuredClone(replacement));
+    this.mapArguments((arg, _command, commandIndex) => {
+      if (commandIndex < index + replacement.length)
+        return arg;
+      if (typeof resultIndex !== "number") {
+        if (arg.$kind === "Result" && arg.Result === index || arg.$kind === "NestedResult" && arg.NestedResult[0] === index)
+          if (!("NestedResult" in arg) || arg.NestedResult[1] === 0)
+            return parse2(ArgumentSchema2, structuredClone(resultIndex));
+          else
+            throw new Error(`Cannot replace command ${index} with a specific result type: NestedResult[${index}, ${arg.NestedResult[1]}] references a nested element that cannot be mapped to the replacement result`);
+      }
+      switch (arg.$kind) {
+        case "Result":
+          if (arg.Result === index && typeof resultIndex === "number")
+            arg.Result = resultIndex;
+          if (arg.Result > index)
+            arg.Result += sizeDiff;
+          break;
+        case "NestedResult":
+          if (arg.NestedResult[0] === index && typeof resultIndex === "number")
+            return {
+              $kind: "NestedResult",
+              NestedResult: [resultIndex, arg.NestedResult[1]]
+            };
+          if (arg.NestedResult[0] > index)
+            arg.NestedResult[0] += sizeDiff;
+          break;
+      }
+      return arg;
+    });
+  }
+  replaceCommandWithTransaction(index, otherTransaction, result) {
+    if (result.$kind !== "Result" && result.$kind !== "NestedResult")
+      throw new Error("Result must be of kind Result or NestedResult");
+    this.insertTransaction(index, otherTransaction);
+    this.replaceCommand(index + otherTransaction.commands.length, [], "Result" in result ? { NestedResult: [result.Result + index, 0] } : { NestedResult: [result.NestedResult[0] + index, result.NestedResult[1]] });
+  }
+  insertTransaction(atCommandIndex, otherTransaction) {
+    const inputMapping = /* @__PURE__ */ new Map();
+    const commandMapping = /* @__PURE__ */ new Map();
+    for (let i = 0; i < otherTransaction.inputs.length; i++) {
+      const otherInput = otherTransaction.inputs[i];
+      const id = getIdFromCallArg2(otherInput);
+      let existingIndex = -1;
+      if (id !== void 0) {
+        existingIndex = this.inputs.findIndex((input) => getIdFromCallArg2(input) === id);
+        if (existingIndex !== -1 && this.inputs[existingIndex].Object?.SharedObject && otherInput.Object?.SharedObject)
+          this.inputs[existingIndex].Object.SharedObject.mutable = this.inputs[existingIndex].Object.SharedObject.mutable || otherInput.Object.SharedObject.mutable;
+      }
+      if (existingIndex !== -1)
+        inputMapping.set(i, existingIndex);
+      else {
+        const newIndex = this.inputs.length;
+        this.inputs.push(otherInput);
+        inputMapping.set(i, newIndex);
+      }
+    }
+    for (let i = 0; i < otherTransaction.commands.length; i++)
+      commandMapping.set(i, atCommandIndex + i);
+    const remappedCommands = [];
+    for (let i = 0; i < otherTransaction.commands.length; i++) {
+      const command = structuredClone(otherTransaction.commands[i]);
+      remapCommandArguments2(command, inputMapping, commandMapping);
+      remappedCommands.push(command);
+    }
+    this.commands.splice(atCommandIndex, 0, ...remappedCommands);
+    const sizeDiff = remappedCommands.length;
+    if (sizeDiff > 0)
+      this.mapArguments((arg, _command, commandIndex) => {
+        if (commandIndex >= atCommandIndex && commandIndex < atCommandIndex + remappedCommands.length)
+          return arg;
+        switch (arg.$kind) {
+          case "Result":
+            if (arg.Result >= atCommandIndex)
+              arg.Result += sizeDiff;
+            break;
+          case "NestedResult":
+            if (arg.NestedResult[0] >= atCommandIndex)
+              arg.NestedResult[0] += sizeDiff;
+            break;
+        }
+        return arg;
+      });
+  }
+  getDigest() {
+    const bytes = this.build({ onlyTransactionKind: false });
+    return TransactionDataBuilder4.getDigestFromBytes(bytes);
+  }
+  snapshot() {
+    return parse2(TransactionDataSchema2, this);
+  }
+  shallowClone() {
+    return new TransactionDataBuilder4({
+      version: this.version,
+      sender: this.sender,
+      expiration: this.expiration,
+      gasData: { ...this.gasData },
+      inputs: [...this.inputs],
+      commands: [...this.commands]
+    });
+  }
+  applyResolvedData(resolved) {
+    if (!this.sender)
+      this.sender = resolved.sender ?? null;
+    if (!this.expiration)
+      this.expiration = resolved.expiration ?? null;
+    if (!this.gasData.budget)
+      this.gasData.budget = resolved.gasData.budget;
+    if (!this.gasData.owner)
+      this.gasData.owner = resolved.gasData.owner ?? null;
+    if (!this.gasData.payment)
+      this.gasData.payment = resolved.gasData.payment;
+    if (!this.gasData.price)
+      this.gasData.price = resolved.gasData.price;
+    for (let i = 0; i < this.inputs.length; i++) {
+      const input = this.inputs[i];
+      const resolvedInput = resolved.inputs[i];
+      switch (input.$kind) {
+        case "UnresolvedPure":
+          if (resolvedInput.$kind !== "Pure")
+            throw new Error(`Expected input at index ${i} to resolve to a Pure argument, but got ${JSON.stringify(resolvedInput)}`);
+          this.inputs[i] = resolvedInput;
+          break;
+        case "UnresolvedObject":
+          if (resolvedInput.$kind !== "Object")
+            throw new Error(`Expected input at index ${i} to resolve to an Object argument, but got ${JSON.stringify(resolvedInput)}`);
+          if (resolvedInput.Object.$kind === "ImmOrOwnedObject" || resolvedInput.Object.$kind === "Receiving") {
+            const original = input.UnresolvedObject;
+            const resolved$1 = resolvedInput.Object.ImmOrOwnedObject ?? resolvedInput.Object.Receiving;
+            if (normalizeSuiAddress2(original.objectId) !== normalizeSuiAddress2(resolved$1.objectId) || original.version != null && original.version !== resolved$1.version || original.digest != null && original.digest !== resolved$1.digest || original.mutable != null || original.initialSharedVersion != null)
+              throw new Error(`Input at index ${i} did not match unresolved object. ${JSON.stringify(original)} is not compatible with ${JSON.stringify(resolved$1)}`);
+          } else if (resolvedInput.Object.$kind === "SharedObject") {
+            const original = input.UnresolvedObject;
+            const resolved$1 = resolvedInput.Object.SharedObject;
+            if (normalizeSuiAddress2(original.objectId) !== normalizeSuiAddress2(resolved$1.objectId) || original.initialSharedVersion != null && original.initialSharedVersion !== resolved$1.initialSharedVersion || original.mutable != null && original.mutable !== resolved$1.mutable || original.version != null || original.digest != null)
+              throw new Error(`Input at index ${i} did not match unresolved object. ${JSON.stringify(original)} is not compatible with ${JSON.stringify(resolved$1)}`);
+          } else
+            throw new Error(`Input at index ${i} resolved to an unexpected Object kind: ${JSON.stringify(resolvedInput.Object)}`);
+          this.inputs[i] = resolvedInput;
+          break;
+      }
+    }
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Commands.mjs
+var TransactionCommands2 = {
+  MoveCall(input) {
+    const [pkg, mod = "", fn = ""] = "target" in input ? input.target.split("::") : [
+      input.package,
+      input.module,
+      input.function
+    ];
+    return {
+      $kind: "MoveCall",
+      MoveCall: {
+        package: pkg,
+        module: mod,
+        function: fn,
+        typeArguments: input.typeArguments ?? [],
+        arguments: input.arguments ?? []
+      }
+    };
+  },
+  TransferObjects(objects, address) {
+    return {
+      $kind: "TransferObjects",
+      TransferObjects: {
+        objects: objects.map((o) => parse2(ArgumentSchema2, o)),
+        address: parse2(ArgumentSchema2, address)
+      }
+    };
+  },
+  SplitCoins(coin, amounts) {
+    return {
+      $kind: "SplitCoins",
+      SplitCoins: {
+        coin: parse2(ArgumentSchema2, coin),
+        amounts: amounts.map((o) => parse2(ArgumentSchema2, o))
+      }
+    };
+  },
+  MergeCoins(destination, sources) {
+    return {
+      $kind: "MergeCoins",
+      MergeCoins: {
+        destination: parse2(ArgumentSchema2, destination),
+        sources: sources.map((o) => parse2(ArgumentSchema2, o))
+      }
+    };
+  },
+  Publish({ modules, dependencies }) {
+    return {
+      $kind: "Publish",
+      Publish: {
+        modules: modules.map((module) => typeof module === "string" ? module : toBase642(new Uint8Array(module))),
+        dependencies: dependencies.map((dep) => normalizeSuiObjectId2(dep))
+      }
+    };
+  },
+  Upgrade({ modules, dependencies, package: packageId, ticket }) {
+    return {
+      $kind: "Upgrade",
+      Upgrade: {
+        modules: modules.map((module) => typeof module === "string" ? module : toBase642(new Uint8Array(module))),
+        dependencies: dependencies.map((dep) => normalizeSuiObjectId2(dep)),
+        package: packageId,
+        ticket: parse2(ArgumentSchema2, ticket)
+      }
+    };
+  },
+  MakeMoveVec({ type, elements }) {
+    return {
+      $kind: "MakeMoveVec",
+      MakeMoveVec: {
+        type: type ?? null,
+        elements: elements.map((o) => parse2(ArgumentSchema2, o))
+      }
+    };
+  },
+  Intent({ name, inputs = {}, data = {} }) {
+    return {
+      $kind: "$Intent",
+      $Intent: {
+        name,
+        inputs: Object.fromEntries(Object.entries(inputs).map(([key, value]) => [key, Array.isArray(value) ? value.map((o) => parse2(ArgumentSchema2, o)) : parse2(ArgumentSchema2, value)])),
+        data
+      }
+    };
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Inputs.mjs
+function Pure2(data) {
+  return {
+    $kind: "Pure",
+    Pure: { bytes: data instanceof Uint8Array ? toBase642(data) : data.toBase64() }
+  };
+}
+var Inputs2 = {
+  Pure: Pure2,
+  ObjectRef({ objectId, digest, version }) {
+    return {
+      $kind: "Object",
+      Object: {
+        $kind: "ImmOrOwnedObject",
+        ImmOrOwnedObject: {
+          digest,
+          version,
+          objectId: normalizeSuiAddress2(objectId)
+        }
+      }
+    };
+  },
+  SharedObjectRef({ objectId, mutable, initialSharedVersion }) {
+    return {
+      $kind: "Object",
+      Object: {
+        $kind: "SharedObject",
+        SharedObject: {
+          mutable,
+          initialSharedVersion,
+          objectId: normalizeSuiAddress2(objectId)
+        }
+      }
+    };
+  },
+  ReceivingRef({ objectId, digest, version }) {
+    return {
+      $kind: "Object",
+      Object: {
+        $kind: "Receiving",
+        Receiving: {
+          digest,
+          version,
+          objectId: normalizeSuiAddress2(objectId)
+        }
+      }
+    };
+  },
+  FundsWithdrawal({ reservation, typeArg, withdrawFrom }) {
+    return {
+      $kind: "FundsWithdrawal",
+      FundsWithdrawal: {
+        reservation,
+        typeArg,
+        withdrawFrom
+      }
+    };
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/constants.mjs
+var MIST_PER_SUI2 = BigInt(1e9);
+var MOVE_STDLIB_ADDRESS2 = "0x0000000000000000000000000000000000000000000000000000000000000001";
+var SUI_FRAMEWORK_ADDRESS2 = "0x0000000000000000000000000000000000000000000000000000000000000002";
+var SUI_SYSTEM_ADDRESS = "0x0000000000000000000000000000000000000000000000000000000000000003";
+var SUI_CLOCK_OBJECT_ID2 = "0x0000000000000000000000000000000000000000000000000000000000000006";
+var SUI_TYPE_ARG2 = `${SUI_FRAMEWORK_ADDRESS2}::sui::SUI`;
+var SUI_SYSTEM_STATE_OBJECT_ID2 = "0x0000000000000000000000000000000000000000000000000000000000000005";
+var SUI_RANDOM_OBJECT_ID2 = "0x0000000000000000000000000000000000000000000000000000000000000008";
+var SUI_DENY_LIST_OBJECT_ID2 = "0x0000000000000000000000000000000000000000000000000000000000000403";
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/serializer.mjs
+function parseTypeName2(typeName) {
+  const parts = typeName.split("::");
+  if (parts.length !== 3)
+    throw new Error(`Invalid type name format: ${typeName}`);
+  return {
+    package: parts[0],
+    module: parts[1],
+    name: parts[2]
+  };
+}
+function isTxContext2(param) {
+  if (param.body.$kind !== "datatype")
+    return false;
+  const { package: pkg, module, name } = parseTypeName2(param.body.datatype.typeName);
+  return normalizeSuiAddress2(pkg) === SUI_FRAMEWORK_ADDRESS2 && module === "tx_context" && name === "TxContext";
+}
+function getPureBcsSchema2(typeSignature) {
+  switch (typeSignature.$kind) {
+    case "address":
+      return suiBcs2.Address;
+    case "bool":
+      return suiBcs2.Bool;
+    case "u8":
+      return suiBcs2.U8;
+    case "u16":
+      return suiBcs2.U16;
+    case "u32":
+      return suiBcs2.U32;
+    case "u64":
+      return suiBcs2.U64;
+    case "u128":
+      return suiBcs2.U128;
+    case "u256":
+      return suiBcs2.U256;
+    case "vector": {
+      if (typeSignature.vector.$kind === "u8")
+        return suiBcs2.byteVector().transform({
+          input: (val) => typeof val === "string" ? new TextEncoder().encode(val) : val,
+          output: (val) => val
+        });
+      const type = getPureBcsSchema2(typeSignature.vector);
+      return type ? suiBcs2.vector(type) : null;
+    }
+    case "datatype": {
+      const { package: pkg, module, name } = parseTypeName2(typeSignature.datatype.typeName);
+      const normalizedPkg = normalizeSuiAddress2(pkg);
+      if (normalizedPkg === MOVE_STDLIB_ADDRESS2) {
+        if (module === "ascii" && name === "String")
+          return suiBcs2.String;
+        if (module === "string" && name === "String")
+          return suiBcs2.String;
+        if (module === "option" && name === "Option") {
+          const type = getPureBcsSchema2(typeSignature.datatype.typeParameters[0]);
+          return type ? suiBcs2.vector(type) : null;
+        }
+      }
+      if (normalizedPkg === SUI_FRAMEWORK_ADDRESS2) {
+        if (module === "object" && name === "ID")
+          return suiBcs2.Address;
+      }
+      return null;
+    }
+    case "typeParameter":
+    case "unknown":
+      return null;
+  }
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/intents/CoinWithBalance.mjs
+var COIN_WITH_BALANCE2 = "CoinWithBalance";
+var SUI_TYPE2 = normalizeStructTag2("0x2::sui::SUI");
+var CoinWithBalanceData2 = object2({
+  type: string2(),
+  balance: bigint2()
+});
+async function resolveCoinBalance2(transactionData, buildOptions, next) {
+  const coinTypes = /* @__PURE__ */ new Set();
+  const totalByType = /* @__PURE__ */ new Map();
+  if (!transactionData.sender)
+    throw new Error("Sender must be set to resolve CoinWithBalance");
+  for (const command of transactionData.commands)
+    if (command.$kind === "$Intent" && command.$Intent.name === COIN_WITH_BALANCE2) {
+      const { type, balance } = parse2(CoinWithBalanceData2, command.$Intent.data);
+      if (type !== "gas" && balance > 0n)
+        coinTypes.add(type);
+      totalByType.set(type, (totalByType.get(type) ?? 0n) + balance);
+    }
+  const usedIds = /* @__PURE__ */ new Set();
+  for (const input of transactionData.inputs) {
+    if (input.Object?.ImmOrOwnedObject)
+      usedIds.add(input.Object.ImmOrOwnedObject.objectId);
+    if (input.UnresolvedObject?.objectId)
+      usedIds.add(input.UnresolvedObject.objectId);
+  }
+  const coinsByType = /* @__PURE__ */ new Map();
+  const addressBalanceByType = /* @__PURE__ */ new Map();
+  const client = buildOptions.client;
+  if (!client)
+    throw new Error("Client must be provided to build or serialize transactions with CoinWithBalance intents");
+  await Promise.all([...[...coinTypes].map(async (coinType) => {
+    const { coins, addressBalance } = await getCoinsAndBalanceOfType2({
+      coinType,
+      balance: totalByType.get(coinType),
+      client,
+      owner: transactionData.sender,
+      usedIds
+    });
+    coinsByType.set(coinType, coins);
+    addressBalanceByType.set(coinType, addressBalance);
+  }), totalByType.has("gas") ? await client.core.getBalance({
+    owner: transactionData.sender,
+    coinType: SUI_TYPE2
+  }).then(({ balance }) => {
+    addressBalanceByType.set("gas", BigInt(balance.addressBalance));
+  }) : null]);
+  const mergedCoins = /* @__PURE__ */ new Map();
+  for (const [index, transaction] of transactionData.commands.entries()) {
+    if (transaction.$kind !== "$Intent" || transaction.$Intent.name !== COIN_WITH_BALANCE2)
+      continue;
+    const { type, balance } = transaction.$Intent.data;
+    if (balance === 0n) {
+      transactionData.replaceCommand(index, TransactionCommands2.MoveCall({
+        target: "0x2::coin::zero",
+        typeArguments: [type === "gas" ? SUI_TYPE2 : type]
+      }));
+      continue;
+    }
+    const commands = [];
+    if (addressBalanceByType.get(type) >= totalByType.get(type))
+      commands.push(TransactionCommands2.MoveCall({
+        target: "0x2::coin::redeem_funds",
+        typeArguments: [type === "gas" ? SUI_TYPE2 : type],
+        arguments: [transactionData.addInput("withdrawal", Inputs2.FundsWithdrawal({
+          reservation: {
+            $kind: "MaxAmountU64",
+            MaxAmountU64: String(balance)
+          },
+          typeArg: {
+            $kind: "Balance",
+            Balance: type === "gas" ? SUI_TYPE2 : type
+          },
+          withdrawFrom: {
+            $kind: "Sender",
+            Sender: true
+          }
+        }))]
+      }));
+    else {
+      if (!mergedCoins.has(type)) {
+        const addressBalance = addressBalanceByType.get(type) ?? 0n;
+        const coinType = type === "gas" ? SUI_TYPE2 : type;
+        let baseCoin;
+        let restCoins;
+        if (type === "gas") {
+          baseCoin = {
+            $kind: "GasCoin",
+            GasCoin: true
+          };
+          restCoins = [];
+        } else
+          [baseCoin, ...restCoins] = coinsByType.get(type).map((coin) => transactionData.addInput("object", Inputs2.ObjectRef({
+            objectId: coin.objectId,
+            digest: coin.digest,
+            version: coin.version
+          })));
+        if (addressBalance > 0n) {
+          commands.push(TransactionCommands2.MoveCall({
+            target: "0x2::coin::redeem_funds",
+            typeArguments: [coinType],
+            arguments: [transactionData.addInput("withdrawal", Inputs2.FundsWithdrawal({
+              reservation: {
+                $kind: "MaxAmountU64",
+                MaxAmountU64: String(addressBalance)
+              },
+              typeArg: {
+                $kind: "Balance",
+                Balance: coinType
+              },
+              withdrawFrom: {
+                $kind: "Sender",
+                Sender: true
+              }
+            }))]
+          }));
+          commands.push(TransactionCommands2.MergeCoins(baseCoin, [{
+            $kind: "Result",
+            Result: index + commands.length - 1
+          }, ...restCoins]));
+        } else if (restCoins.length > 0)
+          commands.push(TransactionCommands2.MergeCoins(baseCoin, restCoins));
+        mergedCoins.set(type, baseCoin);
+      }
+      commands.push(TransactionCommands2.SplitCoins(mergedCoins.get(type), [transactionData.addInput("pure", Inputs2.Pure(suiBcs2.u64().serialize(balance)))]));
+    }
+    transactionData.replaceCommand(index, commands);
+    transactionData.mapArguments((arg, _command, commandIndex) => {
+      if (commandIndex >= index && commandIndex < index + commands.length)
+        return arg;
+      if (arg.$kind === "Result" && arg.Result === index)
+        return {
+          $kind: "NestedResult",
+          NestedResult: [index + commands.length - 1, 0]
+        };
+      return arg;
+    });
+  }
+  return next();
+}
+async function getCoinsAndBalanceOfType2({ coinType, balance, client, owner, usedIds }) {
+  let remainingBalance = balance;
+  const coins = [];
+  const balanceRequest = client.core.getBalance({
+    owner,
+    coinType
+  }).then(({ balance: balance$1 }) => {
+    remainingBalance -= BigInt(balance$1.addressBalance);
+    return balance$1;
+  });
+  const [allCoins, balanceResponse] = await Promise.all([loadMoreCoins(), balanceRequest]);
+  if (BigInt(balanceResponse.balance) < balance)
+    throw new Error(`Insufficient balance of ${coinType} for owner ${owner}. Required: ${balance}, Available: ${balance - remainingBalance}`);
+  return {
+    coins: allCoins,
+    balance: BigInt(balanceResponse.coinBalance),
+    addressBalance: BigInt(balanceResponse.addressBalance),
+    coinBalance: BigInt(balanceResponse.coinBalance)
+  };
+  async function loadMoreCoins(cursor = null) {
+    const { objects, hasNextPage, cursor: nextCursor } = await client.core.listCoins({
+      owner,
+      coinType,
+      cursor
+    });
+    await balanceRequest;
+    if (remainingBalance > 0n) {
+      for (const coin of objects) {
+        if (usedIds.has(coin.objectId))
+          continue;
+        const coinBalance = BigInt(coin.balance);
+        coins.push(coin);
+        remainingBalance -= coinBalance;
+        if (remainingBalance <= 0)
+          break;
+      }
+      if (hasNextPage)
+        return loadMoreCoins(nextCursor);
+    }
+    return coins;
+  }
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/v2.mjs
+function enumUnion2(options) {
+  return union2(Object.entries(options).map(([key, value]) => object2({ [key]: value })));
+}
+var Argument4 = enumUnion2({
+  GasCoin: literal2(true),
+  Input: pipe2(number2(), integer2()),
+  Result: pipe2(number2(), integer2()),
+  NestedResult: tuple2([pipe2(number2(), integer2()), pipe2(number2(), integer2())])
+});
+var GasData4 = object2({
+  budget: nullable2(JsonU642),
+  price: nullable2(JsonU642),
+  owner: nullable2(SuiAddress2),
+  payment: nullable2(array2(ObjectRefSchema2))
+});
+var ProgrammableMoveCall4 = object2({
+  package: ObjectID2,
+  module: string2(),
+  function: string2(),
+  typeArguments: array2(string2()),
+  arguments: array2(Argument4)
+});
+var $Intent4 = object2({
+  name: string2(),
+  inputs: record2(string2(), union2([Argument4, array2(Argument4)])),
+  data: record2(string2(), unknown2())
+});
+var Command4 = enumUnion2({
+  MoveCall: ProgrammableMoveCall4,
+  TransferObjects: object2({
+    objects: array2(Argument4),
+    address: Argument4
+  }),
+  SplitCoins: object2({
+    coin: Argument4,
+    amounts: array2(Argument4)
+  }),
+  MergeCoins: object2({
+    destination: Argument4,
+    sources: array2(Argument4)
+  }),
+  Publish: object2({
+    modules: array2(BCSBytes2),
+    dependencies: array2(ObjectID2)
+  }),
+  MakeMoveVec: object2({
+    type: nullable2(string2()),
+    elements: array2(Argument4)
+  }),
+  Upgrade: object2({
+    modules: array2(BCSBytes2),
+    dependencies: array2(ObjectID2),
+    package: ObjectID2,
+    ticket: Argument4
+  }),
+  $Intent: $Intent4
+});
+var CallArg4 = enumUnion2({
+  Object: enumUnion2({
+    ImmOrOwnedObject: ObjectRefSchema2,
+    SharedObject: object2({
+      objectId: ObjectID2,
+      initialSharedVersion: JsonU642,
+      mutable: boolean2()
+    }),
+    Receiving: ObjectRefSchema2
+  }),
+  Pure: object2({ bytes: BCSBytes2 }),
+  UnresolvedPure: object2({ value: unknown2() }),
+  UnresolvedObject: object2({
+    objectId: ObjectID2,
+    version: optional2(nullable2(JsonU642)),
+    digest: optional2(nullable2(string2())),
+    initialSharedVersion: optional2(nullable2(JsonU642)),
+    mutable: optional2(nullable2(boolean2()))
+  }),
+  FundsWithdrawal: FundsWithdrawalArgSchema2
+});
+var TransactionExpiration8 = enumUnion2({
+  None: literal2(true),
+  Epoch: JsonU642,
+  ValidDuring: ValidDuringSchema2
+});
+var SerializedTransactionDataV2Schema2 = object2({
+  version: literal2(2),
+  sender: nullish2(SuiAddress2),
+  expiration: nullish2(TransactionExpiration8),
+  gasData: GasData4,
+  inputs: array2(CallArg4),
+  commands: array2(Command4),
+  digest: optional2(nullable2(string2()))
+});
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/errors.mjs
+var SuiClientError2 = class extends Error {
+};
+var SimulationError2 = class extends SuiClientError2 {
+  constructor(message, options) {
+    super(message, { cause: options?.cause });
+    this.executionError = options?.executionError;
+  }
+};
+var ObjectError = class ObjectError2 extends SuiClientError2 {
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+  }
+  static fromResponse(response, objectId) {
+    switch (response.code) {
+      case "notExists":
+        return new ObjectError2(response.code, `Object ${response.object_id} does not exist`);
+      case "dynamicFieldNotFound":
+        return new ObjectError2(response.code, `Dynamic field not found for object ${response.parent_object_id}`);
+      case "deleted":
+        return new ObjectError2(response.code, `Object ${response.object_id} has been deleted`);
+      case "displayError":
+        return new ObjectError2(response.code, `Display error: ${response.error}`);
+      case "unknown":
+      default:
+        return new ObjectError2(response.code, `Unknown error while loading object${objectId ? ` ${objectId}` : ""}`);
+    }
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/core-resolver.mjs
+var MAX_OBJECTS_PER_FETCH2 = 50;
+var GAS_SAFE_OVERHEAD2 = 1000n;
+var MAX_GAS2 = 5e10;
+function getClient3(options) {
+  if (!options.client)
+    throw new Error(`No sui client passed to Transaction#build, but transaction data was not sufficient to build offline.`);
+  return options.client;
+}
+async function coreClientResolveTransactionPlugin2(transactionData, options, next) {
+  const client = getClient3(options);
+  await normalizeInputs2(transactionData, client);
+  await resolveObjectReferences2(transactionData, client);
+  if (!options.onlyTransactionKind)
+    await setGasData2(transactionData, client);
+  return await next();
+}
+async function setGasData2(transactionData, client) {
+  let systemState = null;
+  if (!transactionData.gasData.price) {
+    systemState = (await client.core.getCurrentSystemState()).systemState;
+    transactionData.gasData.price = systemState.referenceGasPrice;
+  }
+  await setGasBudget2(transactionData, client);
+  await setGasPayment2(transactionData, client);
+  if (!transactionData.expiration)
+    await setExpiration2(transactionData, client, systemState);
+}
+async function setGasBudget2(transactionData, client) {
+  if (transactionData.gasData.budget)
+    return;
+  const simulateResult = await client.core.simulateTransaction({
+    transaction: transactionData.build({ overrides: { gasData: {
+      budget: String(MAX_GAS2),
+      payment: []
+    } } }),
+    include: { effects: true }
+  });
+  if (simulateResult.$kind === "FailedTransaction") {
+    const executionError = simulateResult.FailedTransaction.status.error ?? void 0;
+    throw new SimulationError2(`Transaction resolution failed: ${executionError?.message ?? "Unknown error"}`, {
+      cause: simulateResult,
+      executionError
+    });
+  }
+  const gasUsed = simulateResult.Transaction.effects.gasUsed;
+  const safeOverhead = GAS_SAFE_OVERHEAD2 * BigInt(transactionData.gasData.price || 1n);
+  const baseComputationCostWithOverhead = BigInt(gasUsed.computationCost) + safeOverhead;
+  const gasBudget = baseComputationCostWithOverhead + BigInt(gasUsed.storageCost) - BigInt(gasUsed.storageRebate);
+  transactionData.gasData.budget = String(gasBudget > baseComputationCostWithOverhead ? gasBudget : baseComputationCostWithOverhead);
+}
+async function setGasPayment2(transactionData, client) {
+  if (!transactionData.gasData.payment) {
+    const gasPayer = transactionData.gasData.owner ?? transactionData.sender;
+    if (!gasPayer)
+      throw new Error("Either a gas owner or sender must be set to determine gas payment.");
+    const normalizedGasPayer = normalizeSuiAddress2(gasPayer);
+    let usesGasCoin = false;
+    let withdrawals = 0n;
+    transactionData.mapArguments((arg) => {
+      if (arg.$kind === "GasCoin")
+        usesGasCoin = true;
+      else if (arg.$kind === "Input") {
+        const input = transactionData.inputs[arg.Input];
+        if (input.$kind === "FundsWithdrawal") {
+          const withdrawalOwner = input.FundsWithdrawal.withdrawFrom.Sender ? transactionData.sender : gasPayer;
+          if (withdrawalOwner && normalizeSuiAddress2(withdrawalOwner) === normalizedGasPayer) {
+            if (input.FundsWithdrawal.reservation.$kind === "MaxAmountU64")
+              withdrawals += BigInt(input.FundsWithdrawal.reservation.MaxAmountU64);
+          }
+        }
+      }
+      return arg;
+    });
+    const [suiBalance, coins] = await Promise.all([usesGasCoin ? null : client.core.getBalance({ owner: gasPayer }), client.core.listCoins({
+      owner: gasPayer,
+      coinType: SUI_TYPE_ARG2
+    })]);
+    if (suiBalance?.balance.addressBalance && BigInt(suiBalance.balance.addressBalance) >= BigInt(transactionData.gasData.budget || "0") + withdrawals) {
+      transactionData.gasData.payment = [];
+      return;
+    }
+    const paymentCoins = coins.objects.filter((coin) => {
+      return !transactionData.inputs.find((input) => {
+        if (input.Object?.ImmOrOwnedObject)
+          return coin.objectId === input.Object.ImmOrOwnedObject.objectId;
+        return false;
+      });
+    }).map((coin) => parse2(ObjectRefSchema2, {
+      objectId: coin.objectId,
+      digest: coin.digest,
+      version: coin.version
+    }));
+    if (!paymentCoins.length)
+      throw new Error("No valid gas coins found for the transaction.");
+    transactionData.gasData.payment = paymentCoins;
+  }
+}
+async function setExpiration2(transactionData, client, existingSystemState) {
+  const [systemState, { chainIdentifier }] = await Promise.all([existingSystemState ?? client.core.getCurrentSystemState().then((r) => r.systemState), client.core.getChainIdentifier()]);
+  const currentEpoch = BigInt(systemState.epoch);
+  transactionData.expiration = {
+    $kind: "ValidDuring",
+    ValidDuring: {
+      minEpoch: String(currentEpoch),
+      maxEpoch: String(currentEpoch + 1n),
+      minTimestamp: null,
+      maxTimestamp: null,
+      chain: chainIdentifier,
+      nonce: Math.random() * 4294967296 >>> 0
+    }
+  };
+}
+async function resolveObjectReferences2(transactionData, client) {
+  const objectsToResolve = transactionData.inputs.filter((input) => {
+    return input.UnresolvedObject && !(input.UnresolvedObject.version || input.UnresolvedObject?.initialSharedVersion);
+  });
+  const dedupedIds = [...new Set(objectsToResolve.map((input) => normalizeSuiObjectId2(input.UnresolvedObject.objectId)))];
+  const objectChunks = dedupedIds.length ? chunk2(dedupedIds, MAX_OBJECTS_PER_FETCH2) : [];
+  const resolved = (await Promise.all(objectChunks.map((chunkIds) => client.core.getObjects({ objectIds: chunkIds })))).flatMap((result) => result.objects);
+  const responsesById = new Map(dedupedIds.map((id, index) => {
+    return [id, resolved[index]];
+  }));
+  const invalidObjects = Array.from(responsesById).filter(([_, obj]) => obj instanceof Error).map(([_, obj]) => obj.message);
+  if (invalidObjects.length)
+    throw new Error(`The following input objects are invalid: ${invalidObjects.join(", ")}`);
+  const objects = resolved.map((object$1) => {
+    if (object$1 instanceof Error)
+      throw new Error(`Failed to fetch object: ${object$1.message}`);
+    const owner = object$1.owner;
+    const initialSharedVersion = owner && typeof owner === "object" ? owner.$kind === "Shared" ? owner.Shared.initialSharedVersion : owner.$kind === "ConsensusAddressOwner" ? owner.ConsensusAddressOwner.startVersion : null : null;
+    return {
+      objectId: object$1.objectId,
+      digest: object$1.digest,
+      version: object$1.version,
+      initialSharedVersion
+    };
+  });
+  const objectsById = new Map(dedupedIds.map((id, index) => {
+    return [id, objects[index]];
+  }));
+  for (const [index, input] of transactionData.inputs.entries()) {
+    if (!input.UnresolvedObject)
+      continue;
+    let updated;
+    const id = normalizeSuiAddress2(input.UnresolvedObject.objectId);
+    const object$1 = objectsById.get(id);
+    if (input.UnresolvedObject.initialSharedVersion ?? object$1?.initialSharedVersion)
+      updated = Inputs2.SharedObjectRef({
+        objectId: id,
+        initialSharedVersion: input.UnresolvedObject.initialSharedVersion || object$1?.initialSharedVersion,
+        mutable: input.UnresolvedObject.mutable || isUsedAsMutable2(transactionData, index)
+      });
+    else if (isUsedAsReceiving2(transactionData, index))
+      updated = Inputs2.ReceivingRef({
+        objectId: id,
+        digest: input.UnresolvedObject.digest ?? object$1?.digest,
+        version: input.UnresolvedObject.version ?? object$1?.version
+      });
+    transactionData.inputs[transactionData.inputs.indexOf(input)] = updated ?? Inputs2.ObjectRef({
+      objectId: id,
+      digest: input.UnresolvedObject.digest ?? object$1?.digest,
+      version: input.UnresolvedObject.version ?? object$1?.version
+    });
+  }
+}
+async function normalizeInputs2(transactionData, client) {
+  const { inputs, commands } = transactionData;
+  const moveCallsToResolve = [];
+  const moveFunctionsToResolve = /* @__PURE__ */ new Set();
+  commands.forEach((command) => {
+    if (command.MoveCall) {
+      if (command.MoveCall._argumentTypes)
+        return;
+      if (command.MoveCall.arguments.map((arg) => {
+        if (arg.$kind === "Input")
+          return transactionData.inputs[arg.Input];
+        return null;
+      }).some((input) => input?.UnresolvedPure || input?.UnresolvedObject && typeof input?.UnresolvedObject.mutable !== "boolean")) {
+        const functionName = `${command.MoveCall.package}::${command.MoveCall.module}::${command.MoveCall.function}`;
+        moveFunctionsToResolve.add(functionName);
+        moveCallsToResolve.push(command.MoveCall);
+      }
+    }
+  });
+  const moveFunctionParameters = /* @__PURE__ */ new Map();
+  if (moveFunctionsToResolve.size > 0)
+    await Promise.all([...moveFunctionsToResolve].map(async (functionName) => {
+      const [packageId, moduleName, name] = functionName.split("::");
+      const { function: def } = await client.core.getMoveFunction({
+        packageId,
+        moduleName,
+        name
+      });
+      moveFunctionParameters.set(functionName, def.parameters);
+    }));
+  if (moveCallsToResolve.length)
+    await Promise.all(moveCallsToResolve.map(async (moveCall) => {
+      const parameters = moveFunctionParameters.get(`${moveCall.package}::${moveCall.module}::${moveCall.function}`);
+      if (!parameters)
+        return;
+      moveCall._argumentTypes = parameters.length > 0 && isTxContext2(parameters.at(-1)) ? parameters.slice(0, parameters.length - 1) : parameters;
+    }));
+  commands.forEach((command) => {
+    if (!command.MoveCall)
+      return;
+    const moveCall = command.MoveCall;
+    const fnName = `${moveCall.package}::${moveCall.module}::${moveCall.function}`;
+    const params = moveCall._argumentTypes;
+    if (!params)
+      return;
+    if (params.length !== command.MoveCall.arguments.length)
+      throw new Error(`Incorrect number of arguments for ${fnName}`);
+    params.forEach((param, i) => {
+      const arg = moveCall.arguments[i];
+      if (arg.$kind !== "Input")
+        return;
+      const input = inputs[arg.Input];
+      if (!input.UnresolvedPure && !input.UnresolvedObject)
+        return;
+      const inputValue = input.UnresolvedPure?.value ?? input.UnresolvedObject?.objectId;
+      const schema = getPureBcsSchema2(param.body);
+      if (schema) {
+        arg.type = "pure";
+        inputs[inputs.indexOf(input)] = Inputs2.Pure(schema.serialize(inputValue));
+        return;
+      }
+      if (typeof inputValue !== "string")
+        throw new Error(`Expect the argument to be an object id string, got ${JSON.stringify(inputValue, null, 2)}`);
+      arg.type = "object";
+      const unresolvedObject = input.UnresolvedPure ? {
+        $kind: "UnresolvedObject",
+        UnresolvedObject: { objectId: inputValue }
+      } : input;
+      inputs[arg.Input] = unresolvedObject;
+    });
+  });
+}
+function isUsedAsMutable2(transactionData, index) {
+  let usedAsMutable = false;
+  transactionData.getInputUses(index, (arg, tx) => {
+    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
+      const argIndex = tx.MoveCall.arguments.indexOf(arg);
+      usedAsMutable = tx.MoveCall._argumentTypes[argIndex].reference !== "immutable" || usedAsMutable;
+    }
+    if (tx.$kind === "MakeMoveVec" || tx.$kind === "MergeCoins" || tx.$kind === "SplitCoins" || tx.$kind === "TransferObjects")
+      usedAsMutable = true;
+  });
+  return usedAsMutable;
+}
+function isUsedAsReceiving2(transactionData, index) {
+  let usedAsReceiving = false;
+  transactionData.getInputUses(index, (arg, tx) => {
+    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
+      const argIndex = tx.MoveCall.arguments.indexOf(arg);
+      usedAsReceiving = isReceivingType2(tx.MoveCall._argumentTypes[argIndex]) || usedAsReceiving;
+    }
+  });
+  return usedAsReceiving;
+}
+var RECEIVING_TYPE2 = "0x0000000000000000000000000000000000000000000000000000000000000002::transfer::Receiving";
+function isReceivingType2(type) {
+  if (type.body.$kind !== "datatype")
+    return false;
+  return type.body.datatype.typeName === RECEIVING_TYPE2;
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/resolve.mjs
+function needsTransactionResolution2(data, options) {
+  if (data.inputs.some((input) => {
+    return input.UnresolvedObject || input.UnresolvedPure;
+  }))
+    return true;
+  if (!options.onlyTransactionKind) {
+    if (!data.gasData.price || !data.gasData.budget || !data.gasData.payment)
+      return true;
+    if (data.gasData.payment.length === 0 && !data.expiration)
+      return true;
+  }
+  return false;
+}
+async function resolveTransactionPlugin2(transactionData, options, next) {
+  normalizeRawArguments2(transactionData);
+  if (!needsTransactionResolution2(transactionData, options)) {
+    await validate2(transactionData);
+    return next();
+  }
+  return (getClient4(options).core?.resolveTransactionPlugin() ?? coreClientResolveTransactionPlugin2)(transactionData, options, async () => {
+    await validate2(transactionData);
+    await next();
+  });
+}
+function validate2(transactionData) {
+  transactionData.inputs.forEach((input, index) => {
+    if (input.$kind !== "Object" && input.$kind !== "Pure" && input.$kind !== "FundsWithdrawal")
+      throw new Error(`Input at index ${index} has not been resolved.  Expected a Pure, Object, or FundsWithdrawal input, but found ${JSON.stringify(input)}`);
+  });
+}
+function getClient4(options) {
+  if (!options.client)
+    throw new Error(`No sui client passed to Transaction#build, but transaction data was not sufficient to build offline.`);
+  return options.client;
+}
+function normalizeRawArguments2(transactionData) {
+  for (const command of transactionData.commands)
+    switch (command.$kind) {
+      case "SplitCoins":
+        command.SplitCoins.amounts.forEach((amount) => {
+          normalizeRawArgument2(amount, suiBcs2.U64, transactionData);
+        });
+        break;
+      case "TransferObjects":
+        normalizeRawArgument2(command.TransferObjects.address, suiBcs2.Address, transactionData);
+        break;
+    }
+}
+function normalizeRawArgument2(arg, schema, transactionData) {
+  if (arg.$kind !== "Input")
+    return;
+  const input = transactionData.inputs[arg.Input];
+  if (input.$kind !== "UnresolvedPure")
+    return;
+  transactionData.inputs[arg.Input] = Inputs2.Pure(schema.serialize(input.UnresolvedPure.value));
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/object.mjs
+function createObjectMethods2(makeObject) {
+  function object3(value) {
+    return makeObject(value);
+  }
+  object3.system = (options) => {
+    const mutable = options?.mutable;
+    if (mutable !== void 0)
+      return object3(Inputs2.SharedObjectRef({
+        objectId: SUI_SYSTEM_STATE_OBJECT_ID2,
+        initialSharedVersion: 1,
+        mutable
+      }));
+    return object3({
+      $kind: "UnresolvedObject",
+      UnresolvedObject: {
+        objectId: SUI_SYSTEM_STATE_OBJECT_ID2,
+        initialSharedVersion: 1
+      }
+    });
+  };
+  object3.clock = () => object3(Inputs2.SharedObjectRef({
+    objectId: SUI_CLOCK_OBJECT_ID2,
+    initialSharedVersion: 1,
+    mutable: false
+  }));
+  object3.random = () => object3({
+    $kind: "UnresolvedObject",
+    UnresolvedObject: {
+      objectId: SUI_RANDOM_OBJECT_ID2,
+      mutable: false
+    }
+  });
+  object3.denyList = (options) => {
+    return object3({
+      $kind: "UnresolvedObject",
+      UnresolvedObject: {
+        objectId: SUI_DENY_LIST_OBJECT_ID2,
+        mutable: options?.mutable
+      }
+    });
+  };
+  object3.option = ({ type, value }) => (tx) => tx.moveCall({
+    typeArguments: [type],
+    target: `${MOVE_STDLIB_ADDRESS2}::option::${value === null ? "none" : "some"}`,
+    arguments: value === null ? [] : [tx.object(value)]
+  });
+  return object3;
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/pure.mjs
+function createPure2(makePure) {
+  function pure(typeOrSerializedValue, value) {
+    if (typeof typeOrSerializedValue === "string")
+      return makePure(pureBcsSchemaFromTypeName2(typeOrSerializedValue).serialize(value));
+    if (typeOrSerializedValue instanceof Uint8Array || isSerializedBcs2(typeOrSerializedValue))
+      return makePure(typeOrSerializedValue);
+    throw new Error("tx.pure must be called either a bcs type name, or a serialized bcs value");
+  }
+  pure.u8 = (value) => makePure(suiBcs2.U8.serialize(value));
+  pure.u16 = (value) => makePure(suiBcs2.U16.serialize(value));
+  pure.u32 = (value) => makePure(suiBcs2.U32.serialize(value));
+  pure.u64 = (value) => makePure(suiBcs2.U64.serialize(value));
+  pure.u128 = (value) => makePure(suiBcs2.U128.serialize(value));
+  pure.u256 = (value) => makePure(suiBcs2.U256.serialize(value));
+  pure.bool = (value) => makePure(suiBcs2.Bool.serialize(value));
+  pure.string = (value) => makePure(suiBcs2.String.serialize(value));
+  pure.address = (value) => makePure(suiBcs2.Address.serialize(value));
+  pure.id = pure.address;
+  pure.vector = (type, value) => {
+    return makePure(suiBcs2.vector(pureBcsSchemaFromTypeName2(type)).serialize(value));
+  };
+  pure.option = (type, value) => {
+    return makePure(suiBcs2.option(pureBcsSchemaFromTypeName2(type)).serialize(value));
+  };
+  return pure;
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/version.mjs
+var PACKAGE_VERSION2 = "2.6.0";
+var TARGETED_RPC_VERSION = "1.68.0";
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/mvr.mjs
+var NAME_SEPARATOR4 = "/";
+var MVR_API_HEADER2 = { "Mvr-Source": `@mysten/sui@${PACKAGE_VERSION2}` };
+var MvrClient = class {
+  #cache;
+  #url;
+  #pageSize;
+  #overrides;
+  constructor({ cache, url, pageSize = 50, overrides }) {
+    this.#cache = cache;
+    this.#url = url;
+    this.#pageSize = pageSize;
+    this.#overrides = {
+      packages: overrides?.packages,
+      types: overrides?.types
+    };
+    validateOverrides(this.#overrides);
+  }
+  get #mvrPackageDataLoader() {
+    return this.#cache.readSync(["#mvrPackageDataLoader", this.#url ?? ""], () => {
+      const loader = new DataLoader(async (packages) => {
+        if (!this.#url)
+          throw new Error(`MVR Api URL is not set for the current client (resolving ${packages.join(", ")})`);
+        const resolved = await this.#resolvePackages(packages);
+        return packages.map((pkg) => resolved[pkg] ?? /* @__PURE__ */ new Error(`Failed to resolve package: ${pkg}`));
+      });
+      const overrides = this.#overrides?.packages;
+      if (overrides)
+        for (const [pkg, id] of Object.entries(overrides))
+          loader.prime(pkg, id);
+      return loader;
+    });
+  }
+  get #mvrTypeDataLoader() {
+    return this.#cache.readSync(["#mvrTypeDataLoader", this.#url ?? ""], () => {
+      const loader = new DataLoader(async (types) => {
+        if (!this.#url)
+          throw new Error(`MVR Api URL is not set for the current client (resolving ${types.join(", ")})`);
+        const resolved = await this.#resolveTypes(types);
+        return types.map((type) => resolved[type] ?? /* @__PURE__ */ new Error(`Failed to resolve type: ${type}`));
+      });
+      const overrides = this.#overrides?.types;
+      if (overrides)
+        for (const [type, id] of Object.entries(overrides))
+          loader.prime(type, id);
+      return loader;
+    });
+  }
+  async #resolvePackages(packages) {
+    if (packages.length === 0)
+      return {};
+    const batches = chunk2(packages, this.#pageSize);
+    const results = {};
+    await Promise.all(batches.map(async (batch) => {
+      const data = await this.#fetch("/v1/resolution/bulk", { names: batch });
+      if (!data?.resolution)
+        return;
+      for (const pkg of Object.keys(data?.resolution)) {
+        const pkgData = data.resolution[pkg]?.package_id;
+        if (!pkgData)
+          continue;
+        results[pkg] = pkgData;
+      }
+    }));
+    return results;
+  }
+  async #resolveTypes(types) {
+    if (types.length === 0)
+      return {};
+    const batches = chunk2(types, this.#pageSize);
+    const results = {};
+    await Promise.all(batches.map(async (batch) => {
+      const data = await this.#fetch("/v1/struct-definition/bulk", { types: batch });
+      if (!data?.resolution)
+        return;
+      for (const type of Object.keys(data?.resolution)) {
+        const typeData = data.resolution[type]?.type_tag;
+        if (!typeData)
+          continue;
+        results[type] = typeData;
+      }
+    }));
+    return results;
+  }
+  async #fetch(url, body) {
+    if (!this.#url)
+      throw new Error("MVR Api URL is not set for the current client");
+    const response = await fetch(`${this.#url}${url}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...MVR_API_HEADER2
+      },
+      body: JSON.stringify(body)
+    });
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}));
+      throw new Error(`Failed to resolve types: ${errorBody?.message}`);
+    }
+    return response.json();
+  }
+  async resolvePackage({ package: name }) {
+    if (!hasMvrName2(name))
+      return { package: name };
+    return { package: await this.#mvrPackageDataLoader.load(name) };
+  }
+  async resolveType({ type }) {
+    if (!hasMvrName2(type))
+      return { type };
+    const mvrTypes = [...extractMvrTypes(type)];
+    const resolvedTypes = await this.#mvrTypeDataLoader.loadMany(mvrTypes);
+    const typeMap = {};
+    for (let i = 0; i < mvrTypes.length; i++) {
+      const resolvedType = resolvedTypes[i];
+      if (resolvedType instanceof Error)
+        throw resolvedType;
+      typeMap[mvrTypes[i]] = resolvedType;
+    }
+    return { type: replaceMvrNames(type, typeMap) };
+  }
+  async resolve({ types = [], packages = [] }) {
+    const mvrTypes = /* @__PURE__ */ new Set();
+    for (const type of types ?? [])
+      extractMvrTypes(type, mvrTypes);
+    const typesArray = [...mvrTypes];
+    const [resolvedTypes, resolvedPackages] = await Promise.all([typesArray.length > 0 ? this.#mvrTypeDataLoader.loadMany(typesArray) : [], packages.length > 0 ? this.#mvrPackageDataLoader.loadMany(packages) : []]);
+    const typeMap = { ...this.#overrides?.types };
+    for (const [i, type] of typesArray.entries()) {
+      const resolvedType = resolvedTypes[i];
+      if (resolvedType instanceof Error)
+        throw resolvedType;
+      typeMap[type] = resolvedType;
+    }
+    const replacedTypes = {};
+    for (const type of types ?? [])
+      replacedTypes[type] = { type: replaceMvrNames(type, typeMap) };
+    const replacedPackages = {};
+    for (const [i, pkg] of (packages ?? []).entries()) {
+      const resolvedPkg = this.#overrides?.packages?.[pkg] ?? resolvedPackages[i];
+      if (resolvedPkg instanceof Error)
+        throw resolvedPkg;
+      replacedPackages[pkg] = { package: resolvedPkg };
+    }
+    return {
+      types: replacedTypes,
+      packages: replacedPackages
+    };
+  }
+};
+function validateOverrides(overrides) {
+  if (overrides?.packages)
+    for (const [pkg, id] of Object.entries(overrides.packages)) {
+      if (!isValidNamedPackage2(pkg))
+        throw new Error(`Invalid package name: ${pkg}`);
+      if (!isValidSuiAddress2(normalizeSuiAddress2(id)))
+        throw new Error(`Invalid package ID: ${id}`);
+    }
+  if (overrides?.types)
+    for (const [type, val] of Object.entries(overrides.types)) {
+      if (parseStructTag2(type).typeParams.length > 0)
+        throw new Error("Type overrides must be first-level only. If you want to supply generic types, just pass each type individually.");
+      if (!isValidSuiAddress2(parseStructTag2(val).address))
+        throw new Error(`Invalid type: ${val}`);
+    }
+}
+function extractMvrTypes(type, types = /* @__PURE__ */ new Set()) {
+  if (typeof type === "string" && !hasMvrName2(type))
+    return types;
+  const tag = isStructTag(type) ? type : parseStructTag2(type);
+  if (hasMvrName2(tag.address))
+    types.add(`${tag.address}::${tag.module}::${tag.name}`);
+  for (const param of tag.typeParams)
+    extractMvrTypes(param, types);
+  return types;
+}
+function replaceMvrNames(tag, typeCache) {
+  const type = isStructTag(tag) ? tag : parseStructTag2(tag);
+  const cacheHit = typeCache[`${type.address}::${type.module}::${type.name}`];
+  return normalizeStructTag2({
+    ...type,
+    address: cacheHit ? cacheHit.split("::")[0] : type.address,
+    typeParams: type.typeParams.map((param) => replaceMvrNames(param, typeCache))
+  });
+}
+function hasMvrName2(nameOrType) {
+  return nameOrType.includes(NAME_SEPARATOR4) || nameOrType.includes("@") || nameOrType.includes(".sui");
+}
+function isStructTag(type) {
+  return typeof type === "object" && "address" in type && "module" in type && "name" in type && "typeParams" in type;
+}
+function findNamesInTransaction2(builder) {
+  const packages = /* @__PURE__ */ new Set();
+  const types = /* @__PURE__ */ new Set();
+  for (const command of builder.commands)
+    switch (command.$kind) {
+      case "MakeMoveVec":
+        if (command.MakeMoveVec.type)
+          getNamesFromTypeList2([command.MakeMoveVec.type]).forEach((type) => {
+            types.add(type);
+          });
+        break;
+      case "MoveCall":
+        const moveCall = command.MoveCall;
+        const pkg = moveCall.package.split("::")[0];
+        if (hasMvrName2(pkg)) {
+          if (!isValidNamedPackage2(pkg))
+            throw new Error(`Invalid package name: ${pkg}`);
+          packages.add(pkg);
+        }
+        getNamesFromTypeList2(moveCall.typeArguments ?? []).forEach((type) => {
+          types.add(type);
+        });
+        break;
+      default:
+        break;
+    }
+  return {
+    packages: [...packages],
+    types: [...types]
+  };
+}
+function replaceNames2(builder, resolved) {
+  for (const command of builder.commands) {
+    if (command.MakeMoveVec?.type) {
+      if (!hasMvrName2(command.MakeMoveVec.type))
+        continue;
+      if (!resolved.types[command.MakeMoveVec.type])
+        throw new Error(`No resolution found for type: ${command.MakeMoveVec.type}`);
+      command.MakeMoveVec.type = resolved.types[command.MakeMoveVec.type].type;
+    }
+    const tx = command.MoveCall;
+    if (!tx)
+      continue;
+    const nameParts = tx.package.split("::");
+    const name = nameParts[0];
+    if (hasMvrName2(name) && !resolved.packages[name])
+      throw new Error(`No address found for package: ${name}`);
+    if (hasMvrName2(name)) {
+      nameParts[0] = resolved.packages[name].package;
+      tx.package = nameParts.join("::");
+    }
+    const types = tx.typeArguments;
+    if (!types)
+      continue;
+    for (let i = 0; i < types.length; i++) {
+      if (!hasMvrName2(types[i]))
+        continue;
+      if (!resolved.types[types[i]])
+        throw new Error(`No resolution found for type: ${types[i]}`);
+      types[i] = resolved.types[types[i]].type;
+    }
+    tx.typeArguments = types;
+  }
+}
+function getNamesFromTypeList2(types) {
+  const names = /* @__PURE__ */ new Set();
+  for (const type of types)
+    if (hasMvrName2(type)) {
+      if (!isValidNamedType2(type))
+        throw new Error(`Invalid type with names: ${type}`);
+      names.add(type);
+    }
+  return names;
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/plugins/NamedPackagesPlugin.mjs
+function namedPackagesPlugin2() {
+  return async (transactionData, buildOptions, next) => {
+    const names = findNamesInTransaction2(transactionData);
+    if (names.types.length === 0 && names.packages.length === 0)
+      return next();
+    if (!buildOptions.client)
+      throw new Error(`Transaction contains MVR names but no client was provided to resolve them. Please pass a client to Transaction#build()`);
+    replaceNames2(transactionData, await buildOptions.client.core.mvr.resolve({
+      types: names.types,
+      packages: names.packages
+    }));
+    await next();
+  };
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Transaction.mjs
+function createTransactionResult2(index, length = Infinity) {
+  const baseResult = {
+    $kind: "Result",
+    get Result() {
+      return typeof index === "function" ? index() : index;
+    }
+  };
+  const nestedResults = [];
+  const nestedResultFor = (resultIndex) => nestedResults[resultIndex] ??= {
+    $kind: "NestedResult",
+    get NestedResult() {
+      return [typeof index === "function" ? index() : index, resultIndex];
+    }
+  };
+  return new Proxy(baseResult, {
+    set() {
+      throw new Error("The transaction result is a proxy, and does not support setting properties directly");
+    },
+    get(target, property) {
+      if (property in target)
+        return Reflect.get(target, property);
+      if (property === Symbol.iterator)
+        return function* () {
+          let i = 0;
+          while (i < length) {
+            yield nestedResultFor(i);
+            i++;
+          }
+        };
+      if (typeof property === "symbol")
+        return;
+      const resultIndex = parseInt(property, 10);
+      if (Number.isNaN(resultIndex) || resultIndex < 0)
+        return;
+      return nestedResultFor(resultIndex);
+    }
+  });
+}
+var TRANSACTION_BRAND2 = Symbol.for("@mysten/transaction");
+function isTransaction2(obj) {
+  return !!obj && typeof obj === "object" && obj[TRANSACTION_BRAND2] === true;
+}
+var Transaction3 = class Transaction4 {
+  #serializationPlugins;
+  #buildPlugins;
+  #intentResolvers = /* @__PURE__ */ new Map();
+  #inputSection = [];
+  #commandSection = [];
+  #availableResults = /* @__PURE__ */ new Set();
+  #pendingPromises = /* @__PURE__ */ new Set();
+  #added = /* @__PURE__ */ new Map();
+  /**
+  * Converts from a serialize transaction kind (built with `build({ onlyTransactionKind: true })`) to a `Transaction` class.
+  * Supports either a byte array, or base64-encoded bytes.
+  */
+  static fromKind(serialized) {
+    const tx = new Transaction4();
+    tx.#data = TransactionDataBuilder3.fromKindBytes(typeof serialized === "string" ? fromBase642(serialized) : serialized);
+    tx.#inputSection = tx.#data.inputs.slice();
+    tx.#commandSection = tx.#data.commands.slice();
+    tx.#availableResults = new Set(tx.#commandSection.map((_, i) => i));
+    return tx;
+  }
+  /**
+  * Converts from a serialized transaction format to a `Transaction` class.
+  * There are two supported serialized formats:
+  * - A string returned from `Transaction#serialize`. The serialized format must be compatible, or it will throw an error.
+  * - A byte array (or base64-encoded bytes) containing BCS transaction data.
+  */
+  static from(transaction) {
+    const newTransaction = new Transaction4();
+    if (isTransaction2(transaction))
+      newTransaction.#data = TransactionDataBuilder3.restore(transaction.getData());
+    else if (typeof transaction !== "string" || !transaction.startsWith("{"))
+      newTransaction.#data = TransactionDataBuilder3.fromBytes(typeof transaction === "string" ? fromBase642(transaction) : transaction);
+    else
+      newTransaction.#data = TransactionDataBuilder3.restore(JSON.parse(transaction));
+    newTransaction.#inputSection = newTransaction.#data.inputs.slice();
+    newTransaction.#commandSection = newTransaction.#data.commands.slice();
+    newTransaction.#availableResults = new Set(newTransaction.#commandSection.map((_, i) => i));
+    if (!newTransaction.isPreparedForSerialization({ supportedIntents: [COIN_WITH_BALANCE2] }))
+      throw new Error("Transaction has unresolved intents or async thunks. Call `prepareForSerialization` before copying.");
+    if (newTransaction.#data.commands.some((cmd) => cmd.$Intent?.name === COIN_WITH_BALANCE2))
+      newTransaction.addIntentResolver(COIN_WITH_BALANCE2, resolveCoinBalance2);
+    return newTransaction;
+  }
+  addSerializationPlugin(step) {
+    this.#serializationPlugins.push(step);
+  }
+  addBuildPlugin(step) {
+    this.#buildPlugins.push(step);
+  }
+  addIntentResolver(intent, resolver) {
+    if (this.#intentResolvers.has(intent) && this.#intentResolvers.get(intent) !== resolver)
+      throw new Error(`Intent resolver for ${intent} already exists`);
+    this.#intentResolvers.set(intent, resolver);
+  }
+  setSender(sender) {
+    this.#data.sender = sender;
+  }
+  /**
+  * Sets the sender only if it has not already been set.
+  * This is useful for sponsored transaction flows where the sender may not be the same as the signer address.
+  */
+  setSenderIfNotSet(sender) {
+    if (!this.#data.sender)
+      this.#data.sender = sender;
+  }
+  setExpiration(expiration) {
+    this.#data.expiration = expiration ? parse2(TransactionExpiration5, expiration) : null;
+  }
+  setGasPrice(price) {
+    this.#data.gasData.price = String(price);
+  }
+  setGasBudget(budget) {
+    this.#data.gasData.budget = String(budget);
+  }
+  setGasBudgetIfNotSet(budget) {
+    if (this.#data.gasData.budget == null)
+      this.#data.gasData.budget = String(budget);
+  }
+  setGasOwner(owner) {
+    this.#data.gasData.owner = owner;
+  }
+  setGasPayment(payments) {
+    this.#data.gasData.payment = payments.map((payment) => parse2(ObjectRefSchema2, payment));
+  }
+  #data;
+  /** Get a snapshot of the transaction data, in JSON form: */
+  getData() {
+    return this.#data.snapshot();
+  }
+  get [TRANSACTION_BRAND2]() {
+    return true;
+  }
+  get pure() {
+    Object.defineProperty(this, "pure", {
+      enumerable: false,
+      value: createPure2((value) => {
+        if (isSerializedBcs2(value))
+          return this.#addInput("pure", {
+            $kind: "Pure",
+            Pure: { bytes: value.toBase64() }
+          });
+        return this.#addInput("pure", is2(NormalizedCallArg3, value) ? parse2(NormalizedCallArg3, value) : value instanceof Uint8Array ? Inputs2.Pure(value) : {
+          $kind: "UnresolvedPure",
+          UnresolvedPure: { value }
+        });
+      })
+    });
+    return this.pure;
+  }
+  constructor() {
+    this.object = createObjectMethods2((value) => {
+      if (typeof value === "function")
+        return this.object(this.add(value));
+      if (typeof value === "object" && is2(ArgumentSchema2, value))
+        return value;
+      const id = getIdFromCallArg2(value);
+      const inserted = this.#data.inputs.find((i) => id === getIdFromCallArg2(i));
+      if (inserted?.Object?.SharedObject && typeof value === "object" && value.Object?.SharedObject)
+        inserted.Object.SharedObject.mutable = inserted.Object.SharedObject.mutable || value.Object.SharedObject.mutable;
+      return inserted ? {
+        $kind: "Input",
+        Input: this.#data.inputs.indexOf(inserted),
+        type: "object"
+      } : this.#addInput("object", typeof value === "string" ? {
+        $kind: "UnresolvedObject",
+        UnresolvedObject: { objectId: normalizeSuiAddress2(value) }
+      } : value);
+    });
+    this.#data = new TransactionDataBuilder3();
+    this.#buildPlugins = [];
+    this.#serializationPlugins = [];
+  }
+  /** Returns an argument for the gas coin, to be used in a transaction. */
+  get gas() {
+    return {
+      $kind: "GasCoin",
+      GasCoin: true
+    };
+  }
+  /**
+  * Add a new object input to the transaction using the fully-resolved object reference.
+  * If you only have an object ID, use `builder.object(id)` instead.
+  */
+  objectRef(...args) {
+    return this.object(Inputs2.ObjectRef(...args));
+  }
+  /**
+  * Add a new receiving input to the transaction using the fully-resolved object reference.
+  * If you only have an object ID, use `builder.object(id)` instead.
+  */
+  receivingRef(...args) {
+    return this.object(Inputs2.ReceivingRef(...args));
+  }
+  /**
+  * Add a new shared object input to the transaction using the fully-resolved shared object reference.
+  * If you only have an object ID, use `builder.object(id)` instead.
+  */
+  sharedObjectRef(...args) {
+    return this.object(Inputs2.SharedObjectRef(...args));
+  }
+  #fork() {
+    const fork = new Transaction4();
+    fork.#data = this.#data;
+    fork.#serializationPlugins = this.#serializationPlugins;
+    fork.#buildPlugins = this.#buildPlugins;
+    fork.#intentResolvers = this.#intentResolvers;
+    fork.#pendingPromises = this.#pendingPromises;
+    fork.#availableResults = new Set(this.#availableResults);
+    fork.#added = this.#added;
+    this.#inputSection.push(fork.#inputSection);
+    this.#commandSection.push(fork.#commandSection);
+    return fork;
+  }
+  add(command) {
+    if (typeof command === "function") {
+      if (this.#added.has(command))
+        return this.#added.get(command);
+      const fork = this.#fork();
+      const result = command(fork);
+      if (!(result && typeof result === "object" && "then" in result)) {
+        this.#availableResults = fork.#availableResults;
+        this.#added.set(command, result);
+        return result;
+      }
+      const placeholder = this.#addCommand({
+        $kind: "$Intent",
+        $Intent: {
+          name: "AsyncTransactionThunk",
+          inputs: {},
+          data: {
+            resultIndex: this.#data.commands.length,
+            result: null
+          }
+        }
+      });
+      this.#pendingPromises.add(Promise.resolve(result).then((result$1) => {
+        placeholder.$Intent.data.result = result$1;
+      }));
+      const txResult = createTransactionResult2(() => placeholder.$Intent.data.resultIndex);
+      this.#added.set(command, txResult);
+      return txResult;
+    } else
+      this.#addCommand(command);
+    return createTransactionResult2(this.#data.commands.length - 1);
+  }
+  #addCommand(command) {
+    const resultIndex = this.#data.commands.length;
+    this.#commandSection.push(command);
+    this.#availableResults.add(resultIndex);
+    this.#data.commands.push(command);
+    this.#data.mapCommandArguments(resultIndex, (arg) => {
+      if (arg.$kind === "Result" && !this.#availableResults.has(arg.Result))
+        throw new Error(`Result { Result: ${arg.Result} } is not available to use in the current transaction`);
+      if (arg.$kind === "NestedResult" && !this.#availableResults.has(arg.NestedResult[0]))
+        throw new Error(`Result { NestedResult: [${arg.NestedResult[0]}, ${arg.NestedResult[1]}] } is not available to use in the current transaction`);
+      if (arg.$kind === "Input" && arg.Input >= this.#data.inputs.length)
+        throw new Error(`Input { Input: ${arg.Input} } references an input that does not exist in the current transaction`);
+      return arg;
+    });
+    return command;
+  }
+  #addInput(type, input) {
+    this.#inputSection.push(input);
+    return this.#data.addInput(type, input);
+  }
+  #normalizeTransactionArgument(arg) {
+    if (isSerializedBcs2(arg))
+      return this.pure(arg);
+    return this.#resolveArgument(arg);
+  }
+  #resolveArgument(arg) {
+    if (typeof arg === "function") {
+      const resolved = this.add(arg);
+      if (typeof resolved === "function")
+        return this.#resolveArgument(resolved);
+      return parse2(ArgumentSchema2, resolved);
+    }
+    return parse2(ArgumentSchema2, arg);
+  }
+  splitCoins(coin, amounts) {
+    const command = TransactionCommands2.SplitCoins(typeof coin === "string" ? this.object(coin) : this.#resolveArgument(coin), amounts.map((amount) => typeof amount === "number" || typeof amount === "bigint" || typeof amount === "string" ? this.pure.u64(amount) : this.#normalizeTransactionArgument(amount)));
+    this.#addCommand(command);
+    return createTransactionResult2(this.#data.commands.length - 1, amounts.length);
+  }
+  mergeCoins(destination, sources) {
+    return this.add(TransactionCommands2.MergeCoins(this.object(destination), sources.map((src) => this.object(src))));
+  }
+  publish({ modules, dependencies }) {
+    return this.add(TransactionCommands2.Publish({
+      modules,
+      dependencies
+    }));
+  }
+  upgrade({ modules, dependencies, package: packageId, ticket }) {
+    return this.add(TransactionCommands2.Upgrade({
+      modules,
+      dependencies,
+      package: packageId,
+      ticket: this.object(ticket)
+    }));
+  }
+  moveCall({ arguments: args, ...input }) {
+    return this.add(TransactionCommands2.MoveCall({
+      ...input,
+      arguments: args?.map((arg) => this.#normalizeTransactionArgument(arg))
+    }));
+  }
+  transferObjects(objects, address) {
+    return this.add(TransactionCommands2.TransferObjects(objects.map((obj) => this.object(obj)), typeof address === "string" ? this.pure.address(address) : this.#normalizeTransactionArgument(address)));
+  }
+  makeMoveVec({ type, elements }) {
+    return this.add(TransactionCommands2.MakeMoveVec({
+      type,
+      elements: elements.map((obj) => this.object(obj))
+    }));
+  }
+  /**
+  * Create a FundsWithdrawal input for withdrawing Balance<T> from an address balance accumulator.
+  * This is used for gas payments from address balances.
+  *
+  * @param options.amount - The Amount to withdraw (u64).
+  * @param options.type - The balance type (e.g., "0x2::sui::SUI"). Defaults to SUI.
+  */
+  withdrawal({ amount, type }) {
+    const input = {
+      $kind: "FundsWithdrawal",
+      FundsWithdrawal: {
+        reservation: {
+          $kind: "MaxAmountU64",
+          MaxAmountU64: String(amount)
+        },
+        typeArg: {
+          $kind: "Balance",
+          Balance: type ?? "0x2::sui::SUI"
+        },
+        withdrawFrom: {
+          $kind: "Sender",
+          Sender: true
+        }
+      }
+    };
+    return this.#addInput("object", input);
+  }
+  /**
+  * @deprecated Use toJSON instead.
+  * For synchronous serialization, you can use `getData()`
+  * */
+  serialize() {
+    return JSON.stringify(serializeV1TransactionData2(this.#data.snapshot()));
+  }
+  async toJSON(options = {}) {
+    await this.prepareForSerialization(options);
+    const fullyResolved = this.isFullyResolved();
+    return JSON.stringify(parse2(SerializedTransactionDataV2Schema2, fullyResolved ? {
+      ...this.#data.snapshot(),
+      digest: this.#data.getDigest()
+    } : this.#data.snapshot()), (_key, value) => typeof value === "bigint" ? value.toString() : value, 2);
+  }
+  /** Build the transaction to BCS bytes, and sign it with the provided keypair. */
+  async sign(options) {
+    const { signer, ...buildOptions } = options;
+    const bytes = await this.build(buildOptions);
+    return signer.signTransaction(bytes);
+  }
+  /**
+  * Checks if the transaction is prepared for serialization to JSON.
+  * This means:
+  *  - All async thunks have been fully resolved
+  *  - All transaction intents have been resolved (unless in supportedIntents)
+  *
+  * Unlike `isFullyResolved()`, this does not require the sender, gas payment,
+  * budget, or object versions to be set.
+  */
+  isPreparedForSerialization(options = {}) {
+    if (this.#pendingPromises.size > 0)
+      return false;
+    if (this.#data.commands.some((cmd) => cmd.$Intent && !options.supportedIntents?.includes(cmd.$Intent.name)))
+      return false;
+    return true;
+  }
+  /**
+  *  Ensures that:
+  *  - All objects have been fully resolved to a specific version
+  *  - All pure inputs have been serialized to bytes
+  *  - All async thunks have been fully resolved
+  *  - All transaction intents have been resolved
+  * 	- The gas payment, budget, and price have been set
+  *  - The transaction sender has been set
+  *
+  *  When true, the transaction will always be built to the same bytes and digest (unless the transaction is mutated)
+  */
+  isFullyResolved() {
+    if (!this.isPreparedForSerialization())
+      return false;
+    if (!this.#data.sender)
+      return false;
+    if (needsTransactionResolution2(this.#data, {}))
+      return false;
+    return true;
+  }
+  /** Build the transaction to BCS bytes. */
+  async build(options = {}) {
+    await this.prepareForSerialization(options);
+    await this.#prepareBuild(options);
+    return this.#data.build({ onlyTransactionKind: options.onlyTransactionKind });
+  }
+  /** Derive transaction digest */
+  async getDigest(options = {}) {
+    await this.prepareForSerialization(options);
+    await this.#prepareBuild(options);
+    return this.#data.getDigest();
+  }
+  /**
+  * Prepare the transaction by validating the transaction data and resolving all inputs
+  * so that it can be built into bytes.
+  */
+  async #prepareBuild(options) {
+    if (!options.onlyTransactionKind && !this.#data.sender)
+      throw new Error("Missing transaction sender");
+    await this.#runPlugins([...this.#buildPlugins, resolveTransactionPlugin2], options);
+  }
+  async #runPlugins(plugins, options) {
+    try {
+      const createNext = (i) => {
+        if (i >= plugins.length)
+          return () => {
+          };
+        const plugin = plugins[i];
+        return async () => {
+          const next = createNext(i + 1);
+          let calledNext = false;
+          let nextResolved = false;
+          await plugin(this.#data, options, async () => {
+            if (calledNext)
+              throw new Error(`next() was call multiple times in TransactionPlugin ${i}`);
+            calledNext = true;
+            await next();
+            nextResolved = true;
+          });
+          if (!calledNext)
+            throw new Error(`next() was not called in TransactionPlugin ${i}`);
+          if (!nextResolved)
+            throw new Error(`next() was not awaited in TransactionPlugin ${i}`);
+        };
+      };
+      await createNext(0)();
+    } finally {
+      this.#inputSection = this.#data.inputs.slice();
+      this.#commandSection = this.#data.commands.slice();
+      this.#availableResults = new Set(this.#commandSection.map((_, i) => i));
+    }
+  }
+  async #waitForPendingTasks() {
+    while (this.#pendingPromises.size > 0) {
+      const newPromise = Promise.all(this.#pendingPromises);
+      this.#pendingPromises.clear();
+      this.#pendingPromises.add(newPromise);
+      await newPromise;
+      this.#pendingPromises.delete(newPromise);
+    }
+  }
+  #sortCommandsAndInputs() {
+    const unorderedCommands = this.#data.commands;
+    const unorderedInputs = this.#data.inputs;
+    const orderedCommands = this.#commandSection.flat(Infinity);
+    const orderedInputs = this.#inputSection.flat(Infinity);
+    if (orderedCommands.length !== unorderedCommands.length)
+      throw new Error("Unexpected number of commands found in transaction data");
+    if (orderedInputs.length !== unorderedInputs.length)
+      throw new Error("Unexpected number of inputs found in transaction data");
+    const filteredCommands = orderedCommands.filter((cmd) => cmd.$Intent?.name !== "AsyncTransactionThunk");
+    this.#data.commands = filteredCommands;
+    this.#data.inputs = orderedInputs;
+    this.#commandSection = filteredCommands;
+    this.#inputSection = orderedInputs;
+    this.#availableResults = new Set(filteredCommands.map((_, i) => i));
+    function getOriginalIndex(index) {
+      const command = unorderedCommands[index];
+      if (command.$Intent?.name === "AsyncTransactionThunk") {
+        const result = command.$Intent.data.result;
+        if (result == null)
+          throw new Error("AsyncTransactionThunk has not been resolved");
+        return getOriginalIndex(result.Result);
+      }
+      const updated = filteredCommands.indexOf(command);
+      if (updated === -1)
+        throw new Error("Unable to find original index for command");
+      return updated;
+    }
+    this.#data.mapArguments((arg) => {
+      if (arg.$kind === "Input") {
+        const updated = orderedInputs.indexOf(unorderedInputs[arg.Input]);
+        if (updated === -1)
+          throw new Error("Input has not been resolved");
+        return {
+          ...arg,
+          Input: updated
+        };
+      } else if (arg.$kind === "Result") {
+        const updated = getOriginalIndex(arg.Result);
+        return {
+          ...arg,
+          Result: updated
+        };
+      } else if (arg.$kind === "NestedResult") {
+        const updated = getOriginalIndex(arg.NestedResult[0]);
+        return {
+          ...arg,
+          NestedResult: [updated, arg.NestedResult[1]]
+        };
+      }
+      return arg;
+    });
+    for (const [i, cmd] of unorderedCommands.entries())
+      if (cmd.$Intent?.name === "AsyncTransactionThunk")
+        try {
+          cmd.$Intent.data.resultIndex = getOriginalIndex(i);
+        } catch {
+        }
+  }
+  async prepareForSerialization(options) {
+    await this.#waitForPendingTasks();
+    this.#sortCommandsAndInputs();
+    const intents = /* @__PURE__ */ new Set();
+    for (const command of this.#data.commands)
+      if (command.$Intent)
+        intents.add(command.$Intent.name);
+    const steps = [...this.#serializationPlugins];
+    for (const intent of intents) {
+      if (options.supportedIntents?.includes(intent))
+        continue;
+      if (!this.#intentResolvers.has(intent))
+        throw new Error(`Missing intent resolver for ${intent}`);
+      steps.push(this.#intentResolvers.get(intent));
+    }
+    steps.push(namedPackagesPlugin2());
+    await this.#runPlugins(steps, options);
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/cache.mjs
+var ClientCache = class ClientCache2 {
+  #prefix;
+  #cache;
+  constructor({ prefix, cache } = {}) {
+    this.#prefix = prefix ?? [];
+    this.#cache = cache ?? /* @__PURE__ */ new Map();
+  }
+  read(key, load) {
+    const cacheKey = [this.#prefix, ...key].join(":");
+    if (this.#cache.has(cacheKey))
+      return this.#cache.get(cacheKey);
+    const result = load();
+    this.#cache.set(cacheKey, result);
+    if (typeof result === "object" && result !== null && "then" in result)
+      return Promise.resolve(result).then((v) => {
+        this.#cache.set(cacheKey, v);
+        return v;
+      }).catch((err) => {
+        this.#cache.delete(cacheKey);
+        throw err;
+      });
+    return result;
+  }
+  readSync(key, load) {
+    const cacheKey = [this.#prefix, ...key].join(":");
+    if (this.#cache.has(cacheKey))
+      return this.#cache.get(cacheKey);
+    const result = load();
+    this.#cache.set(cacheKey, result);
+    return result;
+  }
+  clear(prefix) {
+    const prefixKey = [...this.#prefix, ...prefix ?? []].join(":");
+    if (!prefixKey) {
+      this.#cache.clear();
+      return;
+    }
+    for (const key of this.#cache.keys())
+      if (key.startsWith(prefixKey))
+        this.#cache.delete(key);
+  }
+  scope(prefix) {
+    return new ClientCache2({
+      prefix: [...this.#prefix, ...Array.isArray(prefix) ? prefix : [prefix]],
+      cache: this.#cache
+    });
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/client.mjs
+var BaseClient = class {
+  constructor({ network, base, cache = base?.cache ?? new ClientCache() }) {
+    this.network = network;
+    this.base = base ?? this;
+    this.cache = cache;
+  }
+  $extend(...registrations) {
+    const extensions = Object.fromEntries(registrations.map((registration) => {
+      return [registration.name, registration.register(this)];
+    }));
+    const methodCache = /* @__PURE__ */ new Map();
+    return new Proxy(this, { get(target, prop, receiver) {
+      if (typeof prop === "string" && prop in extensions)
+        return extensions[prop];
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value === "function") {
+        if (prop === "$extend")
+          return value.bind(receiver);
+        if (!methodCache.has(prop))
+          methodCache.set(prop, value.bind(target));
+        return methodCache.get(prop);
+      }
+      return value;
+    } });
+  }
+};
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/dynamic-fields.mjs
+function deriveDynamicFieldID(parentId, typeTag, key) {
+  const address = suiBcs2.Address.serialize(parentId).toBytes();
+  const tag = suiBcs2.TypeTag.serialize(typeTag).toBytes();
+  const keyLength = suiBcs2.u64().serialize(key.length).toBytes();
+  const hash = blake2b2.create({ dkLen: 32 });
+  hash.update(new Uint8Array([240]));
+  hash.update(address);
+  hash.update(keyLength);
+  hash.update(key);
+  hash.update(tag);
+  return `0x${toHex2(hash.digest().slice(0, 32))}`;
+}
+
+// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/core.mjs
+var DEFAULT_MVR_URLS = {
+  mainnet: "https://mainnet.mvr.mystenlabs.com",
+  testnet: "https://testnet.mvr.mystenlabs.com"
+};
+var CoreClient = class extends BaseClient {
+  constructor(options) {
+    super(options);
+    this.core = this;
+    this.mvr = new MvrClient({
+      cache: this.cache.scope("core.mvr"),
+      url: options.mvr?.url ?? DEFAULT_MVR_URLS[this.network],
+      pageSize: options.mvr?.pageSize,
+      overrides: options.mvr?.overrides
+    });
+  }
+  async getObject(options) {
+    const { objectId } = options;
+    const { objects: [result] } = await this.getObjects({
+      objectIds: [objectId],
+      signal: options.signal,
+      include: options.include
+    });
+    if (result instanceof Error)
+      throw result;
+    return { object: result };
+  }
+  async getDynamicField(options) {
+    const normalizedNameType = TypeTagSerializer3.parseFromStr((await this.core.mvr.resolveType({ type: options.name.type })).type);
+    const fieldId = deriveDynamicFieldID(options.parentId, normalizedNameType, options.name.bcs);
+    const { objects: [fieldObject] } = await this.getObjects({
+      objectIds: [fieldId],
+      signal: options.signal,
+      include: {
+        previousTransaction: true,
+        content: true
+      }
+    });
+    if (fieldObject instanceof Error)
+      throw fieldObject;
+    const fieldType = parseStructTag2(fieldObject.type);
+    const content = await fieldObject.content;
+    const nameTypeParam = fieldType.typeParams[0];
+    const isDynamicObject = typeof nameTypeParam !== "string" && nameTypeParam.module === "dynamic_object_field" && nameTypeParam.name === "Wrapper";
+    const valueBcs = content.slice(SUI_ADDRESS_LENGTH2 + options.name.bcs.length);
+    const valueType = typeof fieldType.typeParams[1] === "string" ? fieldType.typeParams[1] : normalizeStructTag2(fieldType.typeParams[1]);
+    return { dynamicField: {
+      $kind: isDynamicObject ? "DynamicObject" : "DynamicField",
+      fieldId: fieldObject.objectId,
+      digest: fieldObject.digest,
+      version: fieldObject.version,
+      type: fieldObject.type,
+      previousTransaction: fieldObject.previousTransaction,
+      name: {
+        type: typeof nameTypeParam === "string" ? nameTypeParam : normalizeStructTag2(nameTypeParam),
+        bcs: options.name.bcs
+      },
+      value: {
+        type: valueType,
+        bcs: valueBcs
+      },
+      childId: isDynamicObject ? suiBcs2.Address.parse(valueBcs) : void 0
+    } };
+  }
+  async getDynamicObjectField(options) {
+    const wrappedType = `0x2::dynamic_object_field::Wrapper<${(await this.core.mvr.resolveType({ type: options.name.type })).type}>`;
+    const { dynamicField } = await this.getDynamicField({
+      parentId: options.parentId,
+      name: {
+        type: wrappedType,
+        bcs: options.name.bcs
+      },
+      signal: options.signal
+    });
+    const { object: object3 } = await this.getObject({
+      objectId: dynamicField.childId,
+      signal: options.signal,
+      include: options.include
+    });
+    return { object: object3 };
+  }
+  async waitForTransaction(options) {
+    const { signal, timeout = 60 * 1e3, include } = options;
+    const digest = "result" in options && options.result ? (options.result.Transaction ?? options.result.FailedTransaction).digest : options.digest;
+    const abortSignal = signal ? AbortSignal.any([AbortSignal.timeout(timeout), signal]) : AbortSignal.timeout(timeout);
+    const abortPromise = new Promise((_, reject) => {
+      abortSignal.addEventListener("abort", () => reject(abortSignal.reason));
+    });
+    abortPromise.catch(() => {
+    });
+    while (true) {
+      abortSignal.throwIfAborted();
+      try {
+        return await this.getTransaction({
+          digest,
+          include,
+          signal: abortSignal
+        });
+      } catch {
+        await Promise.race([new Promise((resolve) => setTimeout(resolve, 2e3)), abortPromise]);
+      }
+    }
+  }
+  async signAndExecuteTransaction({ transaction, signer, additionalSignatures = [], ...input }) {
+    let transactionBytes;
+    if (transaction instanceof Uint8Array)
+      transactionBytes = transaction;
+    else {
+      transaction.setSenderIfNotSet(signer.toSuiAddress());
+      transactionBytes = await transaction.build({ client: this });
+    }
+    const { signature } = await signer.signTransaction(transactionBytes);
+    return this.executeTransaction({
+      transaction: transactionBytes,
+      signatures: [signature, ...additionalSignatures],
+      ...input
+    });
+  }
+};
+
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/utils.mjs
 var ordinalRules = new Intl.PluralRules("en-US", { type: "ordinal" });
 var ordinalSuffixes = /* @__PURE__ */ new Map([
@@ -4980,17 +12393,17 @@ function formatMoveAbortMessage(options) {
   }
   return parts.join(", ");
 }
-var MinimalEffectsWithError = suiBcs.struct("MinimalEffectsWithError", { status: ExecutionStatus });
-var MinimalTransactionEffectsWithError = suiBcs.enum("MinimalTransactionEffectsWithError", {
+var MinimalEffectsWithError = suiBcs2.struct("MinimalEffectsWithError", { status: ExecutionStatus2 });
+var MinimalTransactionEffectsWithError = suiBcs2.enum("MinimalTransactionEffectsWithError", {
   V1: MinimalEffectsWithError,
   V2: MinimalEffectsWithError
 });
-var MinimalExecutionStatusNoError = suiBcs.enum("MinimalExecutionStatusNoError", {
+var MinimalExecutionStatusNoError = suiBcs2.enum("MinimalExecutionStatusNoError", {
   Success: null,
   Failed: null
 });
-var MinimalEffectsNoError = suiBcs.struct("MinimalEffectsNoError", { status: MinimalExecutionStatusNoError });
-var MinimalTransactionEffectsNoError = suiBcs.enum("MinimalTransactionEffectsNoError", {
+var MinimalEffectsNoError = suiBcs2.struct("MinimalEffectsNoError", { status: MinimalExecutionStatusNoError });
+var MinimalTransactionEffectsNoError = suiBcs2.enum("MinimalTransactionEffectsNoError", {
   V1: MinimalEffectsNoError,
   V2: MinimalEffectsNoError
 });
@@ -5121,7 +12534,7 @@ function parseBcsExecutionError(failure) {
         PackageUpgradeError: {
           name: upgradeError.$kind,
           packageId: upgradeError.$kind === "UnableToFetchPackage" ? upgradeError.UnableToFetchPackage.packageId : void 0,
-          digest: upgradeError.$kind === "DigestDoesNotMatch" ? toBase64(upgradeError.DigestDoesNotMatch.digest) : void 0
+          digest: upgradeError.$kind === "DigestDoesNotMatch" ? toBase642(upgradeError.DigestDoesNotMatch.digest) : void 0
         }
       };
     }
@@ -5243,10 +12656,10 @@ function parseBcsExecutionError(failure) {
   }
 }
 function parseTransactionBcs(bytes, onlyTransactionKind = false) {
-  return (onlyTransactionKind ? TransactionDataBuilder.fromKindBytes(bytes) : TransactionDataBuilder.fromBytes(bytes)).snapshot();
+  return (onlyTransactionKind ? TransactionDataBuilder3.fromKindBytes(bytes) : TransactionDataBuilder3.fromBytes(bytes)).snapshot();
 }
 function parseTransactionEffectsBcs(effects) {
-  const parsed = suiBcs.TransactionEffects.parse(effects);
+  const parsed = suiBcs2.TransactionEffects.parse(effects);
   switch (parsed.$kind) {
     case "V1":
       return parseTransactionEffectsV1({
@@ -5297,59 +12710,17 @@ function parseTransactionEffectsV2({ bytes, effects }) {
     dependencies: effects.dependencies,
     lamportVersion: effects.lamportVersion,
     changedObjects,
-    unchangedConsensusObjects: effects.unchangedConsensusObjects.map(([objectId, object2]) => {
+    unchangedConsensusObjects: effects.unchangedConsensusObjects.map(([objectId, object3]) => {
       return {
-        kind: object2.$kind,
+        kind: object3.$kind,
         objectId,
-        version: object2.$kind === "ReadOnlyRoot" ? object2.ReadOnlyRoot[0] : object2[object2.$kind],
-        digest: object2.$kind === "ReadOnlyRoot" ? object2.ReadOnlyRoot[1] : null
+        version: object3.$kind === "ReadOnlyRoot" ? object3.ReadOnlyRoot[0] : object3[object3.$kind],
+        digest: object3.$kind === "ReadOnlyRoot" ? object3.ReadOnlyRoot[1] : null
       };
     }),
     auxiliaryDataDigest: effects.auxDataDigest
   };
 }
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/errors.mjs
-var SuiClientError = class extends Error {
-};
-var SimulationError = class extends SuiClientError {
-  constructor(message, options) {
-    super(message, { cause: options?.cause });
-    this.executionError = options?.executionError;
-  }
-};
-var ObjectError = class ObjectError2 extends SuiClientError {
-  constructor(code, message) {
-    super(message);
-    this.code = code;
-  }
-  static fromResponse(response, objectId) {
-    switch (response.code) {
-      case "notExists":
-        return new ObjectError2(response.code, `Object ${response.object_id} does not exist`);
-      case "dynamicFieldNotFound":
-        return new ObjectError2(response.code, `Dynamic field not found for object ${response.parent_object_id}`);
-      case "deleted":
-        return new ObjectError2(response.code, `Object ${response.object_id} has been deleted`);
-      case "displayError":
-        return new ObjectError2(response.code, `Display error: ${response.error}`);
-      case "unknown":
-      default:
-        return new ObjectError2(response.code, `Unknown error while loading object${objectId ? ` ${objectId}` : ""}`);
-    }
-  }
-};
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/utils/constants.mjs
-var MIST_PER_SUI = BigInt(1e9);
-var MOVE_STDLIB_ADDRESS = "0x0000000000000000000000000000000000000000000000000000000000000001";
-var SUI_FRAMEWORK_ADDRESS = "0x0000000000000000000000000000000000000000000000000000000000000002";
-var SUI_SYSTEM_ADDRESS = "0x0000000000000000000000000000000000000000000000000000000000000003";
-var SUI_CLOCK_OBJECT_ID = "0x0000000000000000000000000000000000000000000000000000000000000006";
-var SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::sui::SUI`;
-var SUI_SYSTEM_STATE_OBJECT_ID = "0x0000000000000000000000000000000000000000000000000000000000000005";
-var SUI_RANDOM_OBJECT_ID = "0x0000000000000000000000000000000000000000000000000000000000000008";
-var SUI_DENY_LIST_OBJECT_ID = "0x0000000000000000000000000000000000000000000000000000000000000403";
 
 // node_modules/.pnpm/@protobuf-ts+runtime@2.11.1/node_modules/@protobuf-ts/runtime/build/es2015/json-typings.js
 function typeofJsonValue(value) {
@@ -5456,7 +12827,7 @@ var UnknownFieldHandler;
 (function(UnknownFieldHandler2) {
   UnknownFieldHandler2.symbol = Symbol.for("protobuf-ts/unknown");
   UnknownFieldHandler2.onRead = (typeName, message, fieldNo, wireType, data) => {
-    let container = is2(message) ? message[UnknownFieldHandler2.symbol] : message[UnknownFieldHandler2.symbol] = [];
+    let container = is3(message) ? message[UnknownFieldHandler2.symbol] : message[UnknownFieldHandler2.symbol] = [];
     container.push({ no: fieldNo, wireType, data });
   };
   UnknownFieldHandler2.onWrite = (typeName, message, writer) => {
@@ -5464,14 +12835,14 @@ var UnknownFieldHandler;
       writer.tag(no, wireType).raw(data);
   };
   UnknownFieldHandler2.list = (message, fieldNo) => {
-    if (is2(message)) {
+    if (is3(message)) {
       let all = message[UnknownFieldHandler2.symbol];
       return fieldNo ? all.filter((uf) => uf.no == fieldNo) : all;
     }
     return [];
   };
   UnknownFieldHandler2.last = (message, fieldNo) => UnknownFieldHandler2.list(message, fieldNo).slice(-1)[0];
-  const is2 = (message) => message && Array.isArray(message[UnknownFieldHandler2.symbol]);
+  const is3 = (message) => message && Array.isArray(message[UnknownFieldHandler2.symbol]);
 })(UnknownFieldHandler || (UnknownFieldHandler = {}));
 function mergeBinaryOptions(a, b) {
   return Object.assign(Object.assign({}, a), b);
@@ -6113,14 +13484,14 @@ var BinaryWriter = class {
    * return to the previous state.
    */
   join() {
-    let chunk2 = this.finish();
+    let chunk3 = this.finish();
     let prev = this.stack.pop();
     if (!prev)
       throw new Error("invalid state, fork stack empty");
     this.chunks = prev.chunks;
     this.buf = prev.buf;
-    this.uint32(chunk2.byteLength);
-    return this.raw(chunk2);
+    this.uint32(chunk3.byteLength);
+    return this.raw(chunk3);
   }
   /**
    * Writes a tag (field number and wire type).
@@ -6135,12 +13506,12 @@ var BinaryWriter = class {
   /**
    * Write a chunk of raw bytes.
    */
-  raw(chunk2) {
+  raw(chunk3) {
     if (this.buf.length) {
       this.chunks.push(new Uint8Array(this.buf));
       this.buf = [];
     }
-    this.chunks.push(chunk2);
+    this.chunks.push(chunk3);
     return this;
   }
   /**
@@ -6181,44 +13552,44 @@ var BinaryWriter = class {
    * Write a `string` value, length-delimited data converted to UTF-8 text.
    */
   string(value) {
-    let chunk2 = this.textEncoder.encode(value);
-    this.uint32(chunk2.byteLength);
-    return this.raw(chunk2);
+    let chunk3 = this.textEncoder.encode(value);
+    this.uint32(chunk3.byteLength);
+    return this.raw(chunk3);
   }
   /**
    * Write a `float` value, 32-bit floating point number.
    */
   float(value) {
     assertFloat32(value);
-    let chunk2 = new Uint8Array(4);
-    new DataView(chunk2.buffer).setFloat32(0, value, true);
-    return this.raw(chunk2);
+    let chunk3 = new Uint8Array(4);
+    new DataView(chunk3.buffer).setFloat32(0, value, true);
+    return this.raw(chunk3);
   }
   /**
    * Write a `double` value, a 64-bit floating point number.
    */
   double(value) {
-    let chunk2 = new Uint8Array(8);
-    new DataView(chunk2.buffer).setFloat64(0, value, true);
-    return this.raw(chunk2);
+    let chunk3 = new Uint8Array(8);
+    new DataView(chunk3.buffer).setFloat64(0, value, true);
+    return this.raw(chunk3);
   }
   /**
    * Write a `fixed32` value, an unsigned, fixed-length 32-bit integer.
    */
   fixed32(value) {
     assertUInt32(value);
-    let chunk2 = new Uint8Array(4);
-    new DataView(chunk2.buffer).setUint32(0, value, true);
-    return this.raw(chunk2);
+    let chunk3 = new Uint8Array(4);
+    new DataView(chunk3.buffer).setUint32(0, value, true);
+    return this.raw(chunk3);
   }
   /**
    * Write a `sfixed32` value, a signed, fixed-length 32-bit integer.
    */
   sfixed32(value) {
     assertInt32(value);
-    let chunk2 = new Uint8Array(4);
-    new DataView(chunk2.buffer).setInt32(0, value, true);
-    return this.raw(chunk2);
+    let chunk3 = new Uint8Array(4);
+    new DataView(chunk3.buffer).setInt32(0, value, true);
+    return this.raw(chunk3);
   }
   /**
    * Write a `sint32` value, a signed, zigzag-encoded 32-bit varint.
@@ -6233,23 +13604,23 @@ var BinaryWriter = class {
    * Write a `fixed64` value, a signed, fixed-length 64-bit integer.
    */
   sfixed64(value) {
-    let chunk2 = new Uint8Array(8);
-    let view = new DataView(chunk2.buffer);
+    let chunk3 = new Uint8Array(8);
+    let view = new DataView(chunk3.buffer);
     let long = PbLong.from(value);
     view.setInt32(0, long.lo, true);
     view.setInt32(4, long.hi, true);
-    return this.raw(chunk2);
+    return this.raw(chunk3);
   }
   /**
    * Write a `fixed64` value, an unsigned, fixed-length 64 bit integer.
    */
   fixed64(value) {
-    let chunk2 = new Uint8Array(8);
-    let view = new DataView(chunk2.buffer);
+    let chunk3 = new Uint8Array(8);
+    let view = new DataView(chunk3.buffer);
     let long = PbULong.from(value);
     view.setInt32(0, long.lo, true);
     view.setInt32(4, long.hi, true);
-    return this.raw(chunk2);
+    return this.raw(chunk3);
   }
   /**
    * Write a `int64` value, a signed 64-bit varint.
@@ -6295,9 +13666,9 @@ function jsonWriteOptions(options) {
 }
 function mergeJsonOptions(a, b) {
   var _a, _b;
-  let c2 = Object.assign(Object.assign({}, a), b);
-  c2.typeRegistry = [...(_a = a === null || a === void 0 ? void 0 : a.typeRegistry) !== null && _a !== void 0 ? _a : [], ...(_b = b === null || b === void 0 ? void 0 : b.typeRegistry) !== null && _b !== void 0 ? _b : []];
-  return c2;
+  let c = Object.assign(Object.assign({}, a), b);
+  c.typeRegistry = [...(_a = a === null || a === void 0 ? void 0 : a.typeRegistry) !== null && _a !== void 0 ? _a : [], ...(_b = b === null || b === void 0 ? void 0 : b.typeRegistry) !== null && _b !== void 0 ? _b : []];
+  return c;
 }
 
 // node_modules/.pnpm/@protobuf-ts+runtime@2.11.1/node_modules/@protobuf-ts/runtime/build/es2015/message-type-contract.js
@@ -6579,8 +13950,8 @@ var ReflectionTypeCheck = class {
     }
     return true;
   }
-  mapKeys(map2, type, depth) {
-    let keys = Object.keys(map2);
+  mapKeys(map3, type, depth) {
+    let keys = Object.keys(map3);
     switch (type) {
       case ScalarType.INT32:
       case ScalarType.FIXED32:
@@ -6995,14 +14366,14 @@ var ReflectionJsonWriter = class {
   /**
    * Returns `null` as the default for google.protobuf.NullValue.
    */
-  enum(type, value, fieldName, optional2, emitDefaultValues, enumAsInteger) {
+  enum(type, value, fieldName, optional3, emitDefaultValues, enumAsInteger) {
     if (type[0] == "google.protobuf.NullValue")
-      return !emitDefaultValues && !optional2 ? void 0 : null;
+      return !emitDefaultValues && !optional3 ? void 0 : null;
     if (value === void 0) {
-      assert(optional2);
+      assert(optional3);
       return void 0;
     }
-    if (value === 0 && !emitDefaultValues && !optional2)
+    if (value === 0 && !emitDefaultValues && !optional3)
       return void 0;
     assert(typeof value == "number");
     assert(Number.isInteger(value));
@@ -7017,12 +14388,12 @@ var ReflectionJsonWriter = class {
       return options.emitDefaultValues ? null : void 0;
     return type.internalJsonWrite(value, options);
   }
-  scalar(type, value, fieldName, optional2, emitDefaultValues) {
+  scalar(type, value, fieldName, optional3, emitDefaultValues) {
     if (value === void 0) {
-      assert(optional2);
+      assert(optional3);
       return void 0;
     }
-    const ed = emitDefaultValues || optional2;
+    const ed = emitDefaultValues || optional3;
     switch (type) {
       case ScalarType.INT32:
       case ScalarType.SFIXED32:
@@ -8065,7 +15436,7 @@ var Package$Type = class extends MessageType {
         name: "type_origins",
         kind: "message",
         repeat: 1,
-        T: () => TypeOrigin2
+        T: () => TypeOrigin3
       },
       {
         no: 6,
@@ -8384,7 +15755,7 @@ var TypeOrigin$Type = class extends MessageType {
     ]);
   }
 };
-var TypeOrigin2 = new TypeOrigin$Type();
+var TypeOrigin3 = new TypeOrigin$Type();
 var Linkage$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.Linkage", [
@@ -8453,7 +15824,7 @@ var Owner$Type = class extends MessageType {
     ]);
   }
 };
-var Owner2 = new Owner$Type();
+var Owner3 = new Owner$Type();
 
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/grpc/proto/sui/rpc/v2/argument.mjs
 var Argument_ArgumentKind = /* @__PURE__ */ function(Argument_ArgumentKind$1) {
@@ -8497,7 +15868,7 @@ var Argument$Type = class extends MessageType {
     ]);
   }
 };
-var Argument2 = new Argument$Type();
+var Argument5 = new Argument$Type();
 
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/grpc/proto/sui/rpc/v2/input.mjs
 var Input_InputKind = /* @__PURE__ */ function(Input_InputKind$1) {
@@ -8579,7 +15950,7 @@ var Input$Type = class extends MessageType {
         no: 8,
         name: "funds_withdrawal",
         kind: "message",
-        T: () => FundsWithdrawal2
+        T: () => FundsWithdrawal3
       },
       {
         no: 1e3,
@@ -8619,7 +15990,7 @@ var FundsWithdrawal$Type = class extends MessageType {
     ]);
   }
 };
-var FundsWithdrawal2 = new FundsWithdrawal$Type();
+var FundsWithdrawal3 = new FundsWithdrawal$Type();
 
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/grpc/proto/google/protobuf/duration.mjs
 var Duration$Type = class extends MessageType {
@@ -8794,7 +16165,7 @@ var Object$Type = class extends MessageType {
         no: 5,
         name: "owner",
         kind: "message",
-        T: () => Owner2
+        T: () => Owner3
       },
       {
         no: 6,
@@ -9067,7 +16438,7 @@ var Transaction$Type = class extends MessageType {
         no: 4,
         name: "kind",
         kind: "message",
-        T: () => TransactionKind2
+        T: () => TransactionKind3
       },
       {
         no: 5,
@@ -9086,12 +16457,12 @@ var Transaction$Type = class extends MessageType {
         no: 7,
         name: "expiration",
         kind: "message",
-        T: () => TransactionExpiration4
+        T: () => TransactionExpiration9
       }
     ]);
   }
 };
-var Transaction = new Transaction$Type();
+var Transaction5 = new Transaction$Type();
 var GasPayment$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.GasPayment", [
@@ -9184,7 +16555,7 @@ var TransactionExpiration$Type = class extends MessageType {
     ]);
   }
 };
-var TransactionExpiration4 = new TransactionExpiration$Type();
+var TransactionExpiration9 = new TransactionExpiration$Type();
 var TransactionKind$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.TransactionKind", [
@@ -9200,7 +16571,7 @@ var TransactionKind$Type = class extends MessageType {
         name: "programmable_transaction",
         kind: "message",
         oneof: "data",
-        T: () => ProgrammableTransaction2
+        T: () => ProgrammableTransaction3
       },
       {
         no: 3,
@@ -9247,7 +16618,7 @@ var TransactionKind$Type = class extends MessageType {
     ]);
   }
 };
-var TransactionKind2 = new TransactionKind$Type();
+var TransactionKind3 = new TransactionKind$Type();
 var ProgrammableTransaction$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.ProgrammableTransaction", [{
@@ -9261,11 +16632,11 @@ var ProgrammableTransaction$Type = class extends MessageType {
       name: "commands",
       kind: "message",
       repeat: 1,
-      T: () => Command2
+      T: () => Command5
     }]);
   }
 };
-var ProgrammableTransaction2 = new ProgrammableTransaction$Type();
+var ProgrammableTransaction3 = new ProgrammableTransaction$Type();
 var Command$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.Command", [
@@ -9321,7 +16692,7 @@ var Command$Type = class extends MessageType {
     ]);
   }
 };
-var Command2 = new Command$Type();
+var Command5 = new Command$Type();
 var MoveCall$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.MoveCall", [
@@ -9358,7 +16729,7 @@ var MoveCall$Type = class extends MessageType {
         name: "arguments",
         kind: "message",
         repeat: 1,
-        T: () => Argument2
+        T: () => Argument5
       }
     ]);
   }
@@ -9371,12 +16742,12 @@ var TransferObjects$Type = class extends MessageType {
       name: "objects",
       kind: "message",
       repeat: 1,
-      T: () => Argument2
+      T: () => Argument5
     }, {
       no: 2,
       name: "address",
       kind: "message",
-      T: () => Argument2
+      T: () => Argument5
     }]);
   }
 };
@@ -9387,13 +16758,13 @@ var SplitCoins$Type = class extends MessageType {
       no: 1,
       name: "coin",
       kind: "message",
-      T: () => Argument2
+      T: () => Argument5
     }, {
       no: 2,
       name: "amounts",
       kind: "message",
       repeat: 1,
-      T: () => Argument2
+      T: () => Argument5
     }]);
   }
 };
@@ -9404,13 +16775,13 @@ var MergeCoins$Type = class extends MessageType {
       no: 1,
       name: "coin",
       kind: "message",
-      T: () => Argument2
+      T: () => Argument5
     }, {
       no: 2,
       name: "coins_to_merge",
       kind: "message",
       repeat: 1,
-      T: () => Argument2
+      T: () => Argument5
     }]);
   }
 };
@@ -9446,7 +16817,7 @@ var MakeMoveVector$Type = class extends MessageType {
       name: "elements",
       kind: "message",
       repeat: 1,
-      T: () => Argument2
+      T: () => Argument5
     }]);
   }
 };
@@ -9479,7 +16850,7 @@ var Upgrade$Type = class extends MessageType {
         no: 4,
         name: "ticket",
         kind: "message",
-        T: () => Argument2
+        T: () => Argument5
       }
     ]);
   }
@@ -9979,7 +17350,7 @@ function callArgToGrpcInput(arg) {
     case "Pure":
       return {
         kind: Input_InputKind.PURE,
-        pure: fromBase64(arg.Pure.bytes)
+        pure: fromBase642(arg.Pure.bytes)
       };
     case "Object":
       if (arg.Object.$kind === "ImmOrOwnedObject")
@@ -10091,7 +17462,7 @@ function tsCommandToGrpcCommand(cmd) {
       return { command: {
         oneofKind: "publish",
         publish: {
-          modules: cmd.Publish.modules.map((m) => fromBase64(m)),
+          modules: cmd.Publish.modules.map((m) => fromBase642(m)),
           dependencies: cmd.Publish.dependencies
         }
       } };
@@ -10107,7 +17478,7 @@ function tsCommandToGrpcCommand(cmd) {
       return { command: {
         oneofKind: "upgrade",
         upgrade: {
-          modules: cmd.Upgrade.modules.map((m) => fromBase64(m)),
+          modules: cmd.Upgrade.modules.map((m) => fromBase642(m)),
           dependencies: cmd.Upgrade.dependencies,
           package: cmd.Upgrade.package,
           ticket: tsArgumentToGrpcArgument(cmd.Upgrade.ticket)
@@ -10190,7 +17561,7 @@ function grpcInputToCallArg(input) {
     case Input_InputKind.PURE:
       return {
         $kind: "Pure",
-        Pure: { bytes: toBase64(input.pure) }
+        Pure: { bytes: toBase642(input.pure) }
       };
     case Input_InputKind.IMMUTABLE_OR_OWNED:
       return {
@@ -10323,7 +17694,7 @@ function grpcCommandToTsCommand(cmd) {
       return {
         $kind: "Publish",
         Publish: {
-          modules: command.publish.modules.map((m) => toBase64(m)),
+          modules: command.publish.modules.map((m) => toBase642(m)),
           dependencies: command.publish.dependencies ?? []
         }
       };
@@ -10339,7 +17710,7 @@ function grpcCommandToTsCommand(cmd) {
       return {
         $kind: "Upgrade",
         Upgrade: {
-          modules: command.upgrade.modules.map((m) => toBase64(m)),
+          modules: command.upgrade.modules.map((m) => toBase642(m)),
           dependencies: command.upgrade.dependencies ?? [],
           package: command.upgrade.package,
           ticket: grpcArgumentToTsArgument(command.upgrade.ticket)
@@ -10505,7 +17876,7 @@ var ExecutionStatus$Type = class extends MessageType {
     }]);
   }
 };
-var ExecutionStatus2 = new ExecutionStatus$Type();
+var ExecutionStatus3 = new ExecutionStatus$Type();
 var ExecutionError$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.ExecutionError", [
@@ -10550,21 +17921,21 @@ var ExecutionError$Type = class extends MessageType {
         name: "command_argument_error",
         kind: "message",
         oneof: "errorDetails",
-        T: () => CommandArgumentError2
+        T: () => CommandArgumentError3
       },
       {
         no: 7,
         name: "type_argument_error",
         kind: "message",
         oneof: "errorDetails",
-        T: () => TypeArgumentError2
+        T: () => TypeArgumentError3
       },
       {
         no: 8,
         name: "package_upgrade_error",
         kind: "message",
         oneof: "errorDetails",
-        T: () => PackageUpgradeError2
+        T: () => PackageUpgradeError3
       },
       {
         no: 9,
@@ -10613,7 +17984,7 @@ var MoveAbort$Type = class extends MessageType {
         no: 2,
         name: "location",
         kind: "message",
-        T: () => MoveLocation2
+        T: () => MoveLocation3
       },
       {
         no: 3,
@@ -10666,7 +18037,7 @@ var MoveLocation$Type = class extends MessageType {
     ]);
   }
 };
-var MoveLocation2 = new MoveLocation$Type();
+var MoveLocation3 = new MoveLocation$Type();
 var CleverError$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.CleverError", [
@@ -10812,7 +18183,7 @@ var CommandArgumentError$Type = class extends MessageType {
     ]);
   }
 };
-var CommandArgumentError2 = new CommandArgumentError$Type();
+var CommandArgumentError3 = new CommandArgumentError$Type();
 var PackageUpgradeError$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.PackageUpgradeError", [
@@ -10854,7 +18225,7 @@ var PackageUpgradeError$Type = class extends MessageType {
     ]);
   }
 };
-var PackageUpgradeError2 = new PackageUpgradeError$Type();
+var PackageUpgradeError3 = new PackageUpgradeError$Type();
 var TypeArgumentError$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.TypeArgumentError", [{
@@ -10872,7 +18243,7 @@ var TypeArgumentError$Type = class extends MessageType {
     }]);
   }
 };
-var TypeArgumentError2 = new TypeArgumentError$Type();
+var TypeArgumentError3 = new TypeArgumentError$Type();
 
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/grpc/proto/sui/rpc/v2/gas_cost_summary.mjs
 var GasCostSummary$Type = class extends MessageType {
@@ -10913,7 +18284,7 @@ var GasCostSummary$Type = class extends MessageType {
     ]);
   }
 };
-var GasCostSummary2 = new GasCostSummary$Type();
+var GasCostSummary3 = new GasCostSummary$Type();
 
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/grpc/proto/sui/rpc/v2/effects.mjs
 var ChangedObject_InputObjectState = /* @__PURE__ */ function(ChangedObject_InputObjectState$1) {
@@ -10979,7 +18350,7 @@ var TransactionEffects$Type = class extends MessageType {
         no: 4,
         name: "status",
         kind: "message",
-        T: () => ExecutionStatus2
+        T: () => ExecutionStatus3
       },
       {
         no: 5,
@@ -10993,7 +18364,7 @@ var TransactionEffects$Type = class extends MessageType {
         no: 6,
         name: "gas_used",
         kind: "message",
-        T: () => GasCostSummary2
+        T: () => GasCostSummary3
       },
       {
         no: 7,
@@ -11061,7 +18432,7 @@ var TransactionEffects$Type = class extends MessageType {
     ]);
   }
 };
-var TransactionEffects2 = new TransactionEffects$Type();
+var TransactionEffects3 = new TransactionEffects$Type();
 var ChangedObject$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.ChangedObject", [
@@ -11102,7 +18473,7 @@ var ChangedObject$Type = class extends MessageType {
         no: 5,
         name: "input_owner",
         kind: "message",
-        T: () => Owner2
+        T: () => Owner3
       },
       {
         no: 6,
@@ -11134,7 +18505,7 @@ var ChangedObject$Type = class extends MessageType {
         no: 9,
         name: "output_owner",
         kind: "message",
-        T: () => Owner2
+        T: () => Owner3
       },
       {
         no: 12,
@@ -11248,7 +18619,7 @@ var GrpcCoreClient = class extends CoreClient {
     this.#client = client;
   }
   async getObjects(options) {
-    const batches = chunk(options.objectIds, 50);
+    const batches = chunk2(options.objectIds, 50);
     const results = [];
     const paths = [
       "owner",
@@ -11270,24 +18641,24 @@ var GrpcCoreClient = class extends CoreClient {
         requests: batch.map((id) => ({ objectId: id })),
         readMask: { paths }
       });
-      results.push(...response.response.objects.map((object2) => {
-        if (object2.result.oneofKind === "error")
-          return new Error(object2.result.error.message);
-        if (object2.result.oneofKind !== "object")
+      results.push(...response.response.objects.map((object3) => {
+        if (object3.result.oneofKind === "error")
+          return new Error(object3.result.error.message);
+        if (object3.result.oneofKind !== "object")
           return /* @__PURE__ */ new Error("Unexpected result type");
-        const bcsContent = object2.result.object.contents?.value ?? void 0;
-        const objectBcs = object2.result.object.bcs?.value ?? void 0;
-        const objectType = object2.result.object.objectType;
-        const type = objectType && objectType.includes("::") ? normalizeStructTag(objectType) : objectType ?? "";
-        const jsonContent = options.include?.json ? object2.result.object.json ? Value.toJson(object2.result.object.json) : null : void 0;
+        const bcsContent = object3.result.object.contents?.value ?? void 0;
+        const objectBcs = object3.result.object.bcs?.value ?? void 0;
+        const objectType = object3.result.object.objectType;
+        const type = objectType && objectType.includes("::") ? normalizeStructTag2(objectType) : objectType ?? "";
+        const jsonContent = options.include?.json ? object3.result.object.json ? Value.toJson(object3.result.object.json) : null : void 0;
         return {
-          objectId: object2.result.object.objectId,
-          version: object2.result.object.version?.toString(),
-          digest: object2.result.object.digest,
+          objectId: object3.result.object.objectId,
+          version: object3.result.object.version?.toString(),
+          digest: object3.result.object.digest,
           content: bcsContent,
-          owner: mapOwner(object2.result.object.owner),
+          owner: mapOwner(object3.result.object.owner),
           type,
-          previousTransaction: object2.result.object.previousTransaction ?? void 0,
+          previousTransaction: object3.result.object.previousTransaction ?? void 0,
           objectBcs,
           json: jsonContent
         };
@@ -11314,23 +18685,23 @@ var GrpcCoreClient = class extends CoreClient {
     const response = await this.#client.stateService.listOwnedObjects({
       owner: options.owner,
       objectType: options.type ? (await this.mvr.resolveType({ type: options.type })).type : void 0,
-      pageToken: options.cursor ? fromBase64(options.cursor) : void 0,
+      pageToken: options.cursor ? fromBase642(options.cursor) : void 0,
       pageSize: options.limit,
       readMask: { paths }
     });
     return {
-      objects: response.response.objects.map((object2) => ({
-        objectId: object2.objectId,
-        version: object2.version?.toString(),
-        digest: object2.digest,
-        content: object2.contents?.value,
-        owner: mapOwner(object2.owner),
-        type: object2.objectType,
-        previousTransaction: object2.previousTransaction ?? void 0,
-        objectBcs: object2.bcs?.value,
-        json: options.include?.json ? object2.json ? Value.toJson(object2.json) : null : void 0
+      objects: response.response.objects.map((object3) => ({
+        objectId: object3.objectId,
+        version: object3.version?.toString(),
+        digest: object3.digest,
+        content: object3.contents?.value,
+        owner: mapOwner(object3.owner),
+        type: object3.objectType,
+        previousTransaction: object3.previousTransaction ?? void 0,
+        objectBcs: object3.bcs?.value,
+        json: options.include?.json ? object3.json ? Value.toJson(object3.json) : null : void 0
       })),
-      cursor: response.response.nextPageToken ? toBase64(response.response.nextPageToken) : null,
+      cursor: response.response.nextPageToken ? toBase642(response.response.nextPageToken) : null,
       hasNextPage: response.response.nextPageToken !== void 0
     };
   }
@@ -11343,28 +18714,28 @@ var GrpcCoreClient = class extends CoreClient {
       "object_id",
       "balance"
     ];
-    const coinType = options.coinType ?? SUI_TYPE_ARG;
+    const coinType = options.coinType ?? SUI_TYPE_ARG2;
     const response = await this.#client.stateService.listOwnedObjects({
       owner: options.owner,
       objectType: `0x2::coin::Coin<${(await this.mvr.resolveType({ type: coinType })).type}>`,
-      pageToken: options.cursor ? fromBase64(options.cursor) : void 0,
+      pageToken: options.cursor ? fromBase642(options.cursor) : void 0,
       readMask: { paths }
     });
     return {
-      objects: response.response.objects.map((object2) => ({
-        objectId: object2.objectId,
-        version: object2.version?.toString(),
-        digest: object2.digest,
-        owner: mapOwner(object2.owner),
-        type: object2.objectType,
-        balance: object2.balance?.toString()
+      objects: response.response.objects.map((object3) => ({
+        objectId: object3.objectId,
+        version: object3.version?.toString(),
+        digest: object3.digest,
+        owner: mapOwner(object3.owner),
+        type: object3.objectType,
+        balance: object3.balance?.toString()
       })),
-      cursor: response.response.nextPageToken ? toBase64(response.response.nextPageToken) : null,
+      cursor: response.response.nextPageToken ? toBase642(response.response.nextPageToken) : null,
       hasNextPage: response.response.nextPageToken !== void 0
     };
   }
   async getBalance(options) {
-    const coinType = options.coinType ?? SUI_TYPE_ARG;
+    const coinType = options.coinType ?? SUI_TYPE_ARG2;
     const result = await this.#client.stateService.getBalance({
       owner: options.owner,
       coinType: (await this.mvr.resolveType({ type: coinType })).type
@@ -11398,12 +18769,12 @@ var GrpcCoreClient = class extends CoreClient {
   async listBalances(options) {
     const result = await this.#client.stateService.listBalances({
       owner: options.owner,
-      pageToken: options.cursor ? fromBase64(options.cursor) : void 0,
+      pageToken: options.cursor ? fromBase642(options.cursor) : void 0,
       pageSize: options.limit
     });
     return {
       hasNextPage: !!result.response.nextPageToken,
-      cursor: result.response.nextPageToken ? toBase64(result.response.nextPageToken) : null,
+      cursor: result.response.nextPageToken ? toBase642(result.response.nextPageToken) : null,
       balances: result.response.balances.map((balance) => ({
         balance: balance.balance?.toString() ?? "0",
         coinType: balance.coinType,
@@ -11465,7 +18836,7 @@ var GrpcCoreClient = class extends CoreClient {
     const { response } = await this.#client.transactionExecutionService.executeTransaction({
       transaction: { bcs: { value: options.transaction } },
       signatures: options.signatures.map((signature) => ({
-        bcs: { value: fromBase64(signature) },
+        bcs: { value: fromBase642(signature) },
         signature: { oneofKind: void 0 }
       })),
       readMask: { paths }
@@ -11579,15 +18950,15 @@ var GrpcCoreClient = class extends CoreClient {
     return this.#client.listDynamicFields(options);
   }
   async verifyZkLoginSignature(options) {
-    const messageBytes = fromBase64(options.bytes);
-    const messageValue = options.intentScope === "PersonalMessage" ? suiBcs.byteVector().serialize(messageBytes).toBytes() : messageBytes;
+    const messageBytes = fromBase642(options.bytes);
+    const messageValue = options.intentScope === "PersonalMessage" ? suiBcs2.byteVector().serialize(messageBytes).toBytes() : messageBytes;
     const { response } = await this.#client.signatureVerificationService.verifySignature({
       message: {
         name: options.intentScope,
         value: messageValue
       },
       signature: {
-        bcs: { value: fromBase64(options.signature) },
+        bcs: { value: fromBase642(options.signature) },
         signature: { oneofKind: void 0 }
       },
       address: options.address,
@@ -11621,7 +18992,7 @@ var GrpcCoreClient = class extends CoreClient {
         break;
     }
     return { function: {
-      packageId: normalizeSuiAddress(resolvedPackageId),
+      packageId: normalizeSuiAddress2(resolvedPackageId),
       moduleName: options.moduleName,
       name: response.function?.name,
       visibility,
@@ -11677,12 +19048,12 @@ var GrpcCoreClient = class extends CoreClient {
         })).response;
       } catch (error) {
         if (error instanceof Error && error.message)
-          throw new SimulationError(decodeURIComponent(error.message), { cause: error });
+          throw new SimulationError2(decodeURIComponent(error.message), { cause: error });
         throw error;
       }
       if (!options.onlyTransactionKind && response.transaction?.effects?.status && !response.transaction.effects.status.success) {
         const executionError = response.transaction.effects.status.error ? parseGrpcExecutionError(response.transaction.effects.status.error) : void 0;
-        throw new SimulationError(`Transaction resolution failed: ${executionError?.message ?? "Transaction failed"}`, { executionError });
+        throw new SimulationError2(`Transaction resolution failed: ${executionError?.message ?? "Transaction failed"}`, { executionError });
       }
       if (!response.transaction?.transaction)
         throw new Error("simulateTransaction did not return resolved transaction data");
@@ -11849,7 +19220,7 @@ function parseMoveAbort(abort) {
       lineNumber: abort.cleverError.lineNumber != null ? Number(abort.cleverError.lineNumber) : void 0,
       constantName: abort.cleverError.constantName,
       constantType: abort.cleverError.constantType,
-      value: abort.cleverError.value?.oneofKind === "rendered" ? abort.cleverError.value.rendered : abort.cleverError.value?.oneofKind === "raw" ? toBase64(abort.cleverError.value.raw) : void 0
+      value: abort.cleverError.value?.oneofKind === "rendered" ? abort.cleverError.value.rendered : abort.cleverError.value?.oneofKind === "raw" ? toBase642(abort.cleverError.value.raw) : void 0
     } : void 0
   };
 }
@@ -11978,12 +19349,12 @@ function parseTransactionEffects({ effects }) {
     dependencies: effects.dependencies,
     lamportVersion: effects.lamportVersion?.toString() ?? null,
     changedObjects,
-    unchangedConsensusObjects: effects.unchangedConsensusObjects.map((object2) => {
+    unchangedConsensusObjects: effects.unchangedConsensusObjects.map((object3) => {
       return {
-        kind: mapUnchangedConsensusObjectKind(object2.kind),
-        objectId: object2.objectId,
-        version: object2.version?.toString() ?? null,
-        digest: object2.digest ?? null
+        kind: mapUnchangedConsensusObjectKind(object3.kind),
+        objectId: object3.objectId,
+        version: object3.version?.toString() ?? null,
+        digest: object3.digest ?? null
       };
     }),
     auxiliaryDataDigest: effects.auxiliaryDataDigest ?? null
@@ -12032,16 +19403,16 @@ function parseTransaction(transaction, include) {
     objectTypes: include?.objectTypes ? objectTypes : void 0,
     transaction: transactionData,
     bcs: bcsBytes,
-    signatures: transaction.signatures?.map((sig) => toBase64(sig.bcs?.value)) ?? [],
+    signatures: transaction.signatures?.map((sig) => toBase642(sig.bcs?.value)) ?? [],
     balanceChanges: include?.balanceChanges ? transaction.balanceChanges?.map((change) => ({
       coinType: change.coinType,
       address: change.address,
       amount: change.amount
     })) ?? [] : void 0,
     events: include?.events ? transaction.events?.events.map((event) => ({
-      packageId: normalizeSuiAddress(event.packageId),
+      packageId: normalizeSuiAddress2(event.packageId),
       module: event.module,
-      sender: normalizeSuiAddress(event.sender),
+      sender: normalizeSuiAddress2(event.sender),
       eventType: event.eventType,
       bcs: event.contents?.value ?? new Uint8Array(),
       json: event.json ? Value.toJson(event.json) : null
@@ -12164,7 +19535,7 @@ var UserSignature$Type = class extends MessageType {
         name: "passkey",
         kind: "message",
         oneof: "signature",
-        T: () => PasskeyAuthenticator2
+        T: () => PasskeyAuthenticator3
       }
     ]);
   }
@@ -12339,7 +19710,7 @@ var MultisigMemberSignature$Type = class extends MessageType {
         no: 4,
         name: "passkey",
         kind: "message",
-        T: () => PasskeyAuthenticator2
+        T: () => PasskeyAuthenticator3
       }
     ]);
   }
@@ -12563,7 +19934,7 @@ var PasskeyAuthenticator$Type = class extends MessageType {
     ]);
   }
 };
-var PasskeyAuthenticator2 = new PasskeyAuthenticator$Type();
+var PasskeyAuthenticator3 = new PasskeyAuthenticator$Type();
 var ValidatorCommittee$Type = class extends MessageType {
   constructor() {
     super("sui.rpc.v2.ValidatorCommittee", [{
@@ -12753,7 +20124,7 @@ var ExecutedTransaction$Type = class extends MessageType {
         no: 2,
         name: "transaction",
         kind: "message",
-        T: () => Transaction
+        T: () => Transaction5
       },
       {
         no: 3,
@@ -12766,7 +20137,7 @@ var ExecutedTransaction$Type = class extends MessageType {
         no: 4,
         name: "effects",
         kind: "message",
-        T: () => TransactionEffects2
+        T: () => TransactionEffects3
       },
       {
         no: 5,
@@ -12932,14 +20303,14 @@ function mergeRpcOptions(defaults, options) {
 function copy(a, into) {
   if (!a)
     return;
-  let c2 = into;
+  let c = into;
   for (let [k, v] of Object.entries(a)) {
     if (v instanceof Date)
-      c2[k] = new Date(v.getTime());
+      c[k] = new Date(v.getTime());
     else if (Array.isArray(v))
-      c2[k] = v.concat();
+      c[k] = v.concat();
     else
-      c2[k] = v;
+      c[k] = v;
   }
 }
 
@@ -13336,7 +20707,7 @@ var ExecuteTransactionRequest$Type = class extends MessageType {
         no: 1,
         name: "transaction",
         kind: "message",
-        T: () => Transaction
+        T: () => Transaction5
       },
       {
         no: 2,
@@ -13373,7 +20744,7 @@ var SimulateTransactionRequest$Type = class extends MessageType {
         no: 1,
         name: "transaction",
         kind: "message",
-        T: () => Transaction
+        T: () => Transaction5
       },
       {
         no: 2,
@@ -13441,7 +20812,7 @@ var CommandOutput$Type = class extends MessageType {
         no: 1,
         name: "argument",
         kind: "message",
-        T: () => Argument2
+        T: () => Argument5
       },
       {
         no: 2,
@@ -14453,7 +21824,7 @@ var CheckpointSummary$Type = class extends MessageType {
         no: 8,
         name: "epoch_rolling_gas_cost_summary",
         kind: "message",
-        T: () => GasCostSummary2
+        T: () => GasCostSummary3
       },
       {
         no: 9,
@@ -16448,10 +23819,10 @@ function parseMetadata(headers) {
 }
 function parseTrailer(trailerData) {
   let headers = {};
-  for (let chunk2 of String.fromCharCode.apply(String, trailerData).trim().split("\r\n")) {
-    if (chunk2 == "")
+  for (let chunk3 of String.fromCharCode.apply(String, trailerData).trim().split("\r\n")) {
+    if (chunk3 == "")
       continue;
-    let [key, ...val] = chunk2.split(":");
+    let [key, ...val] = chunk3.split(":");
     const value = val.join(":").trim();
     key = key.trim();
     let e = headers[key];
@@ -16772,7 +24143,7 @@ var SuiGrpcClient = class extends BaseClient {
       paths.push("value");
     const response = await this.stateService.listDynamicFields({
       parent: input.parentId,
-      pageToken: input.cursor ? fromBase64(input.cursor) : void 0,
+      pageToken: input.cursor ? fromBase642(input.cursor) : void 0,
       pageSize: input.limit,
       readMask: { paths }
     });
@@ -16788,7 +24159,7 @@ var SuiGrpcClient = class extends BaseClient {
             bcs: field.name?.value
           },
           valueType: field.valueType,
-          type: normalizeStructTag(fieldType),
+          type: normalizeStructTag2(fieldType),
           childId: field.childId,
           value: includeValue ? {
             type: field.valueType,
@@ -16796,7 +24167,7 @@ var SuiGrpcClient = class extends BaseClient {
           } : void 0
         };
       }),
-      cursor: response.response.nextPageToken ? toBase64(response.response.nextPageToken) : null,
+      cursor: response.response.nextPageToken ? toBase642(response.response.nextPageToken) : null,
       hasNextPage: response.response.nextPageToken !== void 0
     };
   }
@@ -16814,1579 +24185,6 @@ var SuiGrpcClient = class extends BaseClient {
   }
   defaultNameServiceName(input) {
     return this.core.defaultNameServiceName(input);
-  }
-};
-
-// ../node_modules/.pnpm/@mysten+wallet-standard@0.20.1_@mysten+sui@2.8.0_typescript@5.9.3_/node_modules/@mysten/wallet-standard/dist/features/suiSignTransaction.mjs
-var SuiSignTransaction = "sui:signTransaction";
-
-// ../node_modules/.pnpm/@wallet-standard+app@1.1.0/node_modules/@wallet-standard/app/lib/esm/wallets.js
-var __classPrivateFieldGet = function(receiver, state, kind, f) {
-  if (kind === "a" && !f)
-    throw new TypeError("Private accessor was defined without a getter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver))
-    throw new TypeError("Cannot read private member from an object whose class did not declare it");
-  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var __classPrivateFieldSet = function(receiver, state, value, kind, f) {
-  if (kind === "m")
-    throw new TypeError("Private method is not writable");
-  if (kind === "a" && !f)
-    throw new TypeError("Private accessor was defined without a setter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver))
-    throw new TypeError("Cannot write private member to an object whose class did not declare it");
-  return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
-};
-var _AppReadyEvent_detail;
-var wallets = void 0;
-var registeredWalletsSet = /* @__PURE__ */ new Set();
-function addRegisteredWallet(wallet) {
-  cachedWalletsArray = void 0;
-  registeredWalletsSet.add(wallet);
-}
-function removeRegisteredWallet(wallet) {
-  cachedWalletsArray = void 0;
-  registeredWalletsSet.delete(wallet);
-}
-var listeners = {};
-function getWallets() {
-  if (wallets)
-    return wallets;
-  wallets = Object.freeze({ register, get, on });
-  if (typeof window === "undefined")
-    return wallets;
-  const api = Object.freeze({ register });
-  try {
-    window.addEventListener("wallet-standard:register-wallet", ({ detail: callback }) => callback(api));
-  } catch (error) {
-    console.error("wallet-standard:register-wallet event listener could not be added\n", error);
-  }
-  try {
-    window.dispatchEvent(new AppReadyEvent(api));
-  } catch (error) {
-    console.error("wallet-standard:app-ready event could not be dispatched\n", error);
-  }
-  return wallets;
-}
-function register(...wallets2) {
-  wallets2 = wallets2.filter((wallet) => !registeredWalletsSet.has(wallet));
-  if (!wallets2.length)
-    return () => {
-    };
-  wallets2.forEach((wallet) => addRegisteredWallet(wallet));
-  listeners["register"]?.forEach((listener) => guard(() => listener(...wallets2)));
-  return function unregister() {
-    wallets2.forEach((wallet) => removeRegisteredWallet(wallet));
-    listeners["unregister"]?.forEach((listener) => guard(() => listener(...wallets2)));
-  };
-}
-var cachedWalletsArray;
-function get() {
-  if (!cachedWalletsArray) {
-    cachedWalletsArray = [...registeredWalletsSet];
-  }
-  return cachedWalletsArray;
-}
-function on(event, listener) {
-  listeners[event]?.push(listener) || (listeners[event] = [listener]);
-  return function off() {
-    listeners[event] = listeners[event]?.filter((existingListener) => listener !== existingListener);
-  };
-}
-function guard(callback) {
-  try {
-    callback();
-  } catch (error) {
-    console.error(error);
-  }
-}
-var AppReadyEvent = class extends Event {
-  get detail() {
-    return __classPrivateFieldGet(this, _AppReadyEvent_detail, "f");
-  }
-  get type() {
-    return "wallet-standard:app-ready";
-  }
-  constructor(api) {
-    super("wallet-standard:app-ready", {
-      bubbles: false,
-      cancelable: false,
-      composed: false
-    });
-    _AppReadyEvent_detail.set(this, void 0);
-    __classPrivateFieldSet(this, _AppReadyEvent_detail, api, "f");
-  }
-  /** @deprecated */
-  preventDefault() {
-    throw new Error("preventDefault cannot be called");
-  }
-  /** @deprecated */
-  stopImmediatePropagation() {
-    throw new Error("stopImmediatePropagation cannot be called");
-  }
-  /** @deprecated */
-  stopPropagation() {
-    throw new Error("stopPropagation cannot be called");
-  }
-};
-_AppReadyEvent_detail = /* @__PURE__ */ new WeakMap();
-
-// ../node_modules/.pnpm/@wallet-standard+features@1.1.0/node_modules/@wallet-standard/features/lib/esm/connect.js
-var StandardConnect = "standard:connect";
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Commands.mjs
-var TransactionCommands = {
-  MoveCall(input) {
-    const [pkg, mod = "", fn = ""] = "target" in input ? input.target.split("::") : [
-      input.package,
-      input.module,
-      input.function
-    ];
-    return {
-      $kind: "MoveCall",
-      MoveCall: {
-        package: pkg,
-        module: mod,
-        function: fn,
-        typeArguments: input.typeArguments ?? [],
-        arguments: input.arguments ?? []
-      }
-    };
-  },
-  TransferObjects(objects, address) {
-    return {
-      $kind: "TransferObjects",
-      TransferObjects: {
-        objects: objects.map((o) => parse(ArgumentSchema, o)),
-        address: parse(ArgumentSchema, address)
-      }
-    };
-  },
-  SplitCoins(coin, amounts) {
-    return {
-      $kind: "SplitCoins",
-      SplitCoins: {
-        coin: parse(ArgumentSchema, coin),
-        amounts: amounts.map((o) => parse(ArgumentSchema, o))
-      }
-    };
-  },
-  MergeCoins(destination, sources) {
-    return {
-      $kind: "MergeCoins",
-      MergeCoins: {
-        destination: parse(ArgumentSchema, destination),
-        sources: sources.map((o) => parse(ArgumentSchema, o))
-      }
-    };
-  },
-  Publish({ modules, dependencies }) {
-    return {
-      $kind: "Publish",
-      Publish: {
-        modules: modules.map((module) => typeof module === "string" ? module : toBase64(new Uint8Array(module))),
-        dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep))
-      }
-    };
-  },
-  Upgrade({ modules, dependencies, package: packageId, ticket }) {
-    return {
-      $kind: "Upgrade",
-      Upgrade: {
-        modules: modules.map((module) => typeof module === "string" ? module : toBase64(new Uint8Array(module))),
-        dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
-        package: packageId,
-        ticket: parse(ArgumentSchema, ticket)
-      }
-    };
-  },
-  MakeMoveVec({ type, elements }) {
-    return {
-      $kind: "MakeMoveVec",
-      MakeMoveVec: {
-        type: type ?? null,
-        elements: elements.map((o) => parse(ArgumentSchema, o))
-      }
-    };
-  },
-  Intent({ name, inputs = {}, data = {} }) {
-    return {
-      $kind: "$Intent",
-      $Intent: {
-        name,
-        inputs: Object.fromEntries(Object.entries(inputs).map(([key, value]) => [key, Array.isArray(value) ? value.map((o) => parse(ArgumentSchema, o)) : parse(ArgumentSchema, value)])),
-        data
-      }
-    };
-  }
-};
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Inputs.mjs
-function Pure(data) {
-  return {
-    $kind: "Pure",
-    Pure: { bytes: data instanceof Uint8Array ? toBase64(data) : data.toBase64() }
-  };
-}
-var Inputs = {
-  Pure,
-  ObjectRef({ objectId, digest, version }) {
-    return {
-      $kind: "Object",
-      Object: {
-        $kind: "ImmOrOwnedObject",
-        ImmOrOwnedObject: {
-          digest,
-          version,
-          objectId: normalizeSuiAddress(objectId)
-        }
-      }
-    };
-  },
-  SharedObjectRef({ objectId, mutable, initialSharedVersion }) {
-    return {
-      $kind: "Object",
-      Object: {
-        $kind: "SharedObject",
-        SharedObject: {
-          mutable,
-          initialSharedVersion,
-          objectId: normalizeSuiAddress(objectId)
-        }
-      }
-    };
-  },
-  ReceivingRef({ objectId, digest, version }) {
-    return {
-      $kind: "Object",
-      Object: {
-        $kind: "Receiving",
-        Receiving: {
-          digest,
-          version,
-          objectId: normalizeSuiAddress(objectId)
-        }
-      }
-    };
-  },
-  FundsWithdrawal({ reservation, typeArg, withdrawFrom }) {
-    return {
-      $kind: "FundsWithdrawal",
-      FundsWithdrawal: {
-        reservation,
-        typeArg,
-        withdrawFrom
-      }
-    };
-  }
-};
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/serializer.mjs
-function parseTypeName(typeName) {
-  const parts = typeName.split("::");
-  if (parts.length !== 3)
-    throw new Error(`Invalid type name format: ${typeName}`);
-  return {
-    package: parts[0],
-    module: parts[1],
-    name: parts[2]
-  };
-}
-function isTxContext(param) {
-  if (param.body.$kind !== "datatype")
-    return false;
-  const { package: pkg, module, name } = parseTypeName(param.body.datatype.typeName);
-  return normalizeSuiAddress(pkg) === SUI_FRAMEWORK_ADDRESS && module === "tx_context" && name === "TxContext";
-}
-function getPureBcsSchema(typeSignature) {
-  switch (typeSignature.$kind) {
-    case "address":
-      return suiBcs.Address;
-    case "bool":
-      return suiBcs.Bool;
-    case "u8":
-      return suiBcs.U8;
-    case "u16":
-      return suiBcs.U16;
-    case "u32":
-      return suiBcs.U32;
-    case "u64":
-      return suiBcs.U64;
-    case "u128":
-      return suiBcs.U128;
-    case "u256":
-      return suiBcs.U256;
-    case "vector": {
-      if (typeSignature.vector.$kind === "u8")
-        return suiBcs.byteVector().transform({
-          input: (val) => typeof val === "string" ? new TextEncoder().encode(val) : val,
-          output: (val) => val
-        });
-      const type = getPureBcsSchema(typeSignature.vector);
-      return type ? suiBcs.vector(type) : null;
-    }
-    case "datatype": {
-      const { package: pkg, module, name } = parseTypeName(typeSignature.datatype.typeName);
-      const normalizedPkg = normalizeSuiAddress(pkg);
-      if (normalizedPkg === MOVE_STDLIB_ADDRESS) {
-        if (module === "ascii" && name === "String")
-          return suiBcs.String;
-        if (module === "string" && name === "String")
-          return suiBcs.String;
-        if (module === "option" && name === "Option") {
-          const type = getPureBcsSchema(typeSignature.datatype.typeParameters[0]);
-          return type ? suiBcs.vector(type) : null;
-        }
-      }
-      if (normalizedPkg === SUI_FRAMEWORK_ADDRESS) {
-        if (module === "object" && name === "ID")
-          return suiBcs.Address;
-      }
-      return null;
-    }
-    case "typeParameter":
-    case "unknown":
-      return null;
-  }
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/intents/CoinWithBalance.mjs
-var COIN_WITH_BALANCE = "CoinWithBalance";
-var SUI_TYPE = normalizeStructTag("0x2::sui::SUI");
-var CoinWithBalanceData = object({
-  type: string(),
-  balance: bigint()
-});
-async function resolveCoinBalance(transactionData, buildOptions, next) {
-  const coinTypes = /* @__PURE__ */ new Set();
-  const totalByType = /* @__PURE__ */ new Map();
-  if (!transactionData.sender)
-    throw new Error("Sender must be set to resolve CoinWithBalance");
-  for (const command of transactionData.commands)
-    if (command.$kind === "$Intent" && command.$Intent.name === COIN_WITH_BALANCE) {
-      const { type, balance } = parse(CoinWithBalanceData, command.$Intent.data);
-      if (type !== "gas" && balance > 0n)
-        coinTypes.add(type);
-      totalByType.set(type, (totalByType.get(type) ?? 0n) + balance);
-    }
-  const usedIds = /* @__PURE__ */ new Set();
-  for (const input of transactionData.inputs) {
-    if (input.Object?.ImmOrOwnedObject)
-      usedIds.add(input.Object.ImmOrOwnedObject.objectId);
-    if (input.UnresolvedObject?.objectId)
-      usedIds.add(input.UnresolvedObject.objectId);
-  }
-  const coinsByType = /* @__PURE__ */ new Map();
-  const addressBalanceByType = /* @__PURE__ */ new Map();
-  const client = buildOptions.client;
-  if (!client)
-    throw new Error("Client must be provided to build or serialize transactions with CoinWithBalance intents");
-  await Promise.all([...[...coinTypes].map(async (coinType) => {
-    const { coins, addressBalance } = await getCoinsAndBalanceOfType({
-      coinType,
-      balance: totalByType.get(coinType),
-      client,
-      owner: transactionData.sender,
-      usedIds
-    });
-    coinsByType.set(coinType, coins);
-    addressBalanceByType.set(coinType, addressBalance);
-  }), totalByType.has("gas") ? await client.core.getBalance({
-    owner: transactionData.sender,
-    coinType: SUI_TYPE
-  }).then(({ balance }) => {
-    addressBalanceByType.set("gas", BigInt(balance.addressBalance));
-  }) : null]);
-  const mergedCoins = /* @__PURE__ */ new Map();
-  for (const [index, transaction] of transactionData.commands.entries()) {
-    if (transaction.$kind !== "$Intent" || transaction.$Intent.name !== COIN_WITH_BALANCE)
-      continue;
-    const { type, balance } = transaction.$Intent.data;
-    if (balance === 0n) {
-      transactionData.replaceCommand(index, TransactionCommands.MoveCall({
-        target: "0x2::coin::zero",
-        typeArguments: [type === "gas" ? SUI_TYPE : type]
-      }));
-      continue;
-    }
-    const commands = [];
-    if (addressBalanceByType.get(type) >= totalByType.get(type))
-      commands.push(TransactionCommands.MoveCall({
-        target: "0x2::coin::redeem_funds",
-        typeArguments: [type === "gas" ? SUI_TYPE : type],
-        arguments: [transactionData.addInput("withdrawal", Inputs.FundsWithdrawal({
-          reservation: {
-            $kind: "MaxAmountU64",
-            MaxAmountU64: String(balance)
-          },
-          typeArg: {
-            $kind: "Balance",
-            Balance: type === "gas" ? SUI_TYPE : type
-          },
-          withdrawFrom: {
-            $kind: "Sender",
-            Sender: true
-          }
-        }))]
-      }));
-    else {
-      if (!mergedCoins.has(type)) {
-        const addressBalance = addressBalanceByType.get(type) ?? 0n;
-        const coinType = type === "gas" ? SUI_TYPE : type;
-        let baseCoin;
-        let restCoins;
-        if (type === "gas") {
-          baseCoin = {
-            $kind: "GasCoin",
-            GasCoin: true
-          };
-          restCoins = [];
-        } else
-          [baseCoin, ...restCoins] = coinsByType.get(type).map((coin) => transactionData.addInput("object", Inputs.ObjectRef({
-            objectId: coin.objectId,
-            digest: coin.digest,
-            version: coin.version
-          })));
-        if (addressBalance > 0n) {
-          commands.push(TransactionCommands.MoveCall({
-            target: "0x2::coin::redeem_funds",
-            typeArguments: [coinType],
-            arguments: [transactionData.addInput("withdrawal", Inputs.FundsWithdrawal({
-              reservation: {
-                $kind: "MaxAmountU64",
-                MaxAmountU64: String(addressBalance)
-              },
-              typeArg: {
-                $kind: "Balance",
-                Balance: coinType
-              },
-              withdrawFrom: {
-                $kind: "Sender",
-                Sender: true
-              }
-            }))]
-          }));
-          commands.push(TransactionCommands.MergeCoins(baseCoin, [{
-            $kind: "Result",
-            Result: index + commands.length - 1
-          }, ...restCoins]));
-        } else if (restCoins.length > 0)
-          commands.push(TransactionCommands.MergeCoins(baseCoin, restCoins));
-        mergedCoins.set(type, baseCoin);
-      }
-      commands.push(TransactionCommands.SplitCoins(mergedCoins.get(type), [transactionData.addInput("pure", Inputs.Pure(suiBcs.u64().serialize(balance)))]));
-    }
-    transactionData.replaceCommand(index, commands);
-    transactionData.mapArguments((arg, _command, commandIndex) => {
-      if (commandIndex >= index && commandIndex < index + commands.length)
-        return arg;
-      if (arg.$kind === "Result" && arg.Result === index)
-        return {
-          $kind: "NestedResult",
-          NestedResult: [index + commands.length - 1, 0]
-        };
-      return arg;
-    });
-  }
-  return next();
-}
-async function getCoinsAndBalanceOfType({ coinType, balance, client, owner, usedIds }) {
-  let remainingBalance = balance;
-  const coins = [];
-  const balanceRequest = client.core.getBalance({
-    owner,
-    coinType
-  }).then(({ balance: balance$1 }) => {
-    remainingBalance -= BigInt(balance$1.addressBalance);
-    return balance$1;
-  });
-  const [allCoins, balanceResponse] = await Promise.all([loadMoreCoins(), balanceRequest]);
-  if (BigInt(balanceResponse.balance) < balance)
-    throw new Error(`Insufficient balance of ${coinType} for owner ${owner}. Required: ${balance}, Available: ${balance - remainingBalance}`);
-  return {
-    coins: allCoins,
-    balance: BigInt(balanceResponse.coinBalance),
-    addressBalance: BigInt(balanceResponse.addressBalance),
-    coinBalance: BigInt(balanceResponse.coinBalance)
-  };
-  async function loadMoreCoins(cursor = null) {
-    const { objects, hasNextPage, cursor: nextCursor } = await client.core.listCoins({
-      owner,
-      coinType,
-      cursor
-    });
-    await balanceRequest;
-    if (remainingBalance > 0n) {
-      for (const coin of objects) {
-        if (usedIds.has(coin.objectId))
-          continue;
-        const coinBalance = BigInt(coin.balance);
-        coins.push(coin);
-        remainingBalance -= coinBalance;
-        if (remainingBalance <= 0)
-          break;
-      }
-      if (hasNextPage)
-        return loadMoreCoins(nextCursor);
-    }
-    return coins;
-  }
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/data/v2.mjs
-function enumUnion(options) {
-  return union(Object.entries(options).map(([key, value]) => object({ [key]: value })));
-}
-var Argument3 = enumUnion({
-  GasCoin: literal(true),
-  Input: pipe(number(), integer()),
-  Result: pipe(number(), integer()),
-  NestedResult: tuple([pipe(number(), integer()), pipe(number(), integer())])
-});
-var GasData2 = object({
-  budget: nullable(JsonU64),
-  price: nullable(JsonU64),
-  owner: nullable(SuiAddress),
-  payment: nullable(array(ObjectRefSchema))
-});
-var ProgrammableMoveCall2 = object({
-  package: ObjectID,
-  module: string(),
-  function: string(),
-  typeArguments: array(string()),
-  arguments: array(Argument3)
-});
-var $Intent2 = object({
-  name: string(),
-  inputs: record(string(), union([Argument3, array(Argument3)])),
-  data: record(string(), unknown())
-});
-var Command3 = enumUnion({
-  MoveCall: ProgrammableMoveCall2,
-  TransferObjects: object({
-    objects: array(Argument3),
-    address: Argument3
-  }),
-  SplitCoins: object({
-    coin: Argument3,
-    amounts: array(Argument3)
-  }),
-  MergeCoins: object({
-    destination: Argument3,
-    sources: array(Argument3)
-  }),
-  Publish: object({
-    modules: array(BCSBytes),
-    dependencies: array(ObjectID)
-  }),
-  MakeMoveVec: object({
-    type: nullable(string()),
-    elements: array(Argument3)
-  }),
-  Upgrade: object({
-    modules: array(BCSBytes),
-    dependencies: array(ObjectID),
-    package: ObjectID,
-    ticket: Argument3
-  }),
-  $Intent: $Intent2
-});
-var CallArg2 = enumUnion({
-  Object: enumUnion({
-    ImmOrOwnedObject: ObjectRefSchema,
-    SharedObject: object({
-      objectId: ObjectID,
-      initialSharedVersion: JsonU64,
-      mutable: boolean()
-    }),
-    Receiving: ObjectRefSchema
-  }),
-  Pure: object({ bytes: BCSBytes }),
-  UnresolvedPure: object({ value: unknown() }),
-  UnresolvedObject: object({
-    objectId: ObjectID,
-    version: optional(nullable(JsonU64)),
-    digest: optional(nullable(string())),
-    initialSharedVersion: optional(nullable(JsonU64)),
-    mutable: optional(nullable(boolean()))
-  }),
-  FundsWithdrawal: FundsWithdrawalArgSchema
-});
-var TransactionExpiration5 = enumUnion({
-  None: literal(true),
-  Epoch: JsonU64,
-  ValidDuring: ValidDuringSchema
-});
-var SerializedTransactionDataV2Schema = object({
-  version: literal(2),
-  sender: nullish(SuiAddress),
-  expiration: nullish(TransactionExpiration5),
-  gasData: GasData2,
-  inputs: array(CallArg2),
-  commands: array(Command3),
-  digest: optional(nullable(string()))
-});
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/client/core-resolver.mjs
-var MAX_OBJECTS_PER_FETCH = 50;
-var GAS_SAFE_OVERHEAD = 1000n;
-var MAX_GAS = 5e10;
-function getClient(options) {
-  if (!options.client)
-    throw new Error(`No sui client passed to Transaction#build, but transaction data was not sufficient to build offline.`);
-  return options.client;
-}
-async function coreClientResolveTransactionPlugin(transactionData, options, next) {
-  const client = getClient(options);
-  await normalizeInputs(transactionData, client);
-  await resolveObjectReferences(transactionData, client);
-  if (!options.onlyTransactionKind)
-    await setGasData(transactionData, client);
-  return await next();
-}
-async function setGasData(transactionData, client) {
-  let systemState = null;
-  if (!transactionData.gasData.price) {
-    systemState = (await client.core.getCurrentSystemState()).systemState;
-    transactionData.gasData.price = systemState.referenceGasPrice;
-  }
-  await setGasBudget(transactionData, client);
-  await setGasPayment(transactionData, client);
-  if (!transactionData.expiration)
-    await setExpiration(transactionData, client, systemState);
-}
-async function setGasBudget(transactionData, client) {
-  if (transactionData.gasData.budget)
-    return;
-  const simulateResult = await client.core.simulateTransaction({
-    transaction: transactionData.build({ overrides: { gasData: {
-      budget: String(MAX_GAS),
-      payment: []
-    } } }),
-    include: { effects: true }
-  });
-  if (simulateResult.$kind === "FailedTransaction") {
-    const executionError = simulateResult.FailedTransaction.status.error ?? void 0;
-    throw new SimulationError(`Transaction resolution failed: ${executionError?.message ?? "Unknown error"}`, {
-      cause: simulateResult,
-      executionError
-    });
-  }
-  const gasUsed = simulateResult.Transaction.effects.gasUsed;
-  const safeOverhead = GAS_SAFE_OVERHEAD * BigInt(transactionData.gasData.price || 1n);
-  const baseComputationCostWithOverhead = BigInt(gasUsed.computationCost) + safeOverhead;
-  const gasBudget = baseComputationCostWithOverhead + BigInt(gasUsed.storageCost) - BigInt(gasUsed.storageRebate);
-  transactionData.gasData.budget = String(gasBudget > baseComputationCostWithOverhead ? gasBudget : baseComputationCostWithOverhead);
-}
-async function setGasPayment(transactionData, client) {
-  if (!transactionData.gasData.payment) {
-    const gasPayer = transactionData.gasData.owner ?? transactionData.sender;
-    if (!gasPayer)
-      throw new Error("Either a gas owner or sender must be set to determine gas payment.");
-    const normalizedGasPayer = normalizeSuiAddress(gasPayer);
-    let usesGasCoin = false;
-    let withdrawals = 0n;
-    transactionData.mapArguments((arg) => {
-      if (arg.$kind === "GasCoin")
-        usesGasCoin = true;
-      else if (arg.$kind === "Input") {
-        const input = transactionData.inputs[arg.Input];
-        if (input.$kind === "FundsWithdrawal") {
-          const withdrawalOwner = input.FundsWithdrawal.withdrawFrom.Sender ? transactionData.sender : gasPayer;
-          if (withdrawalOwner && normalizeSuiAddress(withdrawalOwner) === normalizedGasPayer) {
-            if (input.FundsWithdrawal.reservation.$kind === "MaxAmountU64")
-              withdrawals += BigInt(input.FundsWithdrawal.reservation.MaxAmountU64);
-          }
-        }
-      }
-      return arg;
-    });
-    const [suiBalance, coins] = await Promise.all([usesGasCoin ? null : client.core.getBalance({ owner: gasPayer }), client.core.listCoins({
-      owner: gasPayer,
-      coinType: SUI_TYPE_ARG
-    })]);
-    if (suiBalance?.balance.addressBalance && BigInt(suiBalance.balance.addressBalance) >= BigInt(transactionData.gasData.budget || "0") + withdrawals) {
-      transactionData.gasData.payment = [];
-      return;
-    }
-    const paymentCoins = coins.objects.filter((coin) => {
-      return !transactionData.inputs.find((input) => {
-        if (input.Object?.ImmOrOwnedObject)
-          return coin.objectId === input.Object.ImmOrOwnedObject.objectId;
-        return false;
-      });
-    }).map((coin) => parse(ObjectRefSchema, {
-      objectId: coin.objectId,
-      digest: coin.digest,
-      version: coin.version
-    }));
-    if (!paymentCoins.length)
-      throw new Error("No valid gas coins found for the transaction.");
-    transactionData.gasData.payment = paymentCoins;
-  }
-}
-async function setExpiration(transactionData, client, existingSystemState) {
-  const [systemState, { chainIdentifier }] = await Promise.all([existingSystemState ?? client.core.getCurrentSystemState().then((r) => r.systemState), client.core.getChainIdentifier()]);
-  const currentEpoch = BigInt(systemState.epoch);
-  transactionData.expiration = {
-    $kind: "ValidDuring",
-    ValidDuring: {
-      minEpoch: String(currentEpoch),
-      maxEpoch: String(currentEpoch + 1n),
-      minTimestamp: null,
-      maxTimestamp: null,
-      chain: chainIdentifier,
-      nonce: Math.random() * 4294967296 >>> 0
-    }
-  };
-}
-async function resolveObjectReferences(transactionData, client) {
-  const objectsToResolve = transactionData.inputs.filter((input) => {
-    return input.UnresolvedObject && !(input.UnresolvedObject.version || input.UnresolvedObject?.initialSharedVersion);
-  });
-  const dedupedIds = [...new Set(objectsToResolve.map((input) => normalizeSuiObjectId(input.UnresolvedObject.objectId)))];
-  const objectChunks = dedupedIds.length ? chunk(dedupedIds, MAX_OBJECTS_PER_FETCH) : [];
-  const resolved = (await Promise.all(objectChunks.map((chunkIds) => client.core.getObjects({ objectIds: chunkIds })))).flatMap((result) => result.objects);
-  const responsesById = new Map(dedupedIds.map((id, index) => {
-    return [id, resolved[index]];
-  }));
-  const invalidObjects = Array.from(responsesById).filter(([_, obj]) => obj instanceof Error).map(([_, obj]) => obj.message);
-  if (invalidObjects.length)
-    throw new Error(`The following input objects are invalid: ${invalidObjects.join(", ")}`);
-  const objects = resolved.map((object$1) => {
-    if (object$1 instanceof Error)
-      throw new Error(`Failed to fetch object: ${object$1.message}`);
-    const owner = object$1.owner;
-    const initialSharedVersion = owner && typeof owner === "object" ? owner.$kind === "Shared" ? owner.Shared.initialSharedVersion : owner.$kind === "ConsensusAddressOwner" ? owner.ConsensusAddressOwner.startVersion : null : null;
-    return {
-      objectId: object$1.objectId,
-      digest: object$1.digest,
-      version: object$1.version,
-      initialSharedVersion
-    };
-  });
-  const objectsById = new Map(dedupedIds.map((id, index) => {
-    return [id, objects[index]];
-  }));
-  for (const [index, input] of transactionData.inputs.entries()) {
-    if (!input.UnresolvedObject)
-      continue;
-    let updated;
-    const id = normalizeSuiAddress(input.UnresolvedObject.objectId);
-    const object$1 = objectsById.get(id);
-    if (input.UnresolvedObject.initialSharedVersion ?? object$1?.initialSharedVersion)
-      updated = Inputs.SharedObjectRef({
-        objectId: id,
-        initialSharedVersion: input.UnresolvedObject.initialSharedVersion || object$1?.initialSharedVersion,
-        mutable: input.UnresolvedObject.mutable || isUsedAsMutable(transactionData, index)
-      });
-    else if (isUsedAsReceiving(transactionData, index))
-      updated = Inputs.ReceivingRef({
-        objectId: id,
-        digest: input.UnresolvedObject.digest ?? object$1?.digest,
-        version: input.UnresolvedObject.version ?? object$1?.version
-      });
-    transactionData.inputs[transactionData.inputs.indexOf(input)] = updated ?? Inputs.ObjectRef({
-      objectId: id,
-      digest: input.UnresolvedObject.digest ?? object$1?.digest,
-      version: input.UnresolvedObject.version ?? object$1?.version
-    });
-  }
-}
-async function normalizeInputs(transactionData, client) {
-  const { inputs, commands } = transactionData;
-  const moveCallsToResolve = [];
-  const moveFunctionsToResolve = /* @__PURE__ */ new Set();
-  commands.forEach((command) => {
-    if (command.MoveCall) {
-      if (command.MoveCall._argumentTypes)
-        return;
-      if (command.MoveCall.arguments.map((arg) => {
-        if (arg.$kind === "Input")
-          return transactionData.inputs[arg.Input];
-        return null;
-      }).some((input) => input?.UnresolvedPure || input?.UnresolvedObject && typeof input?.UnresolvedObject.mutable !== "boolean")) {
-        const functionName = `${command.MoveCall.package}::${command.MoveCall.module}::${command.MoveCall.function}`;
-        moveFunctionsToResolve.add(functionName);
-        moveCallsToResolve.push(command.MoveCall);
-      }
-    }
-  });
-  const moveFunctionParameters = /* @__PURE__ */ new Map();
-  if (moveFunctionsToResolve.size > 0)
-    await Promise.all([...moveFunctionsToResolve].map(async (functionName) => {
-      const [packageId, moduleName, name] = functionName.split("::");
-      const { function: def } = await client.core.getMoveFunction({
-        packageId,
-        moduleName,
-        name
-      });
-      moveFunctionParameters.set(functionName, def.parameters);
-    }));
-  if (moveCallsToResolve.length)
-    await Promise.all(moveCallsToResolve.map(async (moveCall) => {
-      const parameters = moveFunctionParameters.get(`${moveCall.package}::${moveCall.module}::${moveCall.function}`);
-      if (!parameters)
-        return;
-      moveCall._argumentTypes = parameters.length > 0 && isTxContext(parameters.at(-1)) ? parameters.slice(0, parameters.length - 1) : parameters;
-    }));
-  commands.forEach((command) => {
-    if (!command.MoveCall)
-      return;
-    const moveCall = command.MoveCall;
-    const fnName = `${moveCall.package}::${moveCall.module}::${moveCall.function}`;
-    const params = moveCall._argumentTypes;
-    if (!params)
-      return;
-    if (params.length !== command.MoveCall.arguments.length)
-      throw new Error(`Incorrect number of arguments for ${fnName}`);
-    params.forEach((param, i) => {
-      const arg = moveCall.arguments[i];
-      if (arg.$kind !== "Input")
-        return;
-      const input = inputs[arg.Input];
-      if (!input.UnresolvedPure && !input.UnresolvedObject)
-        return;
-      const inputValue = input.UnresolvedPure?.value ?? input.UnresolvedObject?.objectId;
-      const schema = getPureBcsSchema(param.body);
-      if (schema) {
-        arg.type = "pure";
-        inputs[inputs.indexOf(input)] = Inputs.Pure(schema.serialize(inputValue));
-        return;
-      }
-      if (typeof inputValue !== "string")
-        throw new Error(`Expect the argument to be an object id string, got ${JSON.stringify(inputValue, null, 2)}`);
-      arg.type = "object";
-      const unresolvedObject = input.UnresolvedPure ? {
-        $kind: "UnresolvedObject",
-        UnresolvedObject: { objectId: inputValue }
-      } : input;
-      inputs[arg.Input] = unresolvedObject;
-    });
-  });
-}
-function isUsedAsMutable(transactionData, index) {
-  let usedAsMutable = false;
-  transactionData.getInputUses(index, (arg, tx) => {
-    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
-      const argIndex = tx.MoveCall.arguments.indexOf(arg);
-      usedAsMutable = tx.MoveCall._argumentTypes[argIndex].reference !== "immutable" || usedAsMutable;
-    }
-    if (tx.$kind === "MakeMoveVec" || tx.$kind === "MergeCoins" || tx.$kind === "SplitCoins" || tx.$kind === "TransferObjects")
-      usedAsMutable = true;
-  });
-  return usedAsMutable;
-}
-function isUsedAsReceiving(transactionData, index) {
-  let usedAsReceiving = false;
-  transactionData.getInputUses(index, (arg, tx) => {
-    if (tx.MoveCall && tx.MoveCall._argumentTypes) {
-      const argIndex = tx.MoveCall.arguments.indexOf(arg);
-      usedAsReceiving = isReceivingType(tx.MoveCall._argumentTypes[argIndex]) || usedAsReceiving;
-    }
-  });
-  return usedAsReceiving;
-}
-var RECEIVING_TYPE = "0x0000000000000000000000000000000000000000000000000000000000000002::transfer::Receiving";
-function isReceivingType(type) {
-  if (type.body.$kind !== "datatype")
-    return false;
-  return type.body.datatype.typeName === RECEIVING_TYPE;
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/resolve.mjs
-function needsTransactionResolution(data, options) {
-  if (data.inputs.some((input) => {
-    return input.UnresolvedObject || input.UnresolvedPure;
-  }))
-    return true;
-  if (!options.onlyTransactionKind) {
-    if (!data.gasData.price || !data.gasData.budget || !data.gasData.payment)
-      return true;
-    if (data.gasData.payment.length === 0 && !data.expiration)
-      return true;
-  }
-  return false;
-}
-async function resolveTransactionPlugin(transactionData, options, next) {
-  normalizeRawArguments(transactionData);
-  if (!needsTransactionResolution(transactionData, options)) {
-    await validate(transactionData);
-    return next();
-  }
-  return (getClient2(options).core?.resolveTransactionPlugin() ?? coreClientResolveTransactionPlugin)(transactionData, options, async () => {
-    await validate(transactionData);
-    await next();
-  });
-}
-function validate(transactionData) {
-  transactionData.inputs.forEach((input, index) => {
-    if (input.$kind !== "Object" && input.$kind !== "Pure" && input.$kind !== "FundsWithdrawal")
-      throw new Error(`Input at index ${index} has not been resolved.  Expected a Pure, Object, or FundsWithdrawal input, but found ${JSON.stringify(input)}`);
-  });
-}
-function getClient2(options) {
-  if (!options.client)
-    throw new Error(`No sui client passed to Transaction#build, but transaction data was not sufficient to build offline.`);
-  return options.client;
-}
-function normalizeRawArguments(transactionData) {
-  for (const command of transactionData.commands)
-    switch (command.$kind) {
-      case "SplitCoins":
-        command.SplitCoins.amounts.forEach((amount) => {
-          normalizeRawArgument(amount, suiBcs.U64, transactionData);
-        });
-        break;
-      case "TransferObjects":
-        normalizeRawArgument(command.TransferObjects.address, suiBcs.Address, transactionData);
-        break;
-    }
-}
-function normalizeRawArgument(arg, schema, transactionData) {
-  if (arg.$kind !== "Input")
-    return;
-  const input = transactionData.inputs[arg.Input];
-  if (input.$kind !== "UnresolvedPure")
-    return;
-  transactionData.inputs[arg.Input] = Inputs.Pure(schema.serialize(input.UnresolvedPure.value));
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/object.mjs
-function createObjectMethods(makeObject) {
-  function object2(value) {
-    return makeObject(value);
-  }
-  object2.system = (options) => {
-    const mutable = options?.mutable;
-    if (mutable !== void 0)
-      return object2(Inputs.SharedObjectRef({
-        objectId: SUI_SYSTEM_STATE_OBJECT_ID,
-        initialSharedVersion: 1,
-        mutable
-      }));
-    return object2({
-      $kind: "UnresolvedObject",
-      UnresolvedObject: {
-        objectId: SUI_SYSTEM_STATE_OBJECT_ID,
-        initialSharedVersion: 1
-      }
-    });
-  };
-  object2.clock = () => object2(Inputs.SharedObjectRef({
-    objectId: SUI_CLOCK_OBJECT_ID,
-    initialSharedVersion: 1,
-    mutable: false
-  }));
-  object2.random = () => object2({
-    $kind: "UnresolvedObject",
-    UnresolvedObject: {
-      objectId: SUI_RANDOM_OBJECT_ID,
-      mutable: false
-    }
-  });
-  object2.denyList = (options) => {
-    return object2({
-      $kind: "UnresolvedObject",
-      UnresolvedObject: {
-        objectId: SUI_DENY_LIST_OBJECT_ID,
-        mutable: options?.mutable
-      }
-    });
-  };
-  object2.option = ({ type, value }) => (tx) => tx.moveCall({
-    typeArguments: [type],
-    target: `${MOVE_STDLIB_ADDRESS}::option::${value === null ? "none" : "some"}`,
-    arguments: value === null ? [] : [tx.object(value)]
-  });
-  return object2;
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/pure.mjs
-function createPure(makePure) {
-  function pure(typeOrSerializedValue, value) {
-    if (typeof typeOrSerializedValue === "string")
-      return makePure(pureBcsSchemaFromTypeName(typeOrSerializedValue).serialize(value));
-    if (typeOrSerializedValue instanceof Uint8Array || isSerializedBcs(typeOrSerializedValue))
-      return makePure(typeOrSerializedValue);
-    throw new Error("tx.pure must be called either a bcs type name, or a serialized bcs value");
-  }
-  pure.u8 = (value) => makePure(suiBcs.U8.serialize(value));
-  pure.u16 = (value) => makePure(suiBcs.U16.serialize(value));
-  pure.u32 = (value) => makePure(suiBcs.U32.serialize(value));
-  pure.u64 = (value) => makePure(suiBcs.U64.serialize(value));
-  pure.u128 = (value) => makePure(suiBcs.U128.serialize(value));
-  pure.u256 = (value) => makePure(suiBcs.U256.serialize(value));
-  pure.bool = (value) => makePure(suiBcs.Bool.serialize(value));
-  pure.string = (value) => makePure(suiBcs.String.serialize(value));
-  pure.address = (value) => makePure(suiBcs.Address.serialize(value));
-  pure.id = pure.address;
-  pure.vector = (type, value) => {
-    return makePure(suiBcs.vector(pureBcsSchemaFromTypeName(type)).serialize(value));
-  };
-  pure.option = (type, value) => {
-    return makePure(suiBcs.option(pureBcsSchemaFromTypeName(type)).serialize(value));
-  };
-  return pure;
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/plugins/NamedPackagesPlugin.mjs
-function namedPackagesPlugin() {
-  return async (transactionData, buildOptions, next) => {
-    const names = findNamesInTransaction(transactionData);
-    if (names.types.length === 0 && names.packages.length === 0)
-      return next();
-    if (!buildOptions.client)
-      throw new Error(`Transaction contains MVR names but no client was provided to resolve them. Please pass a client to Transaction#build()`);
-    replaceNames(transactionData, await buildOptions.client.core.mvr.resolve({
-      types: names.types,
-      packages: names.packages
-    }));
-    await next();
-  };
-}
-
-// node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/transactions/Transaction.mjs
-function createTransactionResult(index, length = Infinity) {
-  const baseResult = {
-    $kind: "Result",
-    get Result() {
-      return typeof index === "function" ? index() : index;
-    }
-  };
-  const nestedResults = [];
-  const nestedResultFor = (resultIndex) => nestedResults[resultIndex] ??= {
-    $kind: "NestedResult",
-    get NestedResult() {
-      return [typeof index === "function" ? index() : index, resultIndex];
-    }
-  };
-  return new Proxy(baseResult, {
-    set() {
-      throw new Error("The transaction result is a proxy, and does not support setting properties directly");
-    },
-    get(target, property) {
-      if (property in target)
-        return Reflect.get(target, property);
-      if (property === Symbol.iterator)
-        return function* () {
-          let i = 0;
-          while (i < length) {
-            yield nestedResultFor(i);
-            i++;
-          }
-        };
-      if (typeof property === "symbol")
-        return;
-      const resultIndex = parseInt(property, 10);
-      if (Number.isNaN(resultIndex) || resultIndex < 0)
-        return;
-      return nestedResultFor(resultIndex);
-    }
-  });
-}
-var TRANSACTION_BRAND = Symbol.for("@mysten/transaction");
-function isTransaction(obj) {
-  return !!obj && typeof obj === "object" && obj[TRANSACTION_BRAND] === true;
-}
-var Transaction2 = class Transaction3 {
-  #serializationPlugins;
-  #buildPlugins;
-  #intentResolvers = /* @__PURE__ */ new Map();
-  #inputSection = [];
-  #commandSection = [];
-  #availableResults = /* @__PURE__ */ new Set();
-  #pendingPromises = /* @__PURE__ */ new Set();
-  #added = /* @__PURE__ */ new Map();
-  /**
-  * Converts from a serialize transaction kind (built with `build({ onlyTransactionKind: true })`) to a `Transaction` class.
-  * Supports either a byte array, or base64-encoded bytes.
-  */
-  static fromKind(serialized) {
-    const tx = new Transaction3();
-    tx.#data = TransactionDataBuilder.fromKindBytes(typeof serialized === "string" ? fromBase64(serialized) : serialized);
-    tx.#inputSection = tx.#data.inputs.slice();
-    tx.#commandSection = tx.#data.commands.slice();
-    tx.#availableResults = new Set(tx.#commandSection.map((_, i) => i));
-    return tx;
-  }
-  /**
-  * Converts from a serialized transaction format to a `Transaction` class.
-  * There are two supported serialized formats:
-  * - A string returned from `Transaction#serialize`. The serialized format must be compatible, or it will throw an error.
-  * - A byte array (or base64-encoded bytes) containing BCS transaction data.
-  */
-  static from(transaction) {
-    const newTransaction = new Transaction3();
-    if (isTransaction(transaction))
-      newTransaction.#data = TransactionDataBuilder.restore(transaction.getData());
-    else if (typeof transaction !== "string" || !transaction.startsWith("{"))
-      newTransaction.#data = TransactionDataBuilder.fromBytes(typeof transaction === "string" ? fromBase64(transaction) : transaction);
-    else
-      newTransaction.#data = TransactionDataBuilder.restore(JSON.parse(transaction));
-    newTransaction.#inputSection = newTransaction.#data.inputs.slice();
-    newTransaction.#commandSection = newTransaction.#data.commands.slice();
-    newTransaction.#availableResults = new Set(newTransaction.#commandSection.map((_, i) => i));
-    if (!newTransaction.isPreparedForSerialization({ supportedIntents: [COIN_WITH_BALANCE] }))
-      throw new Error("Transaction has unresolved intents or async thunks. Call `prepareForSerialization` before copying.");
-    if (newTransaction.#data.commands.some((cmd) => cmd.$Intent?.name === COIN_WITH_BALANCE))
-      newTransaction.addIntentResolver(COIN_WITH_BALANCE, resolveCoinBalance);
-    return newTransaction;
-  }
-  addSerializationPlugin(step) {
-    this.#serializationPlugins.push(step);
-  }
-  addBuildPlugin(step) {
-    this.#buildPlugins.push(step);
-  }
-  addIntentResolver(intent, resolver) {
-    if (this.#intentResolvers.has(intent) && this.#intentResolvers.get(intent) !== resolver)
-      throw new Error(`Intent resolver for ${intent} already exists`);
-    this.#intentResolvers.set(intent, resolver);
-  }
-  setSender(sender) {
-    this.#data.sender = sender;
-  }
-  /**
-  * Sets the sender only if it has not already been set.
-  * This is useful for sponsored transaction flows where the sender may not be the same as the signer address.
-  */
-  setSenderIfNotSet(sender) {
-    if (!this.#data.sender)
-      this.#data.sender = sender;
-  }
-  setExpiration(expiration) {
-    this.#data.expiration = expiration ? parse(TransactionExpiration2, expiration) : null;
-  }
-  setGasPrice(price) {
-    this.#data.gasData.price = String(price);
-  }
-  setGasBudget(budget) {
-    this.#data.gasData.budget = String(budget);
-  }
-  setGasBudgetIfNotSet(budget) {
-    if (this.#data.gasData.budget == null)
-      this.#data.gasData.budget = String(budget);
-  }
-  setGasOwner(owner) {
-    this.#data.gasData.owner = owner;
-  }
-  setGasPayment(payments) {
-    this.#data.gasData.payment = payments.map((payment) => parse(ObjectRefSchema, payment));
-  }
-  #data;
-  /** Get a snapshot of the transaction data, in JSON form: */
-  getData() {
-    return this.#data.snapshot();
-  }
-  get [TRANSACTION_BRAND]() {
-    return true;
-  }
-  get pure() {
-    Object.defineProperty(this, "pure", {
-      enumerable: false,
-      value: createPure((value) => {
-        if (isSerializedBcs(value))
-          return this.#addInput("pure", {
-            $kind: "Pure",
-            Pure: { bytes: value.toBase64() }
-          });
-        return this.#addInput("pure", is(NormalizedCallArg, value) ? parse(NormalizedCallArg, value) : value instanceof Uint8Array ? Inputs.Pure(value) : {
-          $kind: "UnresolvedPure",
-          UnresolvedPure: { value }
-        });
-      })
-    });
-    return this.pure;
-  }
-  constructor() {
-    this.object = createObjectMethods((value) => {
-      if (typeof value === "function")
-        return this.object(this.add(value));
-      if (typeof value === "object" && is(ArgumentSchema, value))
-        return value;
-      const id = getIdFromCallArg(value);
-      const inserted = this.#data.inputs.find((i) => id === getIdFromCallArg(i));
-      if (inserted?.Object?.SharedObject && typeof value === "object" && value.Object?.SharedObject)
-        inserted.Object.SharedObject.mutable = inserted.Object.SharedObject.mutable || value.Object.SharedObject.mutable;
-      return inserted ? {
-        $kind: "Input",
-        Input: this.#data.inputs.indexOf(inserted),
-        type: "object"
-      } : this.#addInput("object", typeof value === "string" ? {
-        $kind: "UnresolvedObject",
-        UnresolvedObject: { objectId: normalizeSuiAddress(value) }
-      } : value);
-    });
-    this.#data = new TransactionDataBuilder();
-    this.#buildPlugins = [];
-    this.#serializationPlugins = [];
-  }
-  /** Returns an argument for the gas coin, to be used in a transaction. */
-  get gas() {
-    return {
-      $kind: "GasCoin",
-      GasCoin: true
-    };
-  }
-  /**
-  * Add a new object input to the transaction using the fully-resolved object reference.
-  * If you only have an object ID, use `builder.object(id)` instead.
-  */
-  objectRef(...args) {
-    return this.object(Inputs.ObjectRef(...args));
-  }
-  /**
-  * Add a new receiving input to the transaction using the fully-resolved object reference.
-  * If you only have an object ID, use `builder.object(id)` instead.
-  */
-  receivingRef(...args) {
-    return this.object(Inputs.ReceivingRef(...args));
-  }
-  /**
-  * Add a new shared object input to the transaction using the fully-resolved shared object reference.
-  * If you only have an object ID, use `builder.object(id)` instead.
-  */
-  sharedObjectRef(...args) {
-    return this.object(Inputs.SharedObjectRef(...args));
-  }
-  #fork() {
-    const fork = new Transaction3();
-    fork.#data = this.#data;
-    fork.#serializationPlugins = this.#serializationPlugins;
-    fork.#buildPlugins = this.#buildPlugins;
-    fork.#intentResolvers = this.#intentResolvers;
-    fork.#pendingPromises = this.#pendingPromises;
-    fork.#availableResults = new Set(this.#availableResults);
-    fork.#added = this.#added;
-    this.#inputSection.push(fork.#inputSection);
-    this.#commandSection.push(fork.#commandSection);
-    return fork;
-  }
-  add(command) {
-    if (typeof command === "function") {
-      if (this.#added.has(command))
-        return this.#added.get(command);
-      const fork = this.#fork();
-      const result = command(fork);
-      if (!(result && typeof result === "object" && "then" in result)) {
-        this.#availableResults = fork.#availableResults;
-        this.#added.set(command, result);
-        return result;
-      }
-      const placeholder = this.#addCommand({
-        $kind: "$Intent",
-        $Intent: {
-          name: "AsyncTransactionThunk",
-          inputs: {},
-          data: {
-            resultIndex: this.#data.commands.length,
-            result: null
-          }
-        }
-      });
-      this.#pendingPromises.add(Promise.resolve(result).then((result$1) => {
-        placeholder.$Intent.data.result = result$1;
-      }));
-      const txResult = createTransactionResult(() => placeholder.$Intent.data.resultIndex);
-      this.#added.set(command, txResult);
-      return txResult;
-    } else
-      this.#addCommand(command);
-    return createTransactionResult(this.#data.commands.length - 1);
-  }
-  #addCommand(command) {
-    const resultIndex = this.#data.commands.length;
-    this.#commandSection.push(command);
-    this.#availableResults.add(resultIndex);
-    this.#data.commands.push(command);
-    this.#data.mapCommandArguments(resultIndex, (arg) => {
-      if (arg.$kind === "Result" && !this.#availableResults.has(arg.Result))
-        throw new Error(`Result { Result: ${arg.Result} } is not available to use in the current transaction`);
-      if (arg.$kind === "NestedResult" && !this.#availableResults.has(arg.NestedResult[0]))
-        throw new Error(`Result { NestedResult: [${arg.NestedResult[0]}, ${arg.NestedResult[1]}] } is not available to use in the current transaction`);
-      if (arg.$kind === "Input" && arg.Input >= this.#data.inputs.length)
-        throw new Error(`Input { Input: ${arg.Input} } references an input that does not exist in the current transaction`);
-      return arg;
-    });
-    return command;
-  }
-  #addInput(type, input) {
-    this.#inputSection.push(input);
-    return this.#data.addInput(type, input);
-  }
-  #normalizeTransactionArgument(arg) {
-    if (isSerializedBcs(arg))
-      return this.pure(arg);
-    return this.#resolveArgument(arg);
-  }
-  #resolveArgument(arg) {
-    if (typeof arg === "function") {
-      const resolved = this.add(arg);
-      if (typeof resolved === "function")
-        return this.#resolveArgument(resolved);
-      return parse(ArgumentSchema, resolved);
-    }
-    return parse(ArgumentSchema, arg);
-  }
-  splitCoins(coin, amounts) {
-    const command = TransactionCommands.SplitCoins(typeof coin === "string" ? this.object(coin) : this.#resolveArgument(coin), amounts.map((amount) => typeof amount === "number" || typeof amount === "bigint" || typeof amount === "string" ? this.pure.u64(amount) : this.#normalizeTransactionArgument(amount)));
-    this.#addCommand(command);
-    return createTransactionResult(this.#data.commands.length - 1, amounts.length);
-  }
-  mergeCoins(destination, sources) {
-    return this.add(TransactionCommands.MergeCoins(this.object(destination), sources.map((src) => this.object(src))));
-  }
-  publish({ modules, dependencies }) {
-    return this.add(TransactionCommands.Publish({
-      modules,
-      dependencies
-    }));
-  }
-  upgrade({ modules, dependencies, package: packageId, ticket }) {
-    return this.add(TransactionCommands.Upgrade({
-      modules,
-      dependencies,
-      package: packageId,
-      ticket: this.object(ticket)
-    }));
-  }
-  moveCall({ arguments: args, ...input }) {
-    return this.add(TransactionCommands.MoveCall({
-      ...input,
-      arguments: args?.map((arg) => this.#normalizeTransactionArgument(arg))
-    }));
-  }
-  transferObjects(objects, address) {
-    return this.add(TransactionCommands.TransferObjects(objects.map((obj) => this.object(obj)), typeof address === "string" ? this.pure.address(address) : this.#normalizeTransactionArgument(address)));
-  }
-  makeMoveVec({ type, elements }) {
-    return this.add(TransactionCommands.MakeMoveVec({
-      type,
-      elements: elements.map((obj) => this.object(obj))
-    }));
-  }
-  /**
-  * Create a FundsWithdrawal input for withdrawing Balance<T> from an address balance accumulator.
-  * This is used for gas payments from address balances.
-  *
-  * @param options.amount - The Amount to withdraw (u64).
-  * @param options.type - The balance type (e.g., "0x2::sui::SUI"). Defaults to SUI.
-  */
-  withdrawal({ amount, type }) {
-    const input = {
-      $kind: "FundsWithdrawal",
-      FundsWithdrawal: {
-        reservation: {
-          $kind: "MaxAmountU64",
-          MaxAmountU64: String(amount)
-        },
-        typeArg: {
-          $kind: "Balance",
-          Balance: type ?? "0x2::sui::SUI"
-        },
-        withdrawFrom: {
-          $kind: "Sender",
-          Sender: true
-        }
-      }
-    };
-    return this.#addInput("object", input);
-  }
-  /**
-  * @deprecated Use toJSON instead.
-  * For synchronous serialization, you can use `getData()`
-  * */
-  serialize() {
-    return JSON.stringify(serializeV1TransactionData(this.#data.snapshot()));
-  }
-  async toJSON(options = {}) {
-    await this.prepareForSerialization(options);
-    const fullyResolved = this.isFullyResolved();
-    return JSON.stringify(parse(SerializedTransactionDataV2Schema, fullyResolved ? {
-      ...this.#data.snapshot(),
-      digest: this.#data.getDigest()
-    } : this.#data.snapshot()), (_key, value) => typeof value === "bigint" ? value.toString() : value, 2);
-  }
-  /** Build the transaction to BCS bytes, and sign it with the provided keypair. */
-  async sign(options) {
-    const { signer, ...buildOptions } = options;
-    const bytes = await this.build(buildOptions);
-    return signer.signTransaction(bytes);
-  }
-  /**
-  * Checks if the transaction is prepared for serialization to JSON.
-  * This means:
-  *  - All async thunks have been fully resolved
-  *  - All transaction intents have been resolved (unless in supportedIntents)
-  *
-  * Unlike `isFullyResolved()`, this does not require the sender, gas payment,
-  * budget, or object versions to be set.
-  */
-  isPreparedForSerialization(options = {}) {
-    if (this.#pendingPromises.size > 0)
-      return false;
-    if (this.#data.commands.some((cmd) => cmd.$Intent && !options.supportedIntents?.includes(cmd.$Intent.name)))
-      return false;
-    return true;
-  }
-  /**
-  *  Ensures that:
-  *  - All objects have been fully resolved to a specific version
-  *  - All pure inputs have been serialized to bytes
-  *  - All async thunks have been fully resolved
-  *  - All transaction intents have been resolved
-  * 	- The gas payment, budget, and price have been set
-  *  - The transaction sender has been set
-  *
-  *  When true, the transaction will always be built to the same bytes and digest (unless the transaction is mutated)
-  */
-  isFullyResolved() {
-    if (!this.isPreparedForSerialization())
-      return false;
-    if (!this.#data.sender)
-      return false;
-    if (needsTransactionResolution(this.#data, {}))
-      return false;
-    return true;
-  }
-  /** Build the transaction to BCS bytes. */
-  async build(options = {}) {
-    await this.prepareForSerialization(options);
-    await this.#prepareBuild(options);
-    return this.#data.build({ onlyTransactionKind: options.onlyTransactionKind });
-  }
-  /** Derive transaction digest */
-  async getDigest(options = {}) {
-    await this.prepareForSerialization(options);
-    await this.#prepareBuild(options);
-    return this.#data.getDigest();
-  }
-  /**
-  * Prepare the transaction by validating the transaction data and resolving all inputs
-  * so that it can be built into bytes.
-  */
-  async #prepareBuild(options) {
-    if (!options.onlyTransactionKind && !this.#data.sender)
-      throw new Error("Missing transaction sender");
-    await this.#runPlugins([...this.#buildPlugins, resolveTransactionPlugin], options);
-  }
-  async #runPlugins(plugins, options) {
-    try {
-      const createNext = (i) => {
-        if (i >= plugins.length)
-          return () => {
-          };
-        const plugin = plugins[i];
-        return async () => {
-          const next = createNext(i + 1);
-          let calledNext = false;
-          let nextResolved = false;
-          await plugin(this.#data, options, async () => {
-            if (calledNext)
-              throw new Error(`next() was call multiple times in TransactionPlugin ${i}`);
-            calledNext = true;
-            await next();
-            nextResolved = true;
-          });
-          if (!calledNext)
-            throw new Error(`next() was not called in TransactionPlugin ${i}`);
-          if (!nextResolved)
-            throw new Error(`next() was not awaited in TransactionPlugin ${i}`);
-        };
-      };
-      await createNext(0)();
-    } finally {
-      this.#inputSection = this.#data.inputs.slice();
-      this.#commandSection = this.#data.commands.slice();
-      this.#availableResults = new Set(this.#commandSection.map((_, i) => i));
-    }
-  }
-  async #waitForPendingTasks() {
-    while (this.#pendingPromises.size > 0) {
-      const newPromise = Promise.all(this.#pendingPromises);
-      this.#pendingPromises.clear();
-      this.#pendingPromises.add(newPromise);
-      await newPromise;
-      this.#pendingPromises.delete(newPromise);
-    }
-  }
-  #sortCommandsAndInputs() {
-    const unorderedCommands = this.#data.commands;
-    const unorderedInputs = this.#data.inputs;
-    const orderedCommands = this.#commandSection.flat(Infinity);
-    const orderedInputs = this.#inputSection.flat(Infinity);
-    if (orderedCommands.length !== unorderedCommands.length)
-      throw new Error("Unexpected number of commands found in transaction data");
-    if (orderedInputs.length !== unorderedInputs.length)
-      throw new Error("Unexpected number of inputs found in transaction data");
-    const filteredCommands = orderedCommands.filter((cmd) => cmd.$Intent?.name !== "AsyncTransactionThunk");
-    this.#data.commands = filteredCommands;
-    this.#data.inputs = orderedInputs;
-    this.#commandSection = filteredCommands;
-    this.#inputSection = orderedInputs;
-    this.#availableResults = new Set(filteredCommands.map((_, i) => i));
-    function getOriginalIndex(index) {
-      const command = unorderedCommands[index];
-      if (command.$Intent?.name === "AsyncTransactionThunk") {
-        const result = command.$Intent.data.result;
-        if (result == null)
-          throw new Error("AsyncTransactionThunk has not been resolved");
-        return getOriginalIndex(result.Result);
-      }
-      const updated = filteredCommands.indexOf(command);
-      if (updated === -1)
-        throw new Error("Unable to find original index for command");
-      return updated;
-    }
-    this.#data.mapArguments((arg) => {
-      if (arg.$kind === "Input") {
-        const updated = orderedInputs.indexOf(unorderedInputs[arg.Input]);
-        if (updated === -1)
-          throw new Error("Input has not been resolved");
-        return {
-          ...arg,
-          Input: updated
-        };
-      } else if (arg.$kind === "Result") {
-        const updated = getOriginalIndex(arg.Result);
-        return {
-          ...arg,
-          Result: updated
-        };
-      } else if (arg.$kind === "NestedResult") {
-        const updated = getOriginalIndex(arg.NestedResult[0]);
-        return {
-          ...arg,
-          NestedResult: [updated, arg.NestedResult[1]]
-        };
-      }
-      return arg;
-    });
-    for (const [i, cmd] of unorderedCommands.entries())
-      if (cmd.$Intent?.name === "AsyncTransactionThunk")
-        try {
-          cmd.$Intent.data.resultIndex = getOriginalIndex(i);
-        } catch {
-        }
-  }
-  async prepareForSerialization(options) {
-    await this.#waitForPendingTasks();
-    this.#sortCommandsAndInputs();
-    const intents = /* @__PURE__ */ new Set();
-    for (const command of this.#data.commands)
-      if (command.$Intent)
-        intents.add(command.$Intent.name);
-    const steps = [...this.#serializationPlugins];
-    for (const intent of intents) {
-      if (options.supportedIntents?.includes(intent))
-        continue;
-      if (!this.#intentResolvers.has(intent))
-        throw new Error(`Missing intent resolver for ${intent}`);
-      steps.push(this.#intentResolvers.get(intent));
-    }
-    steps.push(namedPackagesPlugin());
-    await this.#runPlugins(steps, options);
   }
 };
 
@@ -18599,7 +24397,7 @@ var JsonRpcHTTPTransport = class {
       headers: {
         "Content-Type": "application/json",
         "Client-Sdk-Type": "typescript",
-        "Client-Sdk-Version": PACKAGE_VERSION,
+        "Client-Sdk-Version": PACKAGE_VERSION2,
         "Client-Target-Api-Version": TARGETED_RPC_VERSION,
         "Client-Request-Method": input.method,
         ...this.#options.rpc?.headers
@@ -18631,7 +24429,7 @@ var JsonRpcHTTPTransport = class {
 };
 
 // node_modules/.pnpm/@mysten+sui@2.6.0_typescript@5.9.3/node_modules/@mysten/sui/dist/jsonRpc/core.mjs
-var MAX_GAS2 = 5e10;
+var MAX_GAS3 = 5e10;
 function parseJsonRpcExecutionStatus(status, abortError) {
   if (status.status === "success")
     return {
@@ -18645,7 +24443,7 @@ function parseJsonRpcExecutionStatus(status, abortError) {
     const instructionMatch = rawMessage.match(/instruction:\s*(\d+)/);
     const instruction = instructionMatch ? parseInt(instructionMatch[1], 10) : void 0;
     const moduleParts = abortError.module_id?.split("::") ?? [];
-    const pkg = moduleParts[0] ? normalizeSuiAddress(moduleParts[0]) : void 0;
+    const pkg = moduleParts[0] ? normalizeSuiAddress2(moduleParts[0]) : void 0;
     const module = moduleParts[1];
     return {
       success: false,
@@ -18666,7 +24464,7 @@ function parseJsonRpcExecutionStatus(status, abortError) {
         MoveAbort: {
           abortCode: String(abortError.error_code ?? 0),
           location: abortError.module_id ? {
-            package: normalizeSuiAddress(abortError.module_id.split("::")[0] ?? ""),
+            package: normalizeSuiAddress2(abortError.module_id.split("::")[0] ?? ""),
             module: abortError.module_id.split("::")[1] ?? "",
             functionName: abortError.function ?? void 0,
             instruction
@@ -18686,16 +24484,16 @@ function parseJsonRpcExecutionStatus(status, abortError) {
 }
 var JSONRpcCoreClient = class extends CoreClient {
   #jsonRpcClient;
-  constructor({ jsonRpcClient, mvr }) {
+  constructor({ jsonRpcClient: jsonRpcClient2, mvr }) {
     super({
-      network: jsonRpcClient.network,
-      base: jsonRpcClient,
+      network: jsonRpcClient2.network,
+      base: jsonRpcClient2,
       mvr
     });
-    this.#jsonRpcClient = jsonRpcClient;
+    this.#jsonRpcClient = jsonRpcClient2;
   }
   async getObjects(options) {
-    const batches = chunk(options.objectIds, 50);
+    const batches = chunk2(options.objectIds, 50);
     const results = [];
     for (const batch of batches) {
       const objects = await this.#jsonRpcClient.multiGetObjects({
@@ -18710,11 +24508,11 @@ var JSONRpcCoreClient = class extends CoreClient {
         },
         signal: options.signal
       });
-      for (const [idx, object2] of objects.entries())
-        if (object2.error)
-          results.push(ObjectError.fromResponse(object2.error, batch[idx]));
+      for (const [idx, object3] of objects.entries())
+        if (object3.error)
+          results.push(ObjectError.fromResponse(object3.error, batch[idx]));
         else
-          results.push(parseObject(object2.data, options.include));
+          results.push(parseObject(object3.data, options.include));
     }
     return { objects: results };
   }
@@ -18771,7 +24569,7 @@ var JSONRpcCoreClient = class extends CoreClient {
         version: coin.version,
         digest: coin.digest,
         balance: coin.balance,
-        type: normalizeStructTag(`0x2::coin::Coin<${coin.coinType}>`),
+        type: normalizeStructTag2(`0x2::coin::Coin<${coin.coinType}>`),
         owner: {
           $kind: "AddressOwner",
           AddressOwner: options.owner
@@ -18790,7 +24588,7 @@ var JSONRpcCoreClient = class extends CoreClient {
     const addressBalance = balance.fundsInAddressBalance ?? "0";
     const coinBalance = String(BigInt(balance.totalBalance) - BigInt(addressBalance));
     return { balance: {
-      coinType: normalizeStructTag(balance.coinType),
+      coinType: normalizeStructTag2(balance.coinType),
       balance: balance.totalBalance,
       coinBalance,
       addressBalance
@@ -18822,7 +24620,7 @@ var JSONRpcCoreClient = class extends CoreClient {
         const addressBalance = balance.fundsInAddressBalance ?? "0";
         const coinBalance = String(BigInt(balance.totalBalance) - BigInt(addressBalance));
         return {
-          coinType: normalizeStructTag(balance.coinType),
+          coinType: normalizeStructTag2(balance.coinType),
           balance: balance.totalBalance,
           coinBalance,
           addressBalance
@@ -18864,10 +24662,10 @@ var JSONRpcCoreClient = class extends CoreClient {
   async simulateTransaction(options) {
     if (!(options.transaction instanceof Uint8Array))
       await options.transaction.prepareForSerialization({ client: this });
-    const tx = Transaction2.from(options.transaction);
-    const data = options.transaction instanceof Uint8Array ? null : TransactionDataBuilder.restore(options.transaction.getData());
+    const tx = Transaction3.from(options.transaction);
+    const data = options.transaction instanceof Uint8Array ? null : TransactionDataBuilder3.restore(options.transaction.getData());
     const transactionBytes = data ? data.build({ overrides: { gasData: {
-      budget: data.gasData.budget ?? String(MAX_GAS2),
+      budget: data.gasData.budget ?? String(MAX_GAS3),
       price: data.gasData.price ?? String(await this.#jsonRpcClient.getReferenceGasPrice()),
       payment: data.gasData.payment ?? []
     } } }) : options.transaction;
@@ -18880,7 +24678,7 @@ var JSONRpcCoreClient = class extends CoreClient {
       objectChanges: result.objectChanges
     });
     const transactionData = {
-      digest: TransactionDataBuilder.getDigestFromBytes(transactionBytes),
+      digest: TransactionDataBuilder3.getDigestFromBytes(transactionBytes),
       epoch: null,
       status: effects.status,
       effects: options.include?.effects ? effects : void 0,
@@ -18889,7 +24687,7 @@ var JSONRpcCoreClient = class extends CoreClient {
       transaction: options.include?.transaction ? parseTransactionBcs(options.transaction instanceof Uint8Array ? options.transaction : await options.transaction.build({ client: this }).catch(() => null)) : void 0,
       bcs: options.include?.bcs ? transactionBytes : void 0,
       balanceChanges: options.include?.balanceChanges ? result.balanceChanges.map((change) => ({
-        coinType: normalizeStructTag(change.coinType),
+        coinType: normalizeStructTag2(change.coinType),
         address: parseOwnerAddress(change.owner),
         amount: change.amount
       })) : void 0,
@@ -18898,14 +24696,14 @@ var JSONRpcCoreClient = class extends CoreClient {
         module: event.transactionModule,
         sender: event.sender,
         eventType: event.type,
-        bcs: "bcs" in event ? fromBase64(event.bcs) : new Uint8Array(),
+        bcs: "bcs" in event ? fromBase642(event.bcs) : new Uint8Array(),
         json: event.parsedJson ?? null
       })) ?? [] : void 0
     };
     let commandResults;
     if (options.include?.commandResults)
       try {
-        const sender = tx.getData().sender ?? normalizeSuiAddress("0x0");
+        const sender = tx.getData().sender ?? normalizeSuiAddress2("0x0");
         const devInspectResult = await this.#jsonRpcClient.devInspectTransactionBlock({
           sender,
           transactionBlock: tx,
@@ -18976,12 +24774,12 @@ var JSONRpcCoreClient = class extends CoreClient {
       dynamicFields: dynamicFields.data.map((dynamicField) => {
         const isDynamicObject = dynamicField.type === "DynamicObject";
         const fullType = isDynamicObject ? `0x2::dynamic_field::Field<0x2::dynamic_object_field::Wrapper<${dynamicField.name.type}>, 0x2::object::ID>` : `0x2::dynamic_field::Field<${dynamicField.name.type}, ${dynamicField.objectType}>`;
-        const bcsBytes = fromBase64(dynamicField.bcsName);
+        const bcsBytes = fromBase642(dynamicField.bcsName);
         const derivedNameType = isDynamicObject ? `0x2::dynamic_object_field::Wrapper<${dynamicField.name.type}>` : dynamicField.name.type;
         return {
           $kind: isDynamicObject ? "DynamicObject" : "DynamicField",
           fieldId: deriveDynamicFieldID(options.parentId, derivedNameType, bcsBytes),
-          type: normalizeStructTag(fullType),
+          type: normalizeStructTag2(fullType),
           name: {
             type: dynamicField.name.type,
             bcs: bcsBytes
@@ -19010,7 +24808,7 @@ var JSONRpcCoreClient = class extends CoreClient {
     return { data: { name: (await this.#jsonRpcClient.resolveNameServiceNames(options)).data[0] } };
   }
   resolveTransactionPlugin() {
-    return coreClientResolveTransactionPlugin;
+    return coreClientResolveTransactionPlugin2;
   }
   async getMoveFunction(options) {
     const resolvedPackageId = (await this.mvr.resolvePackage({ package: options.packageId })).package;
@@ -19020,7 +24818,7 @@ var JSONRpcCoreClient = class extends CoreClient {
       function: options.name
     });
     return { function: {
-      packageId: normalizeSuiAddress(resolvedPackageId),
+      packageId: normalizeSuiAddress2(resolvedPackageId),
       moduleName: options.moduleName,
       name: options.name,
       visibility: parseVisibility(result.visibility),
@@ -19039,15 +24837,15 @@ var JSONRpcCoreClient = class extends CoreClient {
     });
   }
 };
-function serializeObjectToBcs(object2) {
-  if (object2.bcs?.dataType !== "moveObject")
+function serializeObjectToBcs(object3) {
+  if (object3.bcs?.dataType !== "moveObject")
     return;
   try {
-    const typeStr = normalizeStructTag(object2.bcs.type);
+    const typeStr = normalizeStructTag2(object3.bcs.type);
     let moveObjectType;
-    const normalizedSuiFramework = normalizeSuiAddress(SUI_FRAMEWORK_ADDRESS);
-    const gasCoinType = normalizeStructTag(`${SUI_FRAMEWORK_ADDRESS}::coin::Coin<${SUI_FRAMEWORK_ADDRESS}::sui::SUI>`);
-    const stakedSuiType = normalizeStructTag(`${SUI_SYSTEM_ADDRESS}::staking_pool::StakedSui`);
+    const normalizedSuiFramework = normalizeSuiAddress2(SUI_FRAMEWORK_ADDRESS2);
+    const gasCoinType = normalizeStructTag2(`${SUI_FRAMEWORK_ADDRESS2}::coin::Coin<${SUI_FRAMEWORK_ADDRESS2}::sui::SUI>`);
+    const stakedSuiType = normalizeStructTag2(`${SUI_SYSTEM_ADDRESS}::staking_pool::StakedSui`);
     const coinPrefix = `${normalizedSuiFramework}::coin::Coin<`;
     if (typeStr === gasCoinType)
       moveObjectType = { GasCoin: null };
@@ -19056,45 +24854,45 @@ function serializeObjectToBcs(object2) {
     else if (typeStr.startsWith(coinPrefix)) {
       const innerTypeMatch = typeStr.match(/* @__PURE__ */ new RegExp(`${normalizedSuiFramework.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}::coin::Coin<(.+)>$`));
       if (innerTypeMatch)
-        moveObjectType = { Coin: TypeTagSerializer.parseFromStr(innerTypeMatch[1], true) };
+        moveObjectType = { Coin: TypeTagSerializer3.parseFromStr(innerTypeMatch[1], true) };
       else
         throw new Error("Failed to parse Coin type");
     } else {
-      const typeTag = TypeTagSerializer.parseFromStr(typeStr, true);
+      const typeTag = TypeTagSerializer3.parseFromStr(typeStr, true);
       if (typeof typeTag !== "object" || !("struct" in typeTag))
         throw new Error("Expected struct type tag");
       moveObjectType = { Other: typeTag.struct };
     }
-    const contents = fromBase64(object2.bcs.bcsBytes);
-    const owner = convertOwnerToBcs(object2.owner);
-    return suiBcs.Object.serialize({
+    const contents = fromBase642(object3.bcs.bcsBytes);
+    const owner = convertOwnerToBcs(object3.owner);
+    return suiBcs2.Object.serialize({
       data: { Move: {
         type: moveObjectType,
-        hasPublicTransfer: object2.bcs.hasPublicTransfer,
-        version: object2.bcs.version,
+        hasPublicTransfer: object3.bcs.hasPublicTransfer,
+        version: object3.bcs.version,
         contents
       } },
       owner,
-      previousTransaction: object2.previousTransaction,
-      storageRebate: object2.storageRebate
+      previousTransaction: object3.previousTransaction,
+      storageRebate: object3.storageRebate
     }).toBytes();
   } catch {
     return;
   }
 }
-function parseObject(object2, include) {
-  const bcsContent = object2.bcs?.dataType === "moveObject" ? fromBase64(object2.bcs.bcsBytes) : void 0;
-  const objectBcs = include?.objectBcs ? serializeObjectToBcs(object2) : void 0;
-  const type = object2.type && object2.type.includes("::") ? normalizeStructTag(object2.type) : object2.type ?? "";
-  const jsonContent = include?.json && object2.content?.dataType === "moveObject" ? object2.content.fields : include?.json ? null : void 0;
+function parseObject(object3, include) {
+  const bcsContent = object3.bcs?.dataType === "moveObject" ? fromBase642(object3.bcs.bcsBytes) : void 0;
+  const objectBcs = include?.objectBcs ? serializeObjectToBcs(object3) : void 0;
+  const type = object3.type && object3.type.includes("::") ? normalizeStructTag2(object3.type) : object3.type ?? "";
+  const jsonContent = include?.json && object3.content?.dataType === "moveObject" ? object3.content.fields : include?.json ? null : void 0;
   return {
-    objectId: object2.objectId,
-    version: object2.version,
-    digest: object2.digest,
+    objectId: object3.objectId,
+    version: object3.version,
+    digest: object3.digest,
     type,
     content: include?.content ? bcsContent : void 0,
-    owner: parseOwner(object2.owner),
-    previousTransaction: include?.previousTransaction ? object2.previousTransaction ?? void 0 : void 0,
+    owner: parseOwner(object3.owner),
+    previousTransaction: include?.previousTransaction ? object3.previousTransaction ?? void 0 : void 0,
     objectBcs,
     json: jsonContent
   };
@@ -19164,20 +24962,20 @@ function parseTransaction2(transaction, include) {
   if (include?.objectTypes)
     transaction.objectChanges?.forEach((change) => {
       if (change.type !== "published")
-        objectTypes[change.objectId] = normalizeStructTag(change.objectType);
+        objectTypes[change.objectId] = normalizeStructTag2(change.objectType);
     });
   let transactionData;
   let signatures = [];
   let bcsBytes;
   if (transaction.rawTransaction) {
-    const parsedTx = suiBcs.SenderSignedData.parse(fromBase64(transaction.rawTransaction))[0];
+    const parsedTx = suiBcs2.SenderSignedData.parse(fromBase642(transaction.rawTransaction))[0];
     signatures = parsedTx.txSignatures;
     if (include?.transaction || include?.bcs) {
-      const bytes = suiBcs.TransactionData.serialize(parsedTx.intentMessage.value).toBytes();
+      const bytes = suiBcs2.TransactionData.serialize(parsedTx.intentMessage.value).toBytes();
       if (include?.bcs)
         bcsBytes = bytes;
       if (include?.transaction)
-        transactionData = { ...TransactionDataBuilder.restore({
+        transactionData = { ...TransactionDataBuilder3.restore({
           version: 2,
           sender: parsedTx.intentMessage.value.V1.sender,
           expiration: parsedTx.intentMessage.value.V1.expiration,
@@ -19206,7 +25004,7 @@ function parseTransaction2(transaction, include) {
     bcs: bcsBytes,
     signatures,
     balanceChanges: include?.balanceChanges ? transaction.balanceChanges?.map((change) => ({
-      coinType: normalizeStructTag(change.coinType),
+      coinType: normalizeStructTag2(change.coinType),
       address: parseOwnerAddress(change.owner),
       amount: change.amount
     })) ?? [] : void 0,
@@ -19215,7 +25013,7 @@ function parseTransaction2(transaction, include) {
       module: event.transactionModule,
       sender: event.sender,
       eventType: event.type,
-      bcs: "bcs" in event ? fromBase64(event.bcs) : new Uint8Array(),
+      bcs: "bcs" in event ? fromBase642(event.bcs) : new Uint8Array(),
       json: event.parsedJson ?? null
     })) ?? [] : void 0
   };
@@ -19263,7 +25061,7 @@ function parseTransactionEffectsJson({ bytes, effects, objectChanges }) {
           outputOwner: parseOwner(change.recipient),
           idOperation: "None"
         });
-        objectTypes[change.objectId] = normalizeStructTag(change.objectType);
+        objectTypes[change.objectId] = normalizeStructTag2(change.objectType);
         break;
       case "mutated":
         changedObjects.push({
@@ -19278,7 +25076,7 @@ function parseTransactionEffectsJson({ bytes, effects, objectChanges }) {
           outputOwner: parseOwner(change.owner),
           idOperation: "None"
         });
-        objectTypes[change.objectId] = normalizeStructTag(change.objectType);
+        objectTypes[change.objectId] = normalizeStructTag2(change.objectType);
         break;
       case "deleted":
         changedObjects.push({
@@ -19293,7 +25091,7 @@ function parseTransactionEffectsJson({ bytes, effects, objectChanges }) {
           outputOwner: null,
           idOperation: "Deleted"
         });
-        objectTypes[change.objectId] = normalizeStructTag(change.objectType);
+        objectTypes[change.objectId] = normalizeStructTag2(change.objectType);
         break;
       case "wrapped":
         changedObjects.push({
@@ -19314,7 +25112,7 @@ function parseTransactionEffectsJson({ bytes, effects, objectChanges }) {
           },
           idOperation: "None"
         });
-        objectTypes[change.objectId] = normalizeStructTag(change.objectType);
+        objectTypes[change.objectId] = normalizeStructTag2(change.objectType);
         break;
       case "created":
         changedObjects.push({
@@ -19329,7 +25127,7 @@ function parseTransactionEffectsJson({ bytes, effects, objectChanges }) {
           outputOwner: parseOwner(change.owner),
           idOperation: "Created"
         });
-        objectTypes[change.objectId] = normalizeStructTag(change.objectType);
+        objectTypes[change.objectId] = normalizeStructTag2(change.objectType);
         break;
     }
   });
@@ -19410,7 +25208,7 @@ function parseNormalizedSuiMoveTypeBody2(type) {
     return {
       $kind: "datatype",
       datatype: {
-        typeName: `${normalizeSuiAddress(type.Struct.address)}::${type.Struct.module}::${type.Struct.name}`,
+        typeName: `${normalizeSuiAddress2(type.Struct.address)}::${type.Struct.module}::${type.Struct.name}`,
         typeParameters: type.Struct.typeArguments.map((t) => parseNormalizedSuiMoveTypeBody2(t))
       }
     };
@@ -19475,7 +25273,7 @@ var COIN_RESERVATION_MAGIC = new Uint8Array([
   172
 ]);
 function isCoinReservationDigest(digestBase58) {
-  return fromBase58(digestBase58).slice(12, 32).every((byte, i) => byte === COIN_RESERVATION_MAGIC[i]);
+  return fromBase582(digestBase58).slice(12, 32).every((byte, i) => byte === COIN_RESERVATION_MAGIC[i]);
 }
 var SuiJsonRpcClient = class extends BaseClient {
   get [SUI_CLIENT_BRAND2]() {
@@ -19506,9 +25304,9 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get all Coin<`coin_type`> objects owned by an address.
   */
   async getCoins({ coinType, owner, cursor, limit, signal }) {
-    if (!owner || !isValidSuiAddress(normalizeSuiAddress(owner)))
+    if (!owner || !isValidSuiAddress2(normalizeSuiAddress2(owner)))
       throw new Error("Invalid Sui address");
-    if (coinType && hasMvrName(coinType))
+    if (coinType && hasMvrName2(coinType))
       coinType = (await this.core.mvr.resolveType({ type: coinType })).type;
     const result = await this.transport.request({
       method: "suix_getCoins",
@@ -19529,7 +25327,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get all Coin objects owned by an address.
   */
   async getAllCoins(input) {
-    if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner)))
+    if (!input.owner || !isValidSuiAddress2(normalizeSuiAddress2(input.owner)))
       throw new Error("Invalid Sui address");
     const result = await this.transport.request({
       method: "suix_getAllCoins",
@@ -19549,9 +25347,9 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get the total coin balance for one coin type, owned by the address owner.
   */
   async getBalance({ owner, coinType, signal }) {
-    if (!owner || !isValidSuiAddress(normalizeSuiAddress(owner)))
+    if (!owner || !isValidSuiAddress2(normalizeSuiAddress2(owner)))
       throw new Error("Invalid Sui address");
-    if (coinType && hasMvrName(coinType))
+    if (coinType && hasMvrName2(coinType))
       coinType = (await this.core.mvr.resolveType({ type: coinType })).type;
     return await this.transport.request({
       method: "suix_getBalance",
@@ -19563,7 +25361,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get the total coin balance for all coin types, owned by the address owner.
   */
   async getAllBalances(input) {
-    if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner)))
+    if (!input.owner || !isValidSuiAddress2(normalizeSuiAddress2(input.owner)))
       throw new Error("Invalid Sui address");
     return await this.transport.request({
       method: "suix_getAllBalances",
@@ -19575,7 +25373,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Fetch CoinMetadata for a given coin type
   */
   async getCoinMetadata({ coinType, signal }) {
-    if (coinType && hasMvrName(coinType))
+    if (coinType && hasMvrName2(coinType))
       coinType = (await this.core.mvr.resolveType({ type: coinType })).type;
     return await this.transport.request({
       method: "suix_getCoinMetadata",
@@ -19587,7 +25385,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   *  Fetch total supply for a coin
   */
   async getTotalSupply({ coinType, signal }) {
-    if (coinType && hasMvrName(coinType))
+    if (coinType && hasMvrName2(coinType))
       coinType = (await this.core.mvr.resolveType({ type: coinType })).type;
     return await this.transport.request({
       method: "suix_getTotalSupply",
@@ -19611,7 +25409,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get Move function argument types like read, write and full access
   */
   async getMoveFunctionArgTypes({ package: pkg, module, function: fn, signal }) {
-    if (pkg && isValidNamedPackage(pkg))
+    if (pkg && isValidNamedPackage2(pkg))
       pkg = (await this.core.mvr.resolvePackage({ package: pkg })).package;
     return await this.transport.request({
       method: "sui_getMoveFunctionArgTypes",
@@ -19628,7 +25426,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * structured representations of Move modules
   */
   async getNormalizedMoveModulesByPackage({ package: pkg, signal }) {
-    if (pkg && isValidNamedPackage(pkg))
+    if (pkg && isValidNamedPackage2(pkg))
       pkg = (await this.core.mvr.resolvePackage({ package: pkg })).package;
     return await this.transport.request({
       method: "sui_getNormalizedMoveModulesByPackage",
@@ -19640,7 +25438,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get a structured representation of Move module
   */
   async getNormalizedMoveModule({ package: pkg, module, signal }) {
-    if (pkg && isValidNamedPackage(pkg))
+    if (pkg && isValidNamedPackage2(pkg))
       pkg = (await this.core.mvr.resolvePackage({ package: pkg })).package;
     return await this.transport.request({
       method: "sui_getNormalizedMoveModule",
@@ -19652,7 +25450,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get a structured representation of Move function
   */
   async getNormalizedMoveFunction({ package: pkg, module, function: fn, signal }) {
-    if (pkg && isValidNamedPackage(pkg))
+    if (pkg && isValidNamedPackage2(pkg))
       pkg = (await this.core.mvr.resolvePackage({ package: pkg })).package;
     return await this.transport.request({
       method: "sui_getNormalizedMoveFunction",
@@ -19668,7 +25466,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get a structured representation of Move struct
   */
   async getNormalizedMoveStruct({ package: pkg, module, struct, signal }) {
-    if (pkg && isValidNamedPackage(pkg))
+    if (pkg && isValidNamedPackage2(pkg))
       pkg = (await this.core.mvr.resolvePackage({ package: pkg })).package;
     return await this.transport.request({
       method: "sui_getNormalizedMoveStruct",
@@ -19684,15 +25482,15 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get all objects owned by an address
   */
   async getOwnedObjects(input) {
-    if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner)))
+    if (!input.owner || !isValidSuiAddress2(normalizeSuiAddress2(input.owner)))
       throw new Error("Invalid Sui address");
     const filter = input.filter ? { ...input.filter } : void 0;
-    if (filter && "MoveModule" in filter && isValidNamedPackage(filter.MoveModule.package))
+    if (filter && "MoveModule" in filter && isValidNamedPackage2(filter.MoveModule.package))
       filter.MoveModule = {
         module: filter.MoveModule.module,
         package: (await this.core.mvr.resolvePackage({ package: filter.MoveModule.package })).package
       };
-    else if (filter && "StructType" in filter && hasMvrName(filter.StructType))
+    else if (filter && "StructType" in filter && hasMvrName2(filter.StructType))
       filter.StructType = (await this.core.mvr.resolveType({ type: filter.StructType })).type;
     return await this.transport.request({
       method: "suix_getOwnedObjects",
@@ -19712,7 +25510,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get details about an object
   */
   async getObject(input) {
-    if (!input.id || !isValidSuiObjectId(normalizeSuiObjectId(input.id)))
+    if (!input.id || !isValidSuiObjectId(normalizeSuiObjectId2(input.id)))
       throw new Error("Invalid Sui Object id");
     return await this.transport.request({
       method: "sui_getObject",
@@ -19736,7 +25534,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   */
   async multiGetObjects(input) {
     input.ids.forEach((id) => {
-      if (!id || !isValidSuiObjectId(normalizeSuiObjectId(id)))
+      if (!id || !isValidSuiObjectId(normalizeSuiObjectId2(id)))
         throw new Error(`Invalid Sui Object id ${id}`);
     });
     if (input.ids.length !== new Set(input.ids).size)
@@ -19751,7 +25549,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get transaction blocks for a given query criteria
   */
   async queryTransactionBlocks({ filter, options, cursor, limit, order, signal }) {
-    if (filter && "MoveFunction" in filter && isValidNamedPackage(filter.MoveFunction.package))
+    if (filter && "MoveFunction" in filter && isValidNamedPackage2(filter.MoveFunction.package))
       filter = {
         ...filter,
         MoveFunction: { package: (await this.core.mvr.resolvePackage({ package: filter.MoveFunction.package })).package }
@@ -19796,7 +25594,7 @@ var SuiJsonRpcClient = class extends BaseClient {
     return await this.transport.request({
       method: "sui_executeTransactionBlock",
       params: [
-        typeof transactionBlock === "string" ? transactionBlock : toBase64(transactionBlock),
+        typeof transactionBlock === "string" ? transactionBlock : toBase642(transactionBlock),
         Array.isArray(signature) ? signature : [signature],
         options
       ],
@@ -19844,7 +25642,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Return the delegated stakes for an address
   */
   async getStakes(input) {
-    if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner)))
+    if (!input.owner || !isValidSuiAddress2(normalizeSuiAddress2(input.owner)))
       throw new Error("Invalid Sui address");
     return await this.transport.request({
       method: "suix_getStakes",
@@ -19857,7 +25655,7 @@ var SuiJsonRpcClient = class extends BaseClient {
   */
   async getStakesByIds(input) {
     input.stakedSuiIds.forEach((id) => {
-      if (!id || !isValidSuiObjectId(normalizeSuiObjectId(id)))
+      if (!id || !isValidSuiObjectId(normalizeSuiObjectId2(id)))
         throw new Error(`Invalid Sui Stake id ${id}`);
     });
     return await this.transport.request({
@@ -19880,12 +25678,12 @@ var SuiJsonRpcClient = class extends BaseClient {
   * Get events for a given query criteria
   */
   async queryEvents({ query, cursor, limit, order, signal }) {
-    if (query && "MoveEventType" in query && hasMvrName(query.MoveEventType))
+    if (query && "MoveEventType" in query && hasMvrName2(query.MoveEventType))
       query = {
         ...query,
         MoveEventType: (await this.core.mvr.resolveType({ type: query.MoveEventType })).type
       };
-    if (query && "MoveEventModule" in query && isValidNamedPackage(query.MoveEventModule.package))
+    if (query && "MoveEventModule" in query && isValidNamedPackage2(query.MoveEventModule.package))
       query = {
         ...query,
         MoveEventModule: {
@@ -19893,7 +25691,7 @@ var SuiJsonRpcClient = class extends BaseClient {
           package: (await this.core.mvr.resolvePackage({ package: query.MoveEventModule.package })).package
         }
       };
-    if ("MoveModule" in query && isValidNamedPackage(query.MoveModule.package))
+    if ("MoveModule" in query && isValidNamedPackage2(query.MoveModule.package))
       query = {
         ...query,
         MoveModule: {
@@ -19919,16 +25717,16 @@ var SuiJsonRpcClient = class extends BaseClient {
   */
   async devInspectTransactionBlock(input) {
     let devInspectTxBytes;
-    if (isTransaction(input.transactionBlock)) {
+    if (isTransaction2(input.transactionBlock)) {
       input.transactionBlock.setSenderIfNotSet(input.sender);
-      devInspectTxBytes = toBase64(await input.transactionBlock.build({
+      devInspectTxBytes = toBase642(await input.transactionBlock.build({
         client: this,
         onlyTransactionKind: true
       }));
     } else if (typeof input.transactionBlock === "string")
       devInspectTxBytes = input.transactionBlock;
     else if (input.transactionBlock instanceof Uint8Array)
-      devInspectTxBytes = toBase64(input.transactionBlock);
+      devInspectTxBytes = toBase642(input.transactionBlock);
     else
       throw new Error("Unknown transaction block format.");
     input.signal?.throwIfAborted();
@@ -19949,14 +25747,14 @@ var SuiJsonRpcClient = class extends BaseClient {
   async dryRunTransactionBlock(input) {
     return await this.transport.request({
       method: "sui_dryRunTransactionBlock",
-      params: [typeof input.transactionBlock === "string" ? input.transactionBlock : toBase64(input.transactionBlock)]
+      params: [typeof input.transactionBlock === "string" ? input.transactionBlock : toBase642(input.transactionBlock)]
     });
   }
   /**
   * Return the list of dynamic field objects owned by an object
   */
   async getDynamicFields(input) {
-    if (!input.parentId || !isValidSuiObjectId(normalizeSuiObjectId(input.parentId)))
+    if (!input.parentId || !isValidSuiObjectId(normalizeSuiObjectId2(input.parentId)))
       throw new Error("Invalid Sui Object id");
     return await this.transport.request({
       method: "suix_getDynamicFields",
@@ -20100,7 +25898,7 @@ var SuiJsonRpcClient = class extends BaseClient {
     });
   }
   async getChainIdentifier({ signal } = {}) {
-    return toHex(fromBase58((await this.getCheckpoint({
+    return toHex2(fromBase582((await this.getCheckpoint({
       id: "0",
       signal
     })).digest).slice(0, 4));
@@ -20175,30 +25973,45 @@ var SuiJsonRpcClient = class extends BaseClient {
 
 // src/suiInterop.ts
 var grpcClient = null;
+var jsonRpcClient = null;
 var currentNetwork = null;
 var currentRpcUrl = null;
 var preferredWalletName = null;
-var currentApiBaseUrl = null;
-function init(network, rpcUrl, preferredWallet, apiBaseUrl) {
+function getChain(network) {
+  switch (network) {
+    case "testnet":
+      return SUI_TESTNET_CHAIN;
+    case "devnet":
+      return SUI_DEVNET_CHAIN;
+    case "mainnet":
+      return SUI_MAINNET_CHAIN;
+    case "localnet":
+      return SUI_LOCALNET_CHAIN;
+  }
+}
+function init(network, rpcUrl, preferredWallet) {
   currentNetwork = network;
   currentRpcUrl = rpcUrl;
   preferredWalletName = preferredWallet;
-  currentApiBaseUrl = apiBaseUrl;
   grpcClient = new SuiGrpcClient({
     network,
     baseUrl: rpcUrl
   });
+  jsonRpcClient = new SuiJsonRpcClient({
+    network,
+    url: rpcUrl
+  });
 }
 function requireInit() {
   if (!currentNetwork || !currentRpcUrl) {
-    throw new Error("suiInterop.init(network, rpcUrl) must be called before using Sui interop.");
+    throw new Error("suiInterop.init(network, rpcUrl, preferredWallet) must be called before using Sui interop.");
   }
   return {
     network: currentNetwork,
     rpcUrl: currentRpcUrl
   };
 }
-function c() {
+function GrpcClient() {
   if (!grpcClient) {
     const { network, rpcUrl } = requireInit();
     grpcClient = new SuiGrpcClient({
@@ -20208,45 +26021,33 @@ function c() {
   }
   return grpcClient;
 }
-function makeJsonRpcClient() {
-  const { network, rpcUrl } = requireInit();
-  return new SuiJsonRpcClient({
-    network,
-    url: rpcUrl
-  });
-}
-function requireApiBaseUrl() {
-  if (!currentApiBaseUrl) {
-    throw new Error("walletInterop.init(network, rpcUrl, preferredWallet, apiBaseUrl) must be called before API calls.");
+function JsonClient() {
+  if (!jsonRpcClient) {
+    const { network, rpcUrl } = requireInit();
+    jsonRpcClient = new SuiJsonRpcClient({
+      network,
+      url: rpcUrl
+    });
   }
-  return currentApiBaseUrl.endsWith("/") ? currentApiBaseUrl : `${currentApiBaseUrl}/`;
+  return jsonRpcClient;
 }
 function pickWallet(preferredName = preferredWalletName) {
   const wallets2 = getWallets().get();
   if (!wallets2.length) {
     throw new Error("No Sui wallets found.");
   }
+  const isCompatible = (w) => !!w.features[StandardConnect] && (!!w.features[SuiSignTransaction] || !!w.features[SuiSignAndExecuteTransaction]);
   const preferred = wallets2.find(
-    (w) => w.name === preferredName && !!w.features[StandardConnect] && !!w.features[SuiSignTransaction]
+    (w) => w.name === preferredName && isCompatible(w)
   );
   if (preferred)
     return preferred;
-  const compatible = wallets2.find(
-    (w) => !!w.features[StandardConnect] && !!w.features[SuiSignTransaction]
-  );
+  const compatible = wallets2.find(isCompatible);
   if (compatible)
     return compatible;
-  const legacy = wallets2.find(
-    (w) => !!w.features[StandardConnect] && !!w.features["sui:signTransactionBlock"]
-  );
-  if (legacy) {
-    throw new Error(
-      `Wallet "${legacy.name}" only exposes deprecated legacy signing (sui:signTransactionBlock).`
-    );
-  }
   const names = wallets2.map((w) => w.name).join(", ");
   throw new Error(
-    `No compatible wallet found. Detected: ${names}. Need standard:connect + sui:signTransaction.`
+    `No compatible wallet found. Detected: ${names}. Need standard:connect + sui signing feature.`
   );
 }
 async function getConnectedAccounts(wallet) {
@@ -20273,22 +26074,23 @@ function debugWalletFeatures() {
   return getWallets().get().map((w) => ({
     name: w.name,
     features: Object.keys(w.features),
-    accounts: (w.accounts ?? []).map((a) => a.address)
+    accounts: (w.accounts ?? []).map((a) => ({
+      address: a.address,
+      chains: a.chains
+    }))
   }));
 }
 async function getSuiBalance(owner) {
-  const result = await c().getBalance({
+  return await GrpcClient().getBalance({
     owner,
     coinType: "0x2::sui::SUI"
   });
-  return result;
 }
 async function getOwnedObjects(owner) {
-  const result = await c().listOwnedObjects({ owner });
-  return result;
+  return await GrpcClient().listOwnedObjects({ owner });
 }
 async function getObjectDump(objectId) {
-  const resp = await c().ledgerService.getObject({
+  const resp = await GrpcClient().ledgerService.getObject({
     objectId,
     readMask: {
       paths: [
@@ -20353,9 +26155,8 @@ async function findOwnedRoleCaps(args) {
   const wallet = pickWallet();
   const accounts = await getConnectedAccounts(wallet);
   const owner = accounts[0].address;
-  const client = makeJsonRpcClient();
   const typeString = `${args.packageId}::roles::RoleCap`;
-  const resp = await client.getOwnedObjects({
+  const resp = await JsonClient().getOwnedObjects({
     owner,
     filter: {
       StructType: typeString
@@ -20367,12 +26168,74 @@ async function findOwnedRoleCaps(args) {
   });
   return resp.data ?? [];
 }
+async function findOwnedObjectIdByType(args) {
+  const wallet = pickWallet();
+  const accounts = await getConnectedAccounts(wallet);
+  const owner = accounts[0].address;
+  const typeString = `${args.packageId}::${args.module}::${args.objectName}`;
+  const resp = await JsonClient().getOwnedObjects({
+    owner,
+    filter: {
+      StructType: typeString
+    },
+    options: {
+      showType: true
+    }
+  });
+  const obj = resp.data?.[0];
+  if (!obj?.data?.objectId) {
+    throw new Error(`No owned object of type ${typeString} found.`);
+  }
+  return obj.data.objectId;
+}
+async function signAndExecuteClientOnly(network, tx) {
+  const wallet = pickWallet();
+  const accounts = await getConnectedAccounts(wallet);
+  const chain3 = getChain(network);
+  const account = accounts.find((a) => a.chains.includes(chain3)) ?? accounts[0];
+  try {
+    tx.setSender(account.address);
+    if (wallet.features[SuiSignAndExecuteTransaction]) {
+      const result = await signAndExecuteTransaction(wallet, {
+        account,
+        chain: chain3,
+        transaction: tx
+      });
+      return {
+        success: true,
+        data: result
+      };
+    }
+    const signed = await signTransaction(wallet, {
+      account,
+      chain: chain3,
+      transaction: tx
+    });
+    const exec = await JsonClient().executeTransactionBlock({
+      transactionBlock: signed.bytes,
+      signature: signed.signature,
+      options: {
+        showRawEffects: true,
+        showEffects: true,
+        showObjectChanges: true,
+        showBalanceChanges: true
+      }
+    });
+    return {
+      success: true,
+      data: exec
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : String(err)
+    };
+  }
+}
 async function grantRole(args) {
   try {
-    console.log("grantRole args", args);
     const { network } = requireInit();
-    console.log("grantRole network", network);
-    const tx = new Transaction2();
+    const tx = new Transaction3();
     tx.moveCall({
       target: `${args.packageId}::roles::grant_role_as_high_executor`,
       arguments: [
@@ -20383,7 +26246,7 @@ async function grantRole(args) {
       ]
     });
     tx.setGasBudget(5e7);
-    return await signAndExecuteViaApi(network, tx);
+    return await signAndExecuteClientOnly(network, tx);
   } catch (err) {
     console.error("grantRole failed", err);
     throw err;
@@ -20391,10 +26254,8 @@ async function grantRole(args) {
 }
 async function revokeRole(args) {
   try {
-    console.log("revokeRole args", args);
     const { network } = requireInit();
-    console.log("revokeRole network", network);
-    const tx = new Transaction2();
+    const tx = new Transaction3();
     tx.moveCall({
       target: `${args.packageId}::roles::revoke_role_as_high_executor`,
       arguments: [
@@ -20404,7 +26265,7 @@ async function revokeRole(args) {
       ]
     });
     tx.setGasBudget(5e7);
-    return await signAndExecuteViaApi(network, tx);
+    return await signAndExecuteClientOnly(network, tx);
   } catch (err) {
     console.error("revokeRole failed", err);
     throw err;
@@ -20433,7 +26294,7 @@ function extractCreatedRoleCapId(txResult) {
 }
 async function setItemConfig(args) {
   const { network } = requireInit();
-  const tx = new Transaction2();
+  const tx = new Transaction3();
   tx.moveCall({
     target: `${args.packageId}::items::set_item_config_as_role_manager`,
     arguments: [
@@ -20447,11 +26308,11 @@ async function setItemConfig(args) {
     ]
   });
   tx.setGasBudget(5e7);
-  return await signAndExecuteViaApi(network, tx);
+  return await signAndExecuteClientOnly(network, tx);
 }
 async function removeItemConfig(args) {
   const { network } = requireInit();
-  const tx = new Transaction2();
+  const tx = new Transaction3();
   tx.moveCall({
     target: `${args.packageId}::items::remove_item_config_as_role_manager`,
     arguments: [
@@ -20461,79 +26322,11 @@ async function removeItemConfig(args) {
     ]
   });
   tx.setGasBudget(5e7);
-  return await signAndExecuteViaApi(network, tx);
-}
-async function findOwnedObjectIdByType(args) {
-  const wallet = pickWallet();
-  const accounts = await getConnectedAccounts(wallet);
-  const owner = accounts[0].address;
-  const client = makeJsonRpcClient();
-  const typeString = `${args.packageId}::${args.module}::${args.objectName}`;
-  const resp = await client.getOwnedObjects({
-    owner,
-    filter: {
-      StructType: typeString
-    },
-    options: {
-      showType: true
-    }
-  });
-  const obj = resp.data?.[0];
-  if (!obj?.data?.objectId) {
-    throw new Error(`No owned object of type ${typeString} found.`);
-  }
-  return obj.data.objectId;
-}
-async function signAndExecuteViaApi(network, tx) {
-  try {
-    const wallet = pickWallet();
-    const accounts = await getConnectedAccounts(wallet);
-    const account = accounts[0];
-    const signFeature = wallet.features[SuiSignTransaction];
-    if (!signFeature) {
-      return { success: false, error: "Wallet does not support sui:signTransaction" };
-    }
-    const signed = await signFeature.signTransaction({
-      account,
-      chain: `sui:${network}`,
-      transaction: tx
-    });
-    const apiBaseUrl = requireApiBaseUrl();
-    const response = await fetch(`${apiBaseUrl}api/sui/execute`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        network,
-        txBytesBase64: signed.bytes,
-        signaturesBase64: [signed.signature]
-      })
-    });
-    const text = await response.text();
-    if (!response.ok) {
-      let message = text;
-      try {
-        const problem = JSON.parse(text);
-        message = problem.detail ?? problem.title ?? text;
-      } catch {
-      }
-      return { success: false, error: message };
-    }
-    return {
-      success: true,
-      data: JSON.parse(text)
-    };
-  } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err)
-    };
-  }
+  return await signAndExecuteClientOnly(network, tx);
 }
 async function setResourceConfig(args) {
   const { network } = requireInit();
-  const tx = new Transaction2();
+  const tx = new Transaction3();
   tx.moveCall({
     target: `${args.packageId}::resources::set_resource_config`,
     arguments: [
@@ -20545,11 +26338,12 @@ async function setResourceConfig(args) {
       tx.pure.bool(args.enabled)
     ]
   });
-  return await signAndExecuteViaApi(network, tx);
+  tx.setGasBudget(5e7);
+  return await signAndExecuteClientOnly(network, tx);
 }
 async function setComplianceConfig(args) {
   const { network } = requireInit();
-  const tx = new Transaction2();
+  const tx = new Transaction3();
   tx.moveCall({
     target: `${args.packageId}::compliance::set_compliance_config`,
     arguments: [
@@ -20560,11 +26354,12 @@ async function setComplianceConfig(args) {
       tx.pure.u64(args.essentialMultiplier)
     ]
   });
-  return await signAndExecuteViaApi(network, tx);
+  tx.setGasBudget(5e7);
+  return await signAndExecuteClientOnly(network, tx);
 }
 async function setGateCostConfig(args) {
   const { network } = requireInit();
-  const tx = new Transaction2();
+  const tx = new Transaction3();
   tx.moveCall({
     target: `${args.packageId}::gate_costs::set_gate_cost_config`,
     arguments: [
@@ -20575,11 +26370,12 @@ async function setGateCostConfig(args) {
       tx.pure.u64(args.longRangeJumpCp)
     ]
   });
-  return await signAndExecuteViaApi(network, tx);
+  tx.setGasBudget(5e7);
+  return await signAndExecuteClientOnly(network, tx);
 }
 async function setFullItemConfig(args) {
   const { network } = requireInit();
-  const tx = new Transaction2();
+  const tx = new Transaction3();
   tx.moveCall({
     target: `${args.packageId}::resources::set_resource_config`,
     arguments: [
@@ -20601,7 +26397,8 @@ async function setFullItemConfig(args) {
       tx.pure.u64(args.essentialMultiplier)
     ]
   });
-  return await signAndExecuteViaApi(network, tx);
+  tx.setGasBudget(5e7);
+  return await signAndExecuteClientOnly(network, tx);
 }
 export {
   connectSui,
@@ -20626,6 +26423,12 @@ export {
   setResourceConfig
 };
 /*! Bundled license information:
+
+@scure/base/index.js:
+  (*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+
+@noble/hashes/utils.js:
+  (*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
 @scure/base/index.js:
   (*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) *)

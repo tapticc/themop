@@ -23,14 +23,14 @@
 		{
 			<div class="mop-boot-panel">
 				<div class="mop-login-title">
-					Ministry Authentication
+					Access Terminal
 				</div>
 
 				<div class="mop-login-subtitle">
-					Directive Access Terminal
+					MINISTRY OF PASSAGE
 				</div>
 
-				<div class="mop-boot-line">MINISTRY OF PASSAGE // AUTH TERMINAL</div>
+				<div class="mop-boot-line">AUTH TERMINAL</div>
 				<div class="mop-boot-line">SECURE LINK ESTABLISHED</div>
 				<div class="mop-boot-line">LOADING CITIZEN REGISTRY...</div>
 				<div class="mop-boot-line">VERIFYING CLEARANCE...</div>
@@ -44,11 +44,11 @@
 		{
 			<div class="mop-login-reveal">
 				<div class="mop-login-title">
-					Ministry Authentication
+					Ministry of Passage
 				</div>
 
 				<div class="mop-login-subtitle">
-					Directive Access Terminal
+					Access Terminal
 				</div>
 
 				<p class="eve-text-muted">
@@ -88,17 +88,10 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		var apiBaseUrl = Config["ApiSettings:BaseUrl"]
-			?? throw new Exception("ApiSettings:BaseUrl missing");
-
-		if (!apiBaseUrl.EndsWith("/"))
-			apiBaseUrl += "/";
-
 		await SuiInterop.InitAsync(
 			Network.Current.Network.ToString().ToLowerInvariant(),
 			Network.Current.RpcUrl,
-			Network.Current.PreferredWallet,
-			apiBaseUrl
+			Network.Current.PreferredWallet
 
 		);
 
@@ -111,17 +104,10 @@
 
 	private async void HandleNetworkChanged()
 	{
-		var apiBaseUrl = Config["ApiSettings:BaseUrl"]
-			?? throw new Exception("ApiSettings:BaseUrl missing");
-
-		if (!apiBaseUrl.EndsWith("/"))
-			apiBaseUrl += "/";
-
 		await SuiInterop.InitAsync(
 			Network.Current.Network.ToString().ToLowerInvariant(),
 			Network.Current.RpcUrl,
-			Network.Current.PreferredWallet,
-			apiBaseUrl
+			Network.Current.PreferredWallet
 
 		);
 

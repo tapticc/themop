@@ -42,52 +42,53 @@ public static class SuiEndpoints
             }
         });
 
-        app.MapPost("/api/sui/execute", async (ExecuteTxRequest body, SuiGrpcGateway gw) =>
-        {
-            if (string.IsNullOrWhiteSpace(body.TxBytesBase64))
-                return Results.BadRequest(new { title = "txBytesBase64 is required.", status = 400 });
+        //this was needed for localnet but moved to client grpc
+        //app.MapPost("/api/sui/execute", async (ExecuteTxRequest body, SuiGrpcGateway gw) =>
+        //{
+        //    if (string.IsNullOrWhiteSpace(body.TxBytesBase64))
+        //        return Results.BadRequest(new { title = "txBytesBase64 is required.", status = 400 });
 
-            if (body.SignaturesBase64 is null || body.SignaturesBase64.Count == 0)
-                return Results.BadRequest(new { title = "At least one signature is required.", status = 400 });
+        //    if (body.SignaturesBase64 is null || body.SignaturesBase64.Count == 0)
+        //        return Results.BadRequest(new { title = "At least one signature is required.", status = 400 });
 
-            try
-            {
-                var txBytes = Convert.FromBase64String(body.TxBytesBase64);
-                var sigs = body.SignaturesBase64.Select(Convert.FromBase64String).ToArray();
+        //    try
+        //    {
+        //        var txBytes = Convert.FromBase64String(body.TxBytesBase64);
+        //        var sigs = body.SignaturesBase64.Select(Convert.FromBase64String).ToArray();
 
-                var resp = await gw.ExecuteSignedTransactionAsync(body.Network, txBytes, sigs);
-                return Results.Ok(resp);
-            }
-            catch (FormatException ex)
-            {
-                return Results.BadRequest(new
-                {
-                    title = "Invalid base64 in request.",
-                    status = 400,
-                    detail = ex.Message
-                });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(
-                    title: "Transaction execution failed",
-                    detail: BuildExceptionDetails(ex),
-                    statusCode: 500);
-            }
-        });
+        //        var resp = await gw.ExecuteSignedTransactionAsync(body.Network, txBytes, sigs);
+        //        return Results.Ok(resp);
+        //    }
+        //    catch (FormatException ex)
+        //    {
+        //        return Results.BadRequest(new
+        //        {
+        //            title = "Invalid base64 in request.",
+        //            status = 400,
+        //            detail = ex.Message
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Results.Problem(
+        //            title: "Transaction execution failed",
+        //            detail: BuildExceptionDetails(ex),
+        //            statusCode: 500);
+        //    }
+        //});
 
-        static string BuildExceptionDetails(Exception ex)
-        {
-            var parts = new List<string>();
-            var current = ex;
+        //static string BuildExceptionDetails(Exception ex)
+        //{
+        //    var parts = new List<string>();
+        //    var current = ex;
 
-            while (current is not null)
-            {
-                parts.Add($"{current.GetType().Name}: {current.Message}");
-                current = current.InnerException;
-            }
+        //    while (current is not null)
+        //    {
+        //        parts.Add($"{current.GetType().Name}: {current.Message}");
+        //        current = current.InnerException;
+        //    }
 
-            return string.Join(" --> ", parts);
-        }
+        //    return string.Join(" --> ", parts);
+        //}
     }
 }

@@ -271,12 +271,12 @@ namespace Api.Services.GraphQL
             string? after,
             CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(_options.Packages.PlayerProfileObjectTypeId))
+            if (string.IsNullOrWhiteSpace(_options.Packages.World))
                 return new();
 
-            var PlayerProfileObjectTypeId = _options.Packages.PlayerProfileObjectTypeId;
+            var worldId = _options.Packages.World;
 
-            var characterType = $"{PlayerProfileObjectTypeId}::character::Character";
+            var characterType = $"{worldId}::character::Character";
 
             var result = await _graphql.SendAsync<KnownCharactersQueryResponse>(
                 SuiQueries.GetKnownCharactersPage,

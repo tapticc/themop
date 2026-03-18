@@ -1,9 +1,6 @@
 module the_mop::smart_storage;
 
-use std::option::{Self as option, Option};
-use std::vector;
 use sui::event;
-use sui::object::{Self as object, ID, UID};
 
 use the_mop::config::AdminCap;
 use the_mop::items::{Self as items, ItemConfigRegistry};

@@ -1,0 +1,558 @@
+{
+  "id": {
+    "address": "world",
+    "name": "status"
+  },
+  "doc": " This module manages the lifecycle of a assembly in the world.\n\n Basic AssemblyStatus are: Anchor, Unanchor/Destroy, Online and Offline assembly.\n AssemblyStatus is mutable by admin and the assembly owner using capabilities.",
+  "immediate_dependencies": [
+    {
+      "address": "sui",
+      "name": "event"
+    },
+    {
+      "address": "sui",
+      "name": "object"
+    },
+    {
+      "address": "world",
+      "name": "in_game_id"
+    }
+  ],
+  "attributes": [],
+  "functions": {
+    "status": {
+      "source_index": 0,
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "assembly_status",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "status"
+                  },
+                  "name": "AssemblyStatus",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "status"
+            },
+            "name": "Status",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "is_online": {
+      "source_index": 1,
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "assembly_status",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "status"
+                  },
+                  "name": "AssemblyStatus",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "return_": [
+        "bool"
+      ]
+    },
+    "anchor": {
+      "source_index": 2,
+      "index": 2,
+      "doc": " Anchors an assembly and returns an instance of the status",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": [
+        {
+          "Datatype": {
+            "module": {
+              "address": "world",
+              "name": "status"
+            },
+            "name": "AssemblyStatus",
+            "type_arguments": []
+          }
+        }
+      ]
+    },
+    "unanchor": {
+      "source_index": 3,
+      "index": 3,
+      "doc": " Unanchor an assembly",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "assembly_status",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "status"
+              },
+              "name": "AssemblyStatus",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    },
+    "online": {
+      "source_index": 4,
+      "index": 4,
+      "doc": " Online an assembly",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "assembly_status",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "status"
+                  },
+                  "name": "AssemblyStatus",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    },
+    "offline": {
+      "source_index": 5,
+      "index": 5,
+      "doc": " Offline an assembly",
+      "attributes": [],
+      "visibility": "Package",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "assembly_status",
+          "type_": {
+            "Reference": [
+              true,
+              {
+                "Datatype": {
+                  "module": {
+                    "address": "world",
+                    "name": "status"
+                  },
+                  "name": "AssemblyStatus",
+                  "type_arguments": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    },
+    "emit_status_changed": {
+      "source_index": 6,
+      "index": 6,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "status",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "status"
+              },
+              "name": "Status",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "action",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "status"
+              },
+              "name": "Action",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_id",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "sui",
+                "name": "object"
+              },
+              "name": "ID",
+              "type_arguments": []
+            }
+          }
+        },
+        {
+          "name": "assembly_key",
+          "type_": {
+            "Datatype": {
+              "module": {
+                "address": "world",
+                "name": "in_game_id"
+              },
+              "name": "TenantItemId",
+              "type_arguments": []
+            }
+          }
+        }
+      ],
+      "return_": []
+    }
+  },
+  "structs": {
+    "AssemblyStatus": {
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Store"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "status": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "status"
+                },
+                "name": "Status",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "StatusChangedEvent": {
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop"
+      ],
+      "type_parameters": [],
+      "fields": {
+        "positional_fields": false,
+        "fields": {
+          "assembly_id": {
+            "index": 0,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "sui",
+                  "name": "object"
+                },
+                "name": "ID",
+                "type_arguments": []
+              }
+            }
+          },
+          "assembly_key": {
+            "index": 1,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "in_game_id"
+                },
+                "name": "TenantItemId",
+                "type_arguments": []
+              }
+            }
+          },
+          "status": {
+            "index": 2,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "status"
+                },
+                "name": "Status",
+                "type_arguments": []
+              }
+            }
+          },
+          "action": {
+            "index": 3,
+            "doc": null,
+            "type_": {
+              "Datatype": {
+                "module": {
+                  "address": "world",
+                  "name": "status"
+                },
+                "name": "Action",
+                "type_arguments": []
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "enums": {
+    "Status": {
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop",
+        "Store"
+      ],
+      "type_parameters": [],
+      "variants": {
+        "NULL": {
+          "index": 0,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "OFFLINE": {
+          "index": 1,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "ONLINE": {
+          "index": 2,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        }
+      }
+    },
+    "Action": {
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "abilities": [
+        "Copy",
+        "Drop",
+        "Store"
+      ],
+      "type_parameters": [],
+      "variants": {
+        "ANCHORED": {
+          "index": 0,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "ONLINE": {
+          "index": 1,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "OFFLINE": {
+          "index": 2,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        },
+        "UNANCHORED": {
+          "index": 3,
+          "doc": null,
+          "fields": {
+            "positional_fields": false,
+            "fields": {}
+          }
+        }
+      }
+    }
+  }
+}

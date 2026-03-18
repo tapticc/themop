@@ -1,17 +1,23 @@
-﻿
-import { SuiGrpcClient } from "@mysten/sui/grpc";
-import {
+﻿import {
     getWallets,
+    signTransaction,
+    signAndExecuteTransaction,
+    type WalletWithRequiredFeatures,
+    SUI_TESTNET_CHAIN,
+    SUI_DEVNET_CHAIN,
+    SUI_MAINNET_CHAIN,
+    SUI_LOCALNET_CHAIN,
+    StandardConnect,
+    StandardConnectFeature,
+    SuiSignAndExecuteTransaction,
     SuiSignTransaction,
-    type SuiSignTransactionFeature,
 } from "@mysten/wallet-standard";
 import { Transaction } from "@mysten/sui/transactions";
-import {
-    StandardConnect,
-    type StandardConnectFeature,
-} from "@wallet-standard/features";
+import { fromBase64 } from "@mysten/sui/utils";
+
+import { type RoleId } from "./constants";
+import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
-import { Roles, RoleNames, AssignableRoles, type RoleId } from "./constants";
 
 // -------------------- Types --------------------
 
@@ -20,38 +26,50 @@ export type Network = "testnet" | "devnet" | "mainnet" | "localnet";
 type WalletList = ReturnType<ReturnType<typeof getWallets>["get"]>;
 type Wallet = WalletList[number];
 
-type CompatibleWallet = Wallet & {
-    features: Wallet["features"] & {
-        [StandardConnect]: StandardConnectFeature[typeof StandardConnect];
-        [SuiSignTransaction]: SuiSignTransactionFeature[typeof SuiSignTransaction];
-    };
-};
-
 // -------------------- Shared runtime state --------------------
 
 let grpcClient: SuiGrpcClient | null = null;
+let jsonRpcClient: SuiJsonRpcClient | null = null;
 let currentNetwork: Network | null = null;
 let currentRpcUrl: string | null = null;
 let preferredWalletName: string | null = null;
-let currentApiBaseUrl: string | null = null;
 
 // -------------------- Init / client access --------------------
 
-export function init(network: Network, rpcUrl: string, preferredWallet: string, apiBaseUrl: string) {
+function getChain(network: Network) {
+    switch (network) {
+        case "testnet":
+            return SUI_TESTNET_CHAIN;
+        case "devnet":
+            return SUI_DEVNET_CHAIN;
+        case "mainnet":
+            return SUI_MAINNET_CHAIN;
+        case "localnet":
+            return SUI_LOCALNET_CHAIN;
+    }
+}
+
+export function init(network: Network, rpcUrl: string, preferredWallet: string) {
     currentNetwork = network;
     currentRpcUrl = rpcUrl;
     preferredWalletName = preferredWallet;
-    currentApiBaseUrl = apiBaseUrl;
 
+    // Reads only:
     grpcClient = new SuiGrpcClient({
         network,
         baseUrl: rpcUrl,
+    });
+
+    // Transaction resolution / execution:
+    jsonRpcClient = new SuiJsonRpcClient({
+        network,
+        url: rpcUrl,
     });
 }
 
 function requireInit(): { network: Network; rpcUrl: string } {
     if (!currentNetwork || !currentRpcUrl) {
-        throw new Error("suiInterop.init(network, rpcUrl) must be called before using Sui interop.");
+        throw new Error("suiInterop.init(network, rpcUrl, preferredWallet) must be called before using Sui interop.");
     }
 
     return {
@@ -60,7 +78,7 @@ function requireInit(): { network: Network; rpcUrl: string } {
     };
 }
 
-function c(): SuiGrpcClient {
+function GrpcClient(): SuiGrpcClient {
     if (!grpcClient) {
         const { network, rpcUrl } = requireInit();
 
@@ -73,28 +91,21 @@ function c(): SuiGrpcClient {
     return grpcClient;
 }
 
-function makeJsonRpcClient(): SuiJsonRpcClient {
-    const { network, rpcUrl } = requireInit();
+function JsonClient(): SuiJsonRpcClient {
+    if (!jsonRpcClient) {
+        const { network, rpcUrl } = requireInit();
 
-    return new SuiJsonRpcClient({
-        network,
-        url: rpcUrl,
-    });
-}
-
-function requireApiBaseUrl(): string {
-    if (!currentApiBaseUrl) {
-        throw new Error("walletInterop.init(network, rpcUrl, preferredWallet, apiBaseUrl) must be called before API calls.");
+        jsonRpcClient = new SuiJsonRpcClient({
+            network,
+            url: rpcUrl,
+        });
     }
 
-    return currentApiBaseUrl.endsWith("/")
-        ? currentApiBaseUrl
-        : `${currentApiBaseUrl}/`;
+    return jsonRpcClient;
 }
 
 // -------------------- Wallet helpers --------------------
 
-//preferredWalletName comes from appsettings.json for localnet, testnet etc.
 export function pickWallet(preferredName = preferredWalletName): Wallet {
     const wallets = getWallets().get();
 
@@ -102,35 +113,24 @@ export function pickWallet(preferredName = preferredWalletName): Wallet {
         throw new Error("No Sui wallets found.");
     }
 
+    const isCompatible = (w: Wallet) =>
+        !!w.features[StandardConnect] &&
+        (
+            !!w.features[SuiSignTransaction] ||
+            !!w.features[SuiSignAndExecuteTransaction]
+        );
+
     const preferred = wallets.find(
-        (w) =>
-            w.name === preferredName &&
-            !!w.features[StandardConnect] &&
-            !!w.features[SuiSignTransaction],
+        (w) => w.name === preferredName && isCompatible(w),
     );
     if (preferred) return preferred;
 
-    const compatible = wallets.find(
-        (w) =>
-            !!w.features[StandardConnect] &&
-            !!w.features[SuiSignTransaction],
-    );
+    const compatible = wallets.find(isCompatible);
     if (compatible) return compatible;
-
-    const legacy = wallets.find(
-        (w) =>
-            !!w.features[StandardConnect] &&
-            !!w.features["sui:signTransactionBlock"],
-    );
-    if (legacy) {
-        throw new Error(
-            `Wallet "${legacy.name}" only exposes deprecated legacy signing (sui:signTransactionBlock).`,
-        );
-    }
 
     const names = wallets.map((w) => w.name).join(", ");
     throw new Error(
-        `No compatible wallet found. Detected: ${names}. Need standard:connect + sui:signTransaction.`,
+        `No compatible wallet found. Detected: ${names}. Need standard:connect + sui signing feature.`,
     );
 }
 
@@ -168,27 +168,28 @@ export function debugWalletFeatures() {
     return getWallets().get().map((w) => ({
         name: w.name,
         features: Object.keys(w.features),
-        accounts: (w.accounts ?? []).map((a) => a.address),
+        accounts: (w.accounts ?? []).map((a) => ({
+            address: a.address,
+            chains: a.chains,
+        })),
     }));
 }
 
-// -------------------- Read helpers --------------------
+// -------------------- Read helpers (gRPC only) --------------------
 
 export async function getSuiBalance(owner: string) {
-    const result = await c().getBalance({
+    return await GrpcClient().getBalance({
         owner,
         coinType: "0x2::sui::SUI",
     });
-    return result;
 }
 
 export async function getOwnedObjects(owner: string) {
-    const result = await c().listOwnedObjects({ owner });
-    return result;
+    return await GrpcClient().listOwnedObjects({ owner });
 }
 
 export async function getObjectDump(objectId: string) {
-    const resp = await c().ledgerService.getObject({
+    const resp = await GrpcClient().ledgerService.getObject({
         objectId,
         readMask: {
             paths: [
@@ -266,7 +267,7 @@ function pretty(v: any) {
     }
 }
 
-// -------------------- ROLES --------------------
+// -------------------- JSON-RPC lookup helpers --------------------
 
 export async function findOwnedRoleCaps(args: {
     packageId: string;
@@ -275,11 +276,9 @@ export async function findOwnedRoleCaps(args: {
     const accounts = await getConnectedAccounts(wallet);
     const owner = accounts[0].address;
 
-    const client = makeJsonRpcClient();
-
     const typeString = `${args.packageId}::roles::RoleCap`;
 
-    const resp = await client.getOwnedObjects({
+    const resp = await JsonClient().getOwnedObjects({
         owner,
         filter: {
             StructType: typeString,
@@ -293,6 +292,96 @@ export async function findOwnedRoleCaps(args: {
     return resp.data ?? [];
 }
 
+export async function findOwnedObjectIdByType(args: {
+    packageId: string;
+    module: string;
+    objectName: string;
+}) {
+    const wallet = pickWallet();
+    const accounts = await getConnectedAccounts(wallet);
+    const owner = accounts[0].address;
+
+    const typeString = `${args.packageId}::${args.module}::${args.objectName}`;
+
+    const resp = await JsonClient().getOwnedObjects({
+        owner,
+        filter: {
+            StructType: typeString,
+        },
+        options: {
+            showType: true,
+        },
+    });
+
+    const obj = resp.data?.[0];
+
+    if (!obj?.data?.objectId) {
+        throw new Error(`No owned object of type ${typeString} found.`);
+    }
+
+    return obj.data.objectId;
+}
+
+// -------------------- Signing / execution --------------------
+
+async function signAndExecuteClientOnly(network: Network, tx: Transaction) {
+    const wallet = pickWallet();
+    const accounts = await getConnectedAccounts(wallet);
+    const chain = getChain(network);
+
+    const account =
+        accounts.find((a) => a.chains.includes(chain)) ??
+        accounts[0];
+
+    try {
+        tx.setSender(account.address);
+
+        // Best path: wallet signs and executes.
+        if (wallet.features[SuiSignAndExecuteTransaction]) {
+            const result = await signAndExecuteTransaction(wallet, {
+                account,
+                chain,
+                transaction: tx,
+            });
+
+            return {
+                success: true,
+                data: result,
+            };
+        }
+
+        // Fallback path: wallet signs, app executes over JSON-RPC.
+        const signed = await signTransaction(wallet, {
+            account,
+            chain,
+            transaction: tx,
+        });
+
+        const exec = await JsonClient().executeTransactionBlock({
+            transactionBlock: signed.bytes,
+            signature: signed.signature,
+            options: {
+                showRawEffects: true,
+                showEffects: true,
+                showObjectChanges: true,
+                showBalanceChanges: true,
+            },
+        });
+
+        return {
+            success: true,
+            data: exec,
+        };
+    } catch (err) {
+        return {
+            success: false,
+            error: err instanceof Error ? err.message : String(err),
+        };
+    }
+}
+
+// -------------------- ROLES --------------------
+
 export async function grantRole(args: {
     packageId: string;
     roleRegistryId: string;
@@ -301,13 +390,9 @@ export async function grantRole(args: {
     grantee: string;
 }) {
     try {
-        console.log("grantRole args", args);
-
         const { network } = requireInit();
-        console.log("grantRole network", network);
 
         const tx = new Transaction();
-
         tx.moveCall({
             target: `${args.packageId}::roles::grant_role_as_high_executor`,
             arguments: [
@@ -320,9 +405,8 @@ export async function grantRole(args: {
 
         tx.setGasBudget(50_000_000);
 
-        return await signAndExecuteViaApi(network, tx);
-    }
-    catch (err) {
+        return await signAndExecuteClientOnly(network, tx);
+    } catch (err) {
         console.error("grantRole failed", err);
         throw err;
     }
@@ -335,12 +419,9 @@ export async function revokeRole(args: {
     roleCapId: string;
 }) {
     try {
-        console.log("revokeRole args", args);
         const { network } = requireInit();
-        console.log("revokeRole network", network);
 
         const tx = new Transaction();
-
         tx.moveCall({
             target: `${args.packageId}::roles::revoke_role_as_high_executor`,
             arguments: [
@@ -352,9 +433,8 @@ export async function revokeRole(args: {
 
         tx.setGasBudget(50_000_000);
 
-        return await signAndExecuteViaApi(network, tx);
-    }
-    catch (err) {
+        return await signAndExecuteClientOnly(network, tx);
+    } catch (err) {
         console.error("revokeRole failed", err);
         throw err;
     }
@@ -368,7 +448,7 @@ export async function getRoleCapId(args: {
 }) {
     throw new Error(
         "getRoleCapId requires a dev-inspect helper or service-layer query. " +
-        "For now, query roles via API/GraphQL or track the role cap from the grant transaction result."
+        "For now, query roles via API/GraphQL or track the role cap from the grant transaction result.",
     );
 }
 
@@ -379,7 +459,7 @@ export async function hasRole(args: {
     roleId: RoleId;
 }) {
     throw new Error(
-        "hasRole requires a Move read helper via dev-inspect or a service-layer GraphQL query."
+        "hasRole requires a Move read helper via dev-inspect or a service-layer GraphQL query.",
     );
 }
 
@@ -401,7 +481,7 @@ export function extractCreatedRoleCapId(txResult: any): string | null {
     return null;
 }
 
-// INVENTORY
+// -------------------- INVENTORY --------------------
 
 export async function setItemConfig(args: {
     packageId: string;
@@ -416,7 +496,6 @@ export async function setItemConfig(args: {
     const { network } = requireInit();
 
     const tx = new Transaction();
-
     tx.moveCall({
         target: `${args.packageId}::items::set_item_config_as_role_manager`,
         arguments: [
@@ -432,7 +511,7 @@ export async function setItemConfig(args: {
 
     tx.setGasBudget(50_000_000);
 
-    return await signAndExecuteViaApi(network, tx);
+    return await signAndExecuteClientOnly(network, tx);
 }
 
 export async function removeItemConfig(args: {
@@ -444,7 +523,6 @@ export async function removeItemConfig(args: {
     const { network } = requireInit();
 
     const tx = new Transaction();
-
     tx.moveCall({
         target: `${args.packageId}::items::remove_item_config_as_role_manager`,
         arguments: [
@@ -456,106 +534,7 @@ export async function removeItemConfig(args: {
 
     tx.setGasBudget(50_000_000);
 
-    return await signAndExecuteViaApi(network, tx);
-}
-
-// -------------------- JSON-RPC lookup helpers --------------------
-
-export async function findOwnedObjectIdByType(args: {
-    packageId: string;
-    module: string;
-    objectName: string;
-}) {
-    const wallet = pickWallet();
-    const accounts = await getConnectedAccounts(wallet);
-
-    const owner = accounts[0].address;
-    const client = makeJsonRpcClient();
-
-    const typeString = `${args.packageId}::${args.module}::${args.objectName}`;
-
-    const resp = await client.getOwnedObjects({
-        owner,
-        filter: {
-            StructType: typeString,
-        },
-        options: {
-            showType: true,
-        },
-    });
-
-    const obj = resp.data?.[0];
-
-    if (!obj?.data?.objectId) {
-        throw new Error(`No owned object of type ${typeString} found.`);
-    }
-
-    return obj.data.objectId;
-}
-
-// -------------------- sign transaction --------------------
-
-async function signAndExecuteViaApi(network: Network, tx: Transaction) {
-    try {
-        const wallet = pickWallet();
-        const accounts = await getConnectedAccounts(wallet);
-        const account = accounts[0];
-
-        const signFeature =
-            wallet.features[SuiSignTransaction] as
-            | SuiSignTransactionFeature[typeof SuiSignTransaction]
-            | undefined;
-
-        if (!signFeature) {
-            return { success: false, error: "Wallet does not support sui:signTransaction" };
-        }
-
-        const signed = await signFeature.signTransaction({
-            account,
-            chain: `sui:${network}`,
-            transaction: tx,
-        });
-
-        const apiBaseUrl = requireApiBaseUrl();
-
-        const response = await fetch(`${apiBaseUrl}api/sui/execute`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                network,
-                txBytesBase64: signed.bytes,
-                signaturesBase64: [signed.signature],
-            }),
-        });
-
-        const text = await response.text();
-
-        if (!response.ok) {
-            let message = text;
-
-            try {
-                const problem = JSON.parse(text);
-                message = problem.detail ?? problem.title ?? text;
-            } catch {
-                // keep raw text
-            }
-
-            return { success: false, error: message };
-        }
-
-        return {
-            success: true,
-            data: JSON.parse(text)
-        };
-    }
-    catch (err) {
-        return {
-            success: false,
-            error: err instanceof Error ? err.message : String(err)
-        };
-    }
+    return await signAndExecuteClientOnly(network, tx);
 }
 
 // -------------------- Move method calls --------------------
@@ -572,7 +551,6 @@ export async function setResourceConfig(args: {
     const { network } = requireInit();
 
     const tx = new Transaction();
-
     tx.moveCall({
         target: `${args.packageId}::resources::set_resource_config`,
         arguments: [
@@ -585,7 +563,9 @@ export async function setResourceConfig(args: {
         ],
     });
 
-    return await signAndExecuteViaApi(network, tx);
+    tx.setGasBudget(50_000_000);
+
+    return await signAndExecuteClientOnly(network, tx);
 }
 
 export async function setComplianceConfig(args: {
@@ -599,7 +579,6 @@ export async function setComplianceConfig(args: {
     const { network } = requireInit();
 
     const tx = new Transaction();
-
     tx.moveCall({
         target: `${args.packageId}::compliance::set_compliance_config`,
         arguments: [
@@ -611,7 +590,9 @@ export async function setComplianceConfig(args: {
         ],
     });
 
-    return await signAndExecuteViaApi(network, tx);
+    tx.setGasBudget(50_000_000);
+
+    return await signAndExecuteClientOnly(network, tx);
 }
 
 export async function setGateCostConfig(args: {
@@ -625,7 +606,6 @@ export async function setGateCostConfig(args: {
     const { network } = requireInit();
 
     const tx = new Transaction();
-
     tx.moveCall({
         target: `${args.packageId}::gate_costs::set_gate_cost_config`,
         arguments: [
@@ -637,7 +617,9 @@ export async function setGateCostConfig(args: {
         ],
     });
 
-    return await signAndExecuteViaApi(network, tx);
+    tx.setGasBudget(50_000_000);
+
+    return await signAndExecuteClientOnly(network, tx);
 }
 
 export async function setFullItemConfig(args: {
@@ -678,8 +660,9 @@ export async function setFullItemConfig(args: {
         ],
     });
 
-    return await signAndExecuteViaApi(network, tx);
-}
+    tx.setGasBudget(50_000_000);
 
+    return await signAndExecuteClientOnly(network, tx);
+}
 
 export { };

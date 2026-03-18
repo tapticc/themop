@@ -1,0 +1,115 @@
+{
+  "id": {
+    "address": "world",
+    "name": "sig_verify"
+  },
+  "doc": " # Signature Verification Module\n\n This module provides cryptographic signature verification functionality for validating\n off-chain signed messages on the Sui blockchain. It supports Ed25519 digital signature\n verification, enabling secure authentication of messages signed by external key pairs.\n\n ## Key Features\n - Derives Sui addresses from Ed25519 public keys\n - Verifies Ed25519 signatures against expected addresses\n - Validates message integrity using Sui's PersonalMessage intent protocol\n - Supports Sui's signature format (flag + signature + public key)\n\n ## Use Cases\n This module is essential for scenarios requiring proof of ownership or authorization,\n such as:\n - Verifying that a message was signed by a specific account holder\n - Authenticating off-chain actions before executing on-chain operations\n - Validating location proofs or other attestations signed externally\n\n ## Implementation Reference\n Based on the Sui off-chain message signing pattern described at:\n https://medium.com/@gfusee33/signing-sui-off-chain-messages-and-verifying-them-on-chain-using-move-e6c5108a04e7",
+  "immediate_dependencies": [
+    {
+      "address": "std",
+      "name": "vector"
+    },
+    {
+      "address": "sui",
+      "name": "address"
+    },
+    {
+      "address": "sui",
+      "name": "ed25519"
+    },
+    {
+      "address": "sui",
+      "name": "hash"
+    }
+  ],
+  "attributes": [],
+  "functions": {
+    "derive_address_from_public_key": {
+      "source_index": 0,
+      "index": 0,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "public_key",
+          "type_": {
+            "vector": "u8"
+          }
+        }
+      ],
+      "return_": [
+        "address"
+      ]
+    },
+    "verify_signature": {
+      "source_index": 1,
+      "index": 1,
+      "doc": null,
+      "attributes": [],
+      "visibility": "Public",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "message",
+          "type_": {
+            "vector": "u8"
+          }
+        },
+        {
+          "name": "signature",
+          "type_": {
+            "vector": "u8"
+          }
+        },
+        {
+          "name": "expected_address",
+          "type_": "address"
+        }
+      ],
+      "return_": [
+        "bool"
+      ]
+    },
+    "extract_bytes": {
+      "source_index": 2,
+      "index": 2,
+      "doc": " Extracts a slice of bytes from a vector within the specified range [start, end).\n\n # Returns\n A new vector containing the bytes from `start` to `end - 1`",
+      "attributes": [],
+      "visibility": "Private",
+      "entry": false,
+      "type_parameters": [],
+      "parameters": [
+        {
+          "name": "source",
+          "type_": {
+            "Reference": [
+              false,
+              {
+                "vector": "u8"
+              }
+            ]
+          }
+        },
+        {
+          "name": "start",
+          "type_": "u64"
+        },
+        {
+          "name": "end",
+          "type_": "u64"
+        }
+      ],
+      "return_": [
+        {
+          "vector": "u8"
+        }
+      ]
+    }
+  },
+  "structs": {},
+  "enums": {}
+}
