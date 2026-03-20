@@ -18,12 +18,15 @@
 			<RadzenMenu class="mop-menu">
 				<RadzenMenuItem Text="Dashboard" Path="/" Match="NavLinkMatch.All" />
 				<RadzenMenuItem Text="Styles Demo" Path="/styles-demo" />
+				<RadzenMenuItem Text="SSU Demo" Path="/storage/0x46dc4510debbfee4e3e02c998747f4c33043ce0097c10bb5f25b86251c800cde" />
+				<RadzenMenuItem Text="Inventory Demo" Path="/storage-inventory/0x46dc4510debbfee4e3e02c998747f4c33043ce0097c10bb5f25b86251c800cde" />
 				@if (AppState.RoleContext?.Permissions?.CanAssignRoles == true)
 				{
 					<RadzenMenuItem Text="Inventory Admin" Path="/admin-inventory" />
 					<RadzenMenuItem Text="Role Admin" Path="/admin-roles" />
 					<RadzenMenuItem Text="Character Search" Path="/character-search" />
 				}
+				<RadzenMenuItem Text="Reload" Click="ForceFullReload"/>
 			</RadzenMenu>
 		</div>
 	</RadzenHeader>
@@ -65,5 +68,10 @@
 	{
 		AppState.OnChange -= StateHasChanged;
 		Network.OnChanged -= HandleNetworkChanged;
+	}
+
+	private void ForceFullReload(MenuItemEventArgs args)
+	{
+		Nav.NavigateTo(Nav.Uri, forceLoad: true);
 	}
 }

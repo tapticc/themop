@@ -5,7 +5,10 @@ namespace Api.Services.Models
     public class PlayerProfileData
     {
         [JsonPropertyName("id")]
-        public string? Id { get; set; }
+        public string? PlayerProfileId { get; set; }
+
+        [JsonPropertyName("character_id")]
+        public string? CharacterId { get; set; }
 
         [JsonPropertyName("character_address")]
         public string? CharacterAddress { get; set; }

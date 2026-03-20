@@ -1,6 +1,7 @@
 ﻿@page "/login"
 @using Client.Models
 @using Client.Services
+@using System.Diagnostics
 @inject SuiWalletService WalletService
 @inject NavigationManager Nav
 @inject AppState AppState
@@ -156,6 +157,12 @@
 			AppState.SetWallet(WalletType.EveFrontier, _address);
 
 			var character = await Api.GetCharacterFromWalletAsync(_address);
+
+			// Debug.WriteLine($"CharacterId = {character.CharacterId}");
+			// Debug.WriteLine($"CharacterName = {character.CharacterName}");
+			// Debug.WriteLine($"PlayerProfileId = {character.PlayerProfileId}");
+			// Debug.WriteLine($"RawJson = {character.DebugData}");
+
 			AppState.SetCharacterSummary(character);
 
 			if (character is not null)

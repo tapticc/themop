@@ -7,5 +7,6 @@
         public string? CharacterName { get; set; }
         public string? OwnerCapId { get; set; }
         public string? PackageId { get; set; }
+        public string? DebugData { get; set; }
     }
 }

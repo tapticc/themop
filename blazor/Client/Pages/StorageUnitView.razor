@@ -1,0 +1,401 @@
+﻿@page "/storage/{AssemblyAddress}"
+@using Client.Models
+@using Client.Services
+@using Common.Storage
+@inject AppState AppState
+@inject Client.Services.WorldStorageService WorldStorageService
+@inject Client.Services.WorldStorageTxService WorldStorageTxService
+
+<PageTitle>Storage Unit</PageTitle>
+
+<h1>Storage Unit</h1>
+
+<p class="eve-text-muted">
+	Assembly address: <b>@AssemblyAddress</b>
+</p>
+<p class="eve-text-muted">
+	Character Id: <b>@AppState?.CharacterSummary?.CharacterId</b>
+</p>
+
+@if (!string.IsNullOrWhiteSpace(Error))
+{
+	<div class="alert alert-danger mt-3">
+		@Error
+	</div>
+}
+else if (IsLoading)
+{
+	<div class="mop-dossier mt-3">
+		<div class="mop-dossier-title">Loading</div>
+		<p class="eve-text-muted mb-0">Fetching storage unit details...</p>
+	</div>
+}
+else if (Storage is not null && Storage.Found)
+{
+	<div class="mop-section">
+		<div class="mop-dossier">
+			<div class="mop-dossier-title">Storage Actions</div>
+
+			<div class="d-flex gap-2 flex-wrap">
+				<RadzenButton Text="Online SSU"
+							  Click="@OnlineStorageUnit"
+							  Disabled="@IsBusy"
+							  class="mop-button-authority" />
+
+				<RadzenButton Text="Offline SSU"
+							  Click="@OfflineStorageUnit"
+							  Disabled="@IsBusy"
+							  class="mop-button-authority" />
+
+				<RadzenButton Text="Set Extension"
+							  Click="@SetExtension"
+							  Disabled="@IsBusy"
+							  class="mop-button-authority" />
+			</div>
+
+			<p class="eve-text-muted mt-3 mb-0">
+				Clear Extension is not supported by the current world contract. The extension can be overwritten with another witness type while not frozen, but not cleared to 0x0000....
+			</p>
+
+			@if (!string.IsNullOrWhiteSpace(ActionMessage))
+			{
+				<div class="mop-dossier mt-3">
+					<div class="mop-dossier-title">Action Status</div>
+					<p class="eve-text-muted mb-0">@ActionMessage</p>
+				</div>
+			}
+		</div>
+	</div>
+
+	<div class="mop-section">
+		<div class="mop-grid">
+			<div class="mop-dossier">
+				<div class="mop-dossier-title">Set Name</div>
+				<InputText @bind-Value="NewName" class="form-control" />
+				<div class="mt-3">
+					<RadzenButton Text="Set Name"
+								  Click="@SetName"
+								  Disabled="@IsBusy"
+								  class="mop-button-authority" />
+				</div>
+			</div>
+
+			<div class="mop-dossier">
+				<div class="mop-dossier-title">Set Description</div>
+				<InputText @bind-Value="NewDescription" class="form-control" />
+				<div class="mt-3">
+					<RadzenButton Text="Set Description"
+								  Click="@SetDescription"
+								  Disabled="@IsBusy"
+								  class="mop-button-authority" />
+				</div>
+			</div>
+
+			<div class="mop-dossier">
+				<div class="mop-dossier-title">Set URL</div>
+				<InputText @bind-Value="NewUrl" class="form-control" />
+				<div class="mt-3">
+					<RadzenButton Text="Set URL"
+								  Click="@SetUrl"
+								  Disabled="@IsBusy"
+								  class="mop-button-authority" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="mop-section">
+		<div class="mop-dossier">
+			<div class="mop-dossier-title">Storage Summary</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Object ID</div>
+				<div class="mop-dossier-value">@Storage.ObjectId</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Type</div>
+				<div class="mop-dossier-value">@Storage.Type</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Owner</div>
+				<div class="mop-dossier-value">@Storage.Owner</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Version</div>
+				<div class="mop-dossier-value">@Storage.Version</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Digest</div>
+				<div class="mop-dossier-value">@Storage.Digest</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Assembly Item ID</div>
+				<div class="mop-dossier-value">@Storage.AssemblyItemId</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Tenant</div>
+				<div class="mop-dossier-value">@Storage.Tenant</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Owner Cap ID</div>
+				<div class="mop-dossier-value">@Storage.OwnerCapId</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Type ID</div>
+				<div class="mop-dossier-value">@Storage.TypeId</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Energy Source</div>
+				<div class="mop-dossier-value">@Storage.EnergySourceId</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Extension</div>
+				<div class="mop-dossier-value">@Storage.ExtensionType</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Metadata Name</div>
+				<div class="mop-dossier-value">@Storage.MetadataName</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Metadata Description</div>
+				<div class="mop-dossier-value">@Storage.MetadataDescription</div>
+			</div>
+
+			<div class="mop-dossier-row">
+				<div class="mop-dossier-key">Metadata URL</div>
+				<div class="mop-dossier-value">@Storage.MetadataUrl</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="mop-section">
+		<div class="mop-dossier">
+			<div class="mop-dossier-title">Inventory Keys</div>
+
+			@if (Storage != null)
+			{
+				@if (Storage.InventoryKeys.Count == 0)
+				{
+					<p class="eve-text-muted mb-0">No inventory keys found.</p>
+				}
+				else
+				{
+					<ul class="mb-0">
+						@foreach (var key in Storage.InventoryKeys)
+						{
+							<li class="mop-dossier-value">@key</li>
+						}
+					</ul>
+				}
+			}
+		</div>
+	</div>
+
+	<div class="mop-grid">
+		<div class="mop-dossier">
+			<div class="mop-dossier-title">Status Raw</div>
+			<pre class="mop-json">@Storage?.StatusJson</pre>
+		</div>
+
+		<div class="mop-dossier">
+			<div class="mop-dossier-title">Location Raw</div>
+			<pre class="mop-json">@Storage?.LocationJson</pre>
+		</div>
+	</div>
+
+	<div class="mop-section">
+		<div class="mop-dossier">
+			<div class="mop-dossier-title">Raw Object Fields</div>
+			<pre class="mop-json">@Storage?.RawJson</pre>
+		</div>
+	</div>
+}
+
+@code {
+	[Parameter]
+	public string? AssemblyAddress { get; set; }
+
+	private StorageUnitDetails? Storage { get; set; }
+	private string? Error { get; set; }
+	private bool IsLoading { get; set; }
+	private bool IsBusy { get; set; }
+	private bool HasLoadedStorageUnit { get; set; }
+	private string? ActionMessage { get; set; }
+
+	private string NewName { get; set; } = string.Empty;
+	private string NewDescription { get; set; } = string.Empty;
+	private string NewUrl { get; set; } = string.Empty;
+
+	// protected override async Task OnParametersSetAsync()
+	// {
+	// 	await LoadStorageUnit();
+	// }
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender || HasLoadedStorageUnit == false)
+		{
+			await LoadStorageUnit();
+			HasLoadedStorageUnit = true;
+			StateHasChanged();
+		}
+	}
+
+	private async Task LoadStorageUnit()
+	{
+		Error = null;
+		Storage = null;
+		IsLoading = true;
+
+		try
+		{
+			if (string.IsNullOrWhiteSpace(AssemblyAddress))
+			{
+				Error = "Assembly address is required.";
+				return;
+			}
+
+			Storage = await WorldStorageService.GetStorageUnitAsync(AssemblyAddress);
+
+			if (Storage == null)
+			{
+				Error = "Storage unit is null.";
+			}
+
+			if (Storage is not null && !Storage.Found)
+			{
+				Error = Storage.Error ?? "Storage unit not found.";
+			}
+
+			if (Storage is not null && Storage.Found)
+			{
+				NewName = Storage.MetadataName;
+				NewDescription = Storage.MetadataDescription;
+				NewUrl = Storage.MetadataUrl;
+			}
+		}
+		catch (Exception ex)
+		{
+			Error = ex.Message;
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
+
+	private async Task OnlineStorageUnit()
+	{
+		if (Storage is null || AppState == null || AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null) return;
+
+		await RunAction(async () =>
+			await WorldStorageTxService.OnlineAsync(Storage.ObjectId, AppState.CharacterSummary.CharacterId, 
+				Storage.EnergySourceId, Storage.OwnerCapId),
+			"Storage unit brought online.");
+	}
+
+	private async Task OfflineStorageUnit()
+	{
+		if (Storage is null || AppState == null || AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null) return;
+
+		await RunAction(async () =>
+			await WorldStorageTxService.OfflineAsync(Storage.ObjectId, AppState.CharacterSummary.CharacterId, 
+				Storage.EnergySourceId, Storage.OwnerCapId),
+			"Storage unit brought offline.");
+	}
+
+	private async Task SetExtension()
+	{
+		if (Storage is null || AppState == null || AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null) return;
+
+		await RunAction(async () =>
+			await WorldStorageTxService.SetSmartStorageExtensionAsync(Storage.ObjectId, AppState.CharacterSummary.CharacterId, 
+				Storage.OwnerCapId),
+			"Extension set to SmartStorageAuth.");
+	}
+
+	private async Task SetName()
+	{
+		if (Storage is null || AppState == null || AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null) return;
+		// if (string.IsNullOrWhiteSpace(NewName))
+		// {
+		// 	ActionMessage = "Name is required.";
+		// 	return;
+		// }
+
+		await RunAction(async () =>
+			await WorldStorageTxService.SetNameAsync(Storage.ObjectId, AppState.CharacterSummary.CharacterId, 
+				Storage.OwnerCapId, NewName),
+			"Name updated.");
+	}
+
+	private async Task SetDescription()
+	{
+		if (Storage is null || AppState == null || AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null) return;
+		// if (string.IsNullOrWhiteSpace(NewDescription))
+		// {
+		// 	ActionMessage = "Description is required.";
+		// 	return;
+		// }
+
+		await RunAction(async () =>
+			await WorldStorageTxService.SetDescriptionAsync(Storage.ObjectId, AppState.CharacterSummary.CharacterId, 
+				Storage.OwnerCapId, NewDescription),
+			"Description updated.");
+	}
+
+	private async Task SetUrl()
+	{
+		if (Storage is null || AppState == null || AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null) return;
+		// if (string.IsNullOrWhiteSpace(NewUrl))
+		// {
+		// 	ActionMessage = "URL is required.";
+		// 	return;
+		// }
+
+		await RunAction(async () =>
+			await WorldStorageTxService.SetUrlAsync(Storage.ObjectId, AppState.CharacterSummary.CharacterId, 
+				Storage.OwnerCapId, NewUrl),
+			"URL updated.");
+	}
+
+	private async Task RunAction(Func<Task<TxResult>> action, string successMessage)
+	{
+		try
+		{
+			IsBusy = true;
+			ActionMessage = null;
+
+			var result = await action();
+
+			if (!result.Success)
+			{
+				ActionMessage = result.Error ?? "Action failed.";
+				return;
+			}
+
+			ActionMessage = successMessage;
+			await LoadStorageUnit();
+		}
+		catch (Exception ex)
+		{
+			ActionMessage = ex.Message;
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+}

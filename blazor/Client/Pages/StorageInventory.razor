@@ -1,0 +1,293 @@
+﻿@page "/storage-inventory/{AssemblyAddress}"
+@using Client.Models
+@using Client.Services
+@using Common.Storage
+@inject AppState AppState
+@inject Client.Services.StorageInventoryService StorageInventoryService
+@inject Client.Services.WorldStorageTxService WorldStorageTxService
+@inject Client.Services.SuiApiClient Api
+
+<PageTitle>Storage Inventory</PageTitle>
+
+<h1>Storage Inventory</h1>
+
+<p class="eve-text-muted">
+    Assembly address: <b>@AssemblyAddress</b>
+</p>
+
+@if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="alert alert-danger mt-3">
+        @Error
+    </div>
+}
+else if (IsLoading)
+{
+    <div class="mop-dossier mt-3">
+        <div class="mop-dossier-title">Loading</div>
+        <p class="eve-text-muted mb-0">Fetching storage inventories...</p>
+    </div>
+}
+else if (Inventory is not null && Inventory.Found)
+{
+    <div class="mop-grid">
+        <div class="mop-dossier">
+            <div class="mop-dossier-title">Extension Check</div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Smart Storage Extension</div>
+                <div class="mop-dossier-value">
+                    @(Inventory.HasSmartStorageExtension ? "Yes" : "No")
+                </div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Current Extension</div>
+                <div class="mop-dossier-value">@Inventory.ExtensionType</div>
+            </div>
+
+            @if (!Inventory.HasSmartStorageExtension)
+            {
+                <div class="mt-3">
+                    <RadzenButton Text="Set Extension"
+                                  Click="@SetExtension"
+                                  Disabled="@IsBusy"
+                                  class="mop-button-authority" />
+                </div>
+            }
+        </div>
+
+        <div class="mop-dossier">
+            <div class="mop-dossier-title">URL Check</div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Metadata URL</div>
+                <div class="mop-dossier-value">@Inventory.MetadataUrl</div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Is themop.dev</div>
+                <div class="mop-dossier-value">
+                    @(Inventory.HasThemopUrl ? "Yes" : "No")
+                </div>
+            </div>
+
+            @if (!Inventory.HasThemopUrl)
+            {
+                <div class="mt-3">
+                    <RadzenButton Text="Set URL to themop.dev"
+                                  Click="@SetUrl"
+                                  Disabled="@IsBusy"
+                                  class="mop-button-authority" />
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(ActionMessage))
+    {
+        <div class="mop-dossier mt-3">
+            <div class="mop-dossier-title">Action Status</div>
+            <p class="eve-text-muted mb-0">@ActionMessage</p>
+        </div>
+    }
+
+    <div class="mop-section">
+        <div class="mop-dossier">
+            <div class="mop-dossier-title">Inventory Keys</div>
+
+            <ul class="mb-0">
+                @foreach (var key in Inventory.InventoryKeys)
+                {
+                    <li class="mop-dossier-value">@key</li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    @foreach (var inv in Inventory.Inventories)
+    {
+        <div class="mop-section">
+            <div class="mop-dossier">
+                <div class="mop-dossier-title">@inv.Label</div>
+
+                <div class="mop-dossier-row">
+                    <div class="mop-dossier-key">Key</div>
+                    <div class="mop-dossier-value">@inv.Key</div>
+                </div>
+
+                <div class="mop-dossier-row">
+                    <div class="mop-dossier-key">Inventory Object ID</div>
+                    <div class="mop-dossier-value">@inv.InventoryObjectId</div>
+                </div>
+
+                <div class="mop-dossier-row">
+                    <div class="mop-dossier-key">Capacity</div>
+                    <div class="mop-dossier-value">@inv.UsedCapacity / @inv.MaxCapacity</div>
+                </div>
+
+                @if (inv.Items.Count == 0)
+                {
+                    <p class="eve-text-muted mt-3 mb-0">No items found.</p>
+                }
+                else
+                {
+                    <ul class="mb-0 mt-3">
+                        @foreach (var item in inv.Items)
+                        {
+                            <li class="mb-3">
+                                <div><b>Item ID:</b> @item.ItemId</div>
+                                <div><b>Quantity:</b> @item.Quantity</div>
+                                @if (!string.IsNullOrWhiteSpace(item.ObjectId))
+                                {
+                                    <div><b>Object ID:</b> @item.ObjectId</div>
+                                }
+                                <details class="mt-1">
+                                    <summary>Raw</summary>
+                                    <pre class="mop-json">@item.RawJson</pre>
+                                </details>
+                            </li>
+                        }
+                    </ul>
+
+                    <ul class="mb-0 mt-3">
+                        @foreach (var item in inv.Items)
+                        {
+                            <li class="mb-3">
+                                <div><b>Name:</b> @item.DisplayName</div>
+                                <div><b>Type ID:</b> @item.ItemId</div>
+                                <div><b>Quantity:</b> @item.Quantity</div>
+                                <div><b>Points Each:</b> @item.PointsPerUnit</div>
+                                <div><b>Total Points:</b> @item.TotalPoints</div>
+
+                                <details class="mt-1">
+                                    <summary>Raw</summary>
+                                    <pre class="mop-json">@item.RawJson</pre>
+                                </details>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public string? AssemblyAddress { get; set; }
+
+    private StorageInventoriesDetails? Inventory { get; set; }
+    private string? Error { get; set; }
+    private string? ActionMessage { get; set; }
+    private bool IsLoading { get; set; }
+    private bool IsBusy { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadInventory();
+    }
+
+    private async Task LoadInventory()
+    {
+        Error = null;
+        ActionMessage = null;
+        Inventory = null;
+        IsLoading = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(AssemblyAddress))
+            {
+                Error = "Assembly address is required.";
+                return;
+            }
+
+            if (AppState.CharacterSummary is null)
+            {
+                Error = "Character information is missing from AppState.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(AppState.CharacterSummary.OwnerCapId))
+            {
+                Error = "Character owner cap id is missing.";
+                return;
+            }
+
+            Inventory = await StorageInventoryService.GetInventoriesAsync(
+                AssemblyAddress,
+                AppState.CharacterSummary.OwnerCapId);
+
+            if (!Inventory.Found)
+            {
+                Error = Inventory.Error ?? "Inventory lookup failed.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task SetExtension()
+    {
+        if (AppState.CharacterSummary is null || string.IsNullOrWhiteSpace(AssemblyAddress)
+            || AppState.CharacterSummary.CharacterId == null || AppState.CharacterSummary.OwnerCapId == null)
+            return;
+
+        await RunAction(async () =>
+            await WorldStorageTxService.SetSmartStorageExtensionAsync(
+                AssemblyAddress,
+                AppState.CharacterSummary.CharacterId,
+                AppState.CharacterSummary.OwnerCapId),
+            "Extension set.");
+    }
+
+    private async Task SetUrl()
+    {
+        if (AppState.CharacterSummary is null || string.IsNullOrWhiteSpace(AssemblyAddress)
+            || AppState.CharacterSummary.CharacterId == null || AppState.CharacterSummary.OwnerCapId == null)
+            return;
+
+        await RunAction(async () =>
+            await WorldStorageTxService.SetUrlAsync(
+                AssemblyAddress,
+                AppState.CharacterSummary.CharacterId,
+                AppState.CharacterSummary.OwnerCapId,
+                "themop.dev"),
+            "URL updated.");
+    }
+
+    private async Task RunAction(Func<Task<TxResult>> action, string successMessage)
+    {
+        try
+        {
+            IsBusy = true;
+            ActionMessage = null;
+
+            var result = await action();
+
+            if (!result.Success)
+            {
+                ActionMessage = result.Error ?? "Action failed.";
+                return;
+            }
+
+            ActionMessage = successMessage;
+            await LoadInventory();
+        }
+        catch (Exception ex)
+        {
+            ActionMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+}

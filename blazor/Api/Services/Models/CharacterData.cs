@@ -4,8 +4,9 @@ namespace Api.Services.Models
 {
     public class CharacterData
     {
+        
         [JsonPropertyName("id")]
-        public string? Id { get; set; }
+        public string? CharacterId { get; set; }
 
         [JsonPropertyName("key")]
         public CharacterKey? Key { get; set; }

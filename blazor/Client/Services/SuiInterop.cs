@@ -1,13 +1,16 @@
 ﻿using Common.Inventory;
 using Common.Roles;
+using Common.Storage;
 using Microsoft.JSInterop;
 
 namespace Client.Services;
 
 public class SuiInterop(IJSRuntime js) : IAsyncDisposable
 {
+    private const string JsVersion = "20260320-2";
+
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
-        js.InvokeAsync<IJSObjectReference>("import", "./js/suiInterop.js").AsTask());
+        js.InvokeAsync<IJSObjectReference>("import", $"/js/suiInterop.js?v={JsVersion}").AsTask());
 
     public async Task InitAsync(string network, string rpcUrl, string preferredWallet)
     {
@@ -113,5 +116,66 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
     {
         var module = await _moduleTask.Value;
         return await module.InvokeAsync<TxResult>("removeItemConfig", request);
+    }
+
+    //STORAGE UNITS
+
+    public async Task<StorageUnitDetails> GetStorageUnitAsync(string storageUnitId)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<StorageUnitDetails>("getStorageUnit", storageUnitId);
+    }
+
+    public async Task<TxResult> OnlineStorageUnitAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("onlineStorageUnit", request);
+    }
+
+    public async Task<TxResult> OfflineStorageUnitAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("offlineStorageUnit", request);
+    }
+
+    public async Task<TxResult> AuthorizeSmartStorageExtensionAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("authorizeSmartStorageExtension", request);
+    }
+
+    public async Task<TxResult> UpdateStorageUnitNameAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("updateStorageUnitName", request);
+    }
+
+    public async Task<TxResult> UpdateStorageUnitDescriptionAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("updateStorageUnitDescription", request);
+    }
+
+    public async Task<TxResult> UpdateStorageUnitUrlAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("updateStorageUnitUrl", request);
+    }
+
+    public async Task<StorageInventoriesDetails> GetStorageInventoriesAsync(
+        string storageUnitId,
+        string characterOwnerCapId,
+        string theMopPackageId)
+    {
+        var module = await _moduleTask.Value;
+
+        return await module.InvokeAsync<StorageInventoriesDetails>(
+            "getStorageInventories",
+            new
+            {
+                storageUnitId,
+                characterOwnerCapId,
+                theMopPackageId
+            });
     }
 }

@@ -8,10 +8,11 @@ using System.Text.Json;
 
 namespace Api.Services.GraphQL
 {
-    public class SuiGraphQLService(GraphQLClient graphql, IOptions<SuiOptions> options)
+    public class SuiGraphQLService(GraphQLClient graphql, IOptions<SuiOptions> options, ILogger<SuiGraphQLService> logger)
     {
         private readonly GraphQLClient _graphql = graphql;
         private readonly SuiOptions _options = options.Value;
+        private readonly ILogger<SuiGraphQLService> _logger = logger;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -70,12 +71,12 @@ namespace Api.Services.GraphQL
                 return null;
 
             var profile = Deserialize<PlayerProfileData>(profileNode.AsMoveObject.Contents.Json.Value);
-            if (profile is null || string.IsNullOrWhiteSpace(profile.Id))
+            if (profile is null || string.IsNullOrWhiteSpace(profile.PlayerProfileId))
                 return null;
 
             var characterResult = await _graphql.SendAsync<CharacterQueryResponse>(
                 SuiQueries.GetCharacter,
-                new { id = profile.Id },
+                new { id = profile.CharacterId }, //Id is the player profile id and not the character id
                 cancellationToken);
 
             var characterNode = characterResult.Object;
@@ -88,11 +89,12 @@ namespace Api.Services.GraphQL
 
             return new CharacterSummary
             {
-                PlayerProfileId = profileNode.Address,
-                CharacterId = characterNode.Address,
+                PlayerProfileId = profile.PlayerProfileId,
+                CharacterId = character.CharacterId,
                 CharacterName = character.Metadata?.Name,
                 OwnerCapId = character.OwnerCapId,
-                PackageId = packageId
+                PackageId = packageId,
+                DebugData = profileNode?.AsMoveObject?.Contents?.Json.ToString()
             };
         }
 
@@ -296,7 +298,7 @@ namespace Api.Services.GraphQL
 
                     return new KnownCharacterSummary
                     {
-                        CharacterId = profile?.Id ?? "",
+                        CharacterId = profile?.PlayerProfileId ?? "",
                         CharacterAddress = profile?.CharacterAddress ?? "",
                         CharacterName = profile?.Metadata?.Name ?? "(Unnamed)"
                     };

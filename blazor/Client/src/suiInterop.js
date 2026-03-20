@@ -113,6 +113,36 @@ export function debugWalletFeatures() {
         })),
     }));
 }
+function extractOptionValue(value) {
+    if (value == null)
+        return null;
+    if (Array.isArray(value?.vec)) {
+        return value.vec.length > 0 ? value.vec[0] : null;
+    }
+    if (Array.isArray(value?.fields?.vec)) {
+        return value.fields.vec.length > 0 ? value.fields.vec[0] : null;
+    }
+    if (value.Some !== undefined)
+        return value.Some;
+    if (value.None !== undefined)
+        return null;
+    return value;
+}
+function normalizeOwner(owner) {
+    if (!owner)
+        return null;
+    if (typeof owner === "string")
+        return owner;
+    if (owner.AddressOwner)
+        return owner.AddressOwner;
+    if (owner.ObjectOwner)
+        return owner.ObjectOwner;
+    if (owner.Shared)
+        return "Shared";
+    if (owner.Immutable)
+        return "Immutable";
+    return JSON.stringify(owner);
+}
 // -------------------- Read helpers (gRPC only) --------------------
 export async function getSuiBalance(owner) {
     return await GrpcClient().getBalance({
@@ -451,4 +481,438 @@ export async function setFullItemConfig(args) {
     });
     tx.setGasBudget(50000000);
     return await signAndExecuteClientOnly(network, tx);
+}
+//******************** STORAGE ********************/
+export async function getStorageUnit(storageUnitId) {
+    try {
+        const client = JsonClient();
+        const result = await client.getObject({
+            id: storageUnitId,
+            options: {
+                showType: true,
+                showOwner: true,
+                showContent: true,
+            },
+        });
+        const data = result?.data;
+        if (!data) {
+            const err = result?.error;
+            let errorText = "Storage unit " + storageUnitId + " not found :(";
+            if (err) {
+                if ("code" in err) {
+                    errorText = `Object error: ${err.code}`;
+                    if ("object_id" in err && err.object_id) {
+                        errorText += ` (${err.object_id})`;
+                    }
+                }
+                else {
+                    errorText = JSON.stringify(err);
+                }
+            }
+            return {
+                found: false,
+                error: errorText,
+            };
+        }
+        const fields = data.content?.fields ?? {};
+        const metadata = extractOptionValue(fields.metadata);
+        const energySource = extractOptionValue(fields.energy_source_id);
+        const extension = extractOptionValue(fields.extension);
+        return {
+            found: true,
+            objectId: data.objectId ?? storageUnitId,
+            version: data.version?.toString?.() ?? "",
+            digest: data.digest ?? "",
+            type: data.type ?? "",
+            owner: normalizeOwner(data.owner),
+            assemblyItemId: fields?.key?.fields?.item_id ?? fields?.key?.item_id ?? "",
+            tenant: fields?.key?.fields?.tenant ?? fields?.key?.tenant ?? "",
+            ownerCapId: fields?.owner_cap_id ?? "",
+            typeId: fields?.type_id?.toString?.() ?? fields?.type_id ?? "",
+            statusJson: JSON.stringify(fields?.status ?? null, null, 2),
+            locationJson: JSON.stringify(fields?.location ?? null, null, 2),
+            metadataName: metadata?.fields?.name ?? metadata?.name ?? "",
+            metadataDescription: metadata?.fields?.description ?? metadata?.description ?? "",
+            metadataUrl: metadata?.fields?.url ?? metadata?.url ?? "",
+            energySourceId: energySource ?? "",
+            extensionType: extension
+                ? typeof extension === "string"
+                    ? extension
+                    : JSON.stringify(extension)
+                : "",
+            inventoryKeys: Array.isArray(fields?.inventory_keys) ? fields.inventory_keys : [],
+            rawJson: JSON.stringify(fields, null, 2),
+        };
+    }
+    catch (err) {
+        return {
+            found: false,
+            error: err instanceof Error ? err.message : String(err),
+        };
+    }
+}
+export async function onlineStorageUnit(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.setGasBudget(50000000);
+    console.log("storageUnitId", args.storageUnitId);
+    console.log("networkNodeId", args.networkNodeId);
+    console.log("energyConfigId", args.energyConfigId);
+    console.log("ownerCapId", args.ownerCapId);
+    const [storageOwnerCap, returnReceipt] = tx.moveCall({
+        target: `${args.worldPackageId}::character::borrow_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            tx.object(args.ownerCapId),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::storage_unit::online`,
+        arguments: [
+            tx.object(args.storageUnitId),
+            tx.object(args.networkNodeId),
+            tx.object(args.energyConfigId),
+            storageOwnerCap,
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::character::return_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            storageOwnerCap,
+            returnReceipt,
+        ],
+    });
+    return await signAndExecuteClientOnly(network, tx);
+}
+export async function offlineStorageUnit(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.setGasBudget(50000000);
+    console.log("storageUnitId", args.storageUnitId);
+    console.log("networkNodeId", args.networkNodeId);
+    console.log("energyConfigId", args.energyConfigId);
+    console.log("ownerCapId", args.ownerCapId);
+    const [storageOwnerCap, returnReceipt] = tx.moveCall({
+        target: `${args.worldPackageId}::character::borrow_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            tx.object(args.ownerCapId),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::storage_unit::offline`,
+        arguments: [
+            tx.object(args.storageUnitId),
+            tx.object(args.networkNodeId),
+            tx.object(args.energyConfigId),
+            storageOwnerCap,
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::character::return_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            storageOwnerCap,
+            returnReceipt,
+        ],
+    });
+    return await signAndExecuteClientOnly(network, tx);
+}
+export async function authorizeSmartStorageExtension(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.setGasBudget(50000000);
+    const [storageOwnerCap, returnReceipt] = tx.moveCall({
+        target: `${args.worldPackageId}::character::borrow_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            tx.object(args.ownerCapId),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::storage_unit::authorize_extension`,
+        typeArguments: [`${args.theMopPackageId}::smart_storage::SmartStorageAuth`],
+        arguments: [
+            tx.object(args.storageUnitId),
+            storageOwnerCap,
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::character::return_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            storageOwnerCap,
+            returnReceipt,
+        ],
+    });
+    return await signAndExecuteClientOnly(network, tx);
+}
+export async function updateStorageUnitName(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.setGasBudget(50000000);
+    const [storageOwnerCap, returnReceipt] = tx.moveCall({
+        target: `${args.worldPackageId}::character::borrow_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            tx.object(args.ownerCapId),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::storage_unit::update_metadata_name`,
+        arguments: [
+            tx.object(args.storageUnitId),
+            storageOwnerCap,
+            tx.pure.string(args.name),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::character::return_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            storageOwnerCap,
+            returnReceipt,
+        ],
+    });
+    return await signAndExecuteClientOnly(network, tx);
+}
+export async function updateStorageUnitDescription(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.setGasBudget(50000000);
+    const [storageOwnerCap, returnReceipt] = tx.moveCall({
+        target: `${args.worldPackageId}::character::borrow_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            tx.object(args.ownerCapId),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::storage_unit::update_metadata_description`,
+        arguments: [
+            tx.object(args.storageUnitId),
+            storageOwnerCap,
+            tx.pure.string(args.description),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::character::return_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            storageOwnerCap,
+            returnReceipt,
+        ],
+    });
+    return await signAndExecuteClientOnly(network, tx);
+}
+export async function updateStorageUnitUrl(args) {
+    const { network } = requireInit();
+    const tx = new Transaction();
+    tx.setGasBudget(50000000);
+    const [storageOwnerCap, returnReceipt] = tx.moveCall({
+        target: `${args.worldPackageId}::character::borrow_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            tx.object(args.ownerCapId),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::storage_unit::update_metadata_url`,
+        arguments: [
+            tx.object(args.storageUnitId),
+            storageOwnerCap,
+            tx.pure.string(args.url),
+        ],
+    });
+    tx.moveCall({
+        target: `${args.worldPackageId}::character::return_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+        arguments: [
+            tx.object(args.characterId),
+            storageOwnerCap,
+            returnReceipt,
+        ],
+    });
+    return await signAndExecuteClientOnly(network, tx);
+}
+function extractString(value) {
+    if (value == null)
+        return "";
+    if (typeof value === "string")
+        return value;
+    if (typeof value === "number" || typeof value === "bigint" || typeof value === "boolean") {
+        return String(value);
+    }
+    return JSON.stringify(value);
+}
+function tryGetField(fields, ...names) {
+    for (const name of names) {
+        if (fields && fields[name] !== undefined)
+            return fields[name];
+        if (fields?.fields && fields.fields[name] !== undefined)
+            return fields.fields[name];
+    }
+    return null;
+}
+function normalizeStorageMetadata(fields) {
+    const metadata = extractOptionValue(fields?.metadata);
+    const extension = extractOptionValue(fields?.extension);
+    return {
+        metadataUrl: metadata?.fields?.url ?? metadata?.url ?? "",
+        extensionType: extension
+            ? typeof extension === "string"
+                ? extension
+                : JSON.stringify(extension)
+            : "",
+    };
+}
+function normalizeInventoryLabel(key, storageOwnerCapId, characterOwnerCapId) {
+    if (key === storageOwnerCapId)
+        return "Main Inventory";
+    if (key === characterOwnerCapId)
+        return "Player Inventory";
+    return "Open Inventory";
+}
+async function loadInventoryItems(client, storageUnitId, inventoryKey) {
+    const inventoryObjectResult = await client.getDynamicFieldObject({
+        parentId: storageUnitId,
+        name: {
+            type: "0x2::object::ID",
+            value: inventoryKey,
+        },
+    });
+    const inventoryObjectData = inventoryObjectResult?.data;
+    if (!inventoryObjectData) {
+        return {
+            hasInventory: false,
+            inventoryObjectId: "",
+            items: [],
+        };
+    }
+    const inventoryObjectId = inventoryObjectData.objectId ??
+        inventoryObjectData.data?.objectId ??
+        "";
+    const dynamicFields = await client.getDynamicFields({
+        parentId: inventoryObjectId,
+    });
+    const items = [];
+    for (const entry of dynamicFields.data ?? []) {
+        const itemId = extractString(entry?.name?.value) ||
+            extractString(entry?.name);
+        const objectId = entry?.objectId ?? "";
+        let quantity = "";
+        let rawJson = "";
+        if (objectId) {
+            const obj = await client.getObject({
+                id: objectId,
+                options: {
+                    showContent: true,
+                },
+            });
+            const objData = obj?.data;
+            const fields = objData?.content?.fields ?? {};
+            quantity = extractString(tryGetField(fields, "quantity", "amount", "balance", "count"));
+            rawJson = JSON.stringify(fields, null, 2);
+        }
+        items.push({
+            itemId,
+            quantity,
+            objectId,
+            rawJson,
+        });
+    }
+    return {
+        hasInventory: true,
+        inventoryObjectId,
+        items,
+    };
+}
+export async function getStorageInventories(args) {
+    try {
+        const client = JsonClient();
+        const storageResult = await client.getObject({
+            id: args.storageUnitId,
+            options: {
+                showType: true,
+                showContent: true,
+            },
+        });
+        const storageData = storageResult?.data;
+        if (!storageData) {
+            return {
+                found: false,
+                error: "Storage unit not found.",
+            };
+        }
+        const storageFields = storageData.content?.fields ?? {};
+        const meta = normalizeStorageMetadata(storageFields);
+        const expectedExtension = `${args.theMopPackageId}::smart_storage::SmartStorageAuth`;
+        const storageOwnerCapId = extractString(storageFields?.owner_cap_id);
+        const dynamicFieldsResult = await client.getDynamicFields({
+            parentId: args.storageUnitId,
+        });
+        const inventories = [];
+        const inventoryKeys = [];
+        for (const entry of dynamicFieldsResult.data ?? []) {
+            const keyType = extractString(entry?.name?.type);
+            const keyValue = extractString(entry?.name?.value) ||
+                extractString(entry?.name);
+            if (!keyValue)
+                continue;
+            inventoryKeys.push(keyValue);
+            const obj = await client.getDynamicFieldObject({
+                parentId: args.storageUnitId,
+                name: {
+                    type: "0x2::object::ID",
+                    value: keyValue,
+                },
+            });
+            const data = obj?.data;
+            const contentFields = data?.content?.fields ?? {};
+            const itemsContents = contentFields?.value?.fields?.items?.fields?.contents ?? [];
+            const items = itemsContents.map((x) => ({
+                itemId: extractString(x?.fields?.value?.fields?.type_id ?? x?.key),
+                quantity: extractString(x?.fields?.value?.fields?.quantity),
+                objectId: extractString(x?.fields?.value?.fields?.item_id),
+                rawJson: JSON.stringify(x?.fields?.value ?? {}, null, 2),
+            }));
+            inventories.push({
+                key: keyValue,
+                label: normalizeInventoryLabel(keyValue, storageOwnerCapId, args.characterOwnerCapId),
+                hasInventory: true,
+                inventoryObjectId: "",
+                items,
+                usedCapacity: extractString(contentFields?.used_capacity),
+                maxCapacity: extractString(contentFields?.max_capacity),
+            });
+        }
+        return {
+            found: true,
+            hasSmartStorageExtension: meta.extensionType === expectedExtension,
+            hasThemopUrl: meta.metadataUrl === "themop.dev",
+            metadataUrl: meta.metadataUrl,
+            extensionType: meta.extensionType,
+            storageOwnerCapId,
+            inventoryKeys,
+            inventories,
+        };
+    }
+    catch (err) {
+        return {
+            found: false,
+            error: err instanceof Error ? err.message : String(err),
+        };
+    }
 }
