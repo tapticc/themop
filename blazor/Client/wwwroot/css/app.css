@@ -1287,3 +1287,148 @@ h1, h2, h3 {
     font-size: .85rem;
     color: var(--eve-text-muted);
 }
+
+.mop-receipt-shell {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 12px 10px 28px;
+}
+
+.mop-receipt-header {
+    border-bottom: 1px solid rgba(212,175,55,.25);
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+.mop-receipt-title {
+    color: var(--mop-gold);
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.mop-receipt-subtitle {
+    color: var(--eve-text-muted);
+    font-size: .78rem;
+    margin-top: 4px;
+    letter-spacing: .8px;
+}
+
+.mop-receipt-panel {
+    background: linear-gradient(180deg, rgba(18,24,38,.96), rgba(10,15,23,.96));
+    border: 1px solid rgba(212,175,55,.14);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.35);
+}
+
+.mop-receipt-warning {
+    border-color: rgba(255,180,120,.25);
+}
+
+.mop-receipt-warning-line {
+    color: #f2d6a6;
+    font-size: .88rem;
+    margin-bottom: 6px;
+}
+
+.mop-receipt-section-title {
+    color: var(--mop-gold);
+    font-size: .88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 10px;
+}
+
+.mop-receipt-muted {
+    color: var(--eve-text-muted);
+    font-size: .88rem;
+}
+
+.mop-receipt-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.mop-receipt-meta {
+    display: grid;
+    gap: 8px;
+}
+
+.mop-receipt-meta-row {
+    display: grid;
+    grid-template-columns: 108px 1fr;
+    gap: 10px;
+    font-size: .82rem;
+    border-bottom: 1px dashed rgba(255,255,255,.08);
+    padding-bottom: 6px;
+}
+
+    .mop-receipt-meta-row span:first-child {
+        color: var(--eve-text-muted);
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .mop-receipt-meta-row span:last-child {
+        color: var(--eve-text);
+        font-family: Consolas, "Courier New", monospace;
+        word-break: break-word;
+        text-align: right;
+    }
+
+.mop-ledger-table {
+    display: grid;
+    gap: 0;
+    border-top: 1px dashed rgba(212,175,55,.18);
+}
+
+.mop-ledger-head,
+.mop-ledger-row,
+.mop-ledger-foot {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 56px 56px;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.mop-ledger-head {
+    color: var(--eve-text-muted);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    border-bottom: 1px dashed rgba(255,255,255,.08);
+}
+
+.mop-ledger-row {
+    font-size: .88rem;
+    border-bottom: 1px dotted rgba(255,255,255,.06);
+}
+
+    .mop-ledger-row span:nth-child(2),
+    .mop-ledger-row span:nth-child(3),
+    .mop-ledger-head span:nth-child(2),
+    .mop-ledger-head span:nth-child(3),
+    .mop-ledger-foot span:nth-child(2),
+    .mop-ledger-foot span:nth-child(3) {
+        text-align: right;
+    }
+
+.mop-ledger-item {
+    color: var(--eve-text);
+}
+
+.mop-ledger-foot {
+    color: var(--mop-gold);
+    font-weight: 800;
+    border-top: 1px solid rgba(212,175,55,.18);
+    margin-top: 4px;
+    padding-top: 10px;
+}

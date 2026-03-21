@@ -11,13 +11,14 @@ namespace Client.Services
         private readonly SuiContractOptions _contracts = contracts.Value;
 
         public Task<StorageInventoriesDetails> GetInventoriesAsync(
-        string storageUnitId,
-        string characterOwnerCapId)
+            string storageUnitId,
+            string characterOwnerCapId)
         {
             return _interop.GetStorageInventoriesAsync(
                 storageUnitId,
                 characterOwnerCapId,
-                _contracts.TheMopPackageId);
+                _contracts.TheMopPackageId,
+                _contracts.WorldPackageId);
         }
     }
 }

@@ -29,6 +29,7 @@ builder.Services.Configure<SuiContractOptions>(builder.Configuration.GetSection(
 builder.Services.AddScoped<InventoryConfigTxService>();
 builder.Services.AddScoped<RoleTxService>();
 builder.Services.AddScoped<StorageInventoryService>();
+builder.Services.AddScoped<SmartStorageTxService>();
 builder.Services.AddScoped<WorldStorageService>();
 builder.Services.AddScoped<WorldStorageTxService>();
 

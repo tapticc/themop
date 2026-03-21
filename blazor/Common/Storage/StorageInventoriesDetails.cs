@@ -14,5 +14,6 @@
 
         public List<string> InventoryKeys { get; set; } = [];
         public List<StorageInventoryGroup> Inventories { get; set; } = [];
+        public string OpenInventoryKey { get; set; } = string.Empty;
     }
 }

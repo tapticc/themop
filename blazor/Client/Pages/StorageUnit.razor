@@ -1,0 +1,445 @@
+﻿@page "/storage/{AssemblyAddress}"
+@using Client.Models
+@using Client.Services
+@using Common.Storage
+@using System.Diagnostics
+@inject AppState AppState
+@inject Client.Services.StorageInventoryService StorageInventoryService
+@inject Client.Services.SuiApiClient Api
+@inject Client.Services.WorldStorageTxService WorldStorageTxService
+@inject Client.Services.WorldStorageService WorldStorageService
+@inject Client.Services.SmartStorageTxService SmartStorageTxService
+
+<PageTitle>Storage</PageTitle>
+
+<div class="mop-receipt-shell">
+    <div class="mop-receipt-header">
+        <div class="mop-receipt-title">Ministry Storage Ledger</div>
+        <div class="mop-receipt-subtitle">Assembly @ShortId(AssemblyAddress)</div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="alert alert-danger mt-3">
+            @Error
+        </div>
+    }
+    else if (IsLoading)
+    {
+        <div class="mop-receipt-panel">
+            <div class="mop-receipt-muted">Loading inventory ledger...</div>
+        </div>
+    }
+    else if (Inventory is not null)
+    {
+        @if (!Inventory.HasSmartStorageExtension || !Inventory.HasThemopUrl)
+        {
+            <div class="mop-receipt-panel mop-receipt-warning">
+                <div class="mop-receipt-section-title">Assembly Setup Required</div>
+
+                @if (!Inventory.HasSmartStorageExtension && CanManageStorage)
+                {
+                    <div class="mop-receipt-warning-line">
+                        Smart Storage extension is not set.
+                    </div>
+                }
+
+                @if ((!Inventory.HasSmartStorageExtension || !Inventory.HasThemopUrl) && !CanManageStorage)
+                {
+                    <div class="mop-receipt-panel mop-receipt-warning">
+                        <div class="mop-receipt-section-title">Assembly Configuration</div>
+                        <div class="mop-receipt-muted">
+                            This storage unit can only be configured by its owning character.
+                        </div>
+                    </div>
+                }
+
+                @if (!Inventory.HasThemopUrl)
+                {
+					<div class="mop-receipt-warning-line">
+						Metadata URL is not <b>themop.dev</b>.
+					</div>
+				}
+
+				<div class="mop-receipt-actions">
+					@if (!Inventory.HasSmartStorageExtension && CanManageStorage)
+					{
+						<RadzenButton Text="Set Extension"
+									  Click="@SetExtension"
+									  Disabled="@IsBusy"
+									  class="mop-button-authority" />
+					}
+
+					@if (!Inventory.HasThemopUrl)
+					{
+						<RadzenButton Text="Set URL"
+									  Click="@SetUrl"
+									  Disabled="@IsBusy"
+									  class="mop-button" />
+					}
+				</div>
+			</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(ActionMessage))
+        {
+            <div class="mop-receipt-panel">
+                <div class="mop-receipt-muted">@ActionMessage</div>
+            </div>
+        }
+
+        <div class="mop-receipt-panel">
+            <div class="mop-receipt-meta">
+                <div class="mop-receipt-meta-row">
+                    <span>Citizen</span>
+                    <span>@(AppState.CharacterSummary?.CharacterName ?? "Unknown")</span>
+                </div>
+                <div class="mop-receipt-meta-row">
+                    <span>Character</span>
+                    <span>@ShortId(AppState.CharacterSummary?.CharacterId)</span>
+                </div>
+                <div class="mop-receipt-meta-row">
+                    <span>Inventory Key</span>
+                    <span>@ShortId(AppState.CharacterSummary?.OwnerCapId)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mop-receipt-panel">
+            <div class="mop-receipt-section-title">
+                @(IsOwnerView ? "Open Inventory Ledger" : "Deposited Inventory")
+            </div>
+
+            <div class="mop-ledger-table">
+                <div class="mop-ledger-head">
+                    <span>Item</span>
+                    <span>Qty</span>
+                    <span>Pts</span>
+                </div>
+
+                @foreach (var row in Rows)
+                {
+                    <div class="mop-ledger-row">
+                        <span class="mop-ledger-item">
+                            @row.DisplayName
+                        </span>
+                        <span>@row.Quantity</span>
+                        <span>@row.TotalPoints</span>
+                    </div>
+                }
+
+                <div class="mop-ledger-foot">
+                    <span>Totals</span>
+                    <span>@TotalQuantity</span>
+                    <span>@TotalPoints</span>
+                </div>
+            </div>
+
+            <div class="mop-receipt-panel">
+                <div class="mop-receipt-section-title">
+                    @(IsOwnerView ? "Owner Transfer" : "Submission")
+                </div>
+
+                <div class="mop-receipt-meta-row">
+                    <span>Depositable Qty</span>
+                    <span>@TotalQuantity</span>
+                </div>
+
+                <div class="mop-receipt-meta-row">
+                    <span>Depositable Points</span>
+                    <span>@TotalPoints</span>
+                </div>
+
+                <div class="mop-receipt-actions">
+                    @if (IsOwnerView)
+                    {
+                        <RadzenButton Text="Transfer Open Inventory to Main"
+                                      Click="@TransferOpenToMain"
+                                      Disabled="@(!HasDepositableItems || IsBusy || Inventory is null || !Inventory.HasSmartStorageExtension)"
+                                      class="mop-button-authority" />
+                    }
+                    else
+                    {
+                        <RadzenButton Text="Submit Items to Open Inventory"
+                                      Click="@SubmitItemsToOpenInventory"
+                                      Disabled="@(!HasDepositableItems || IsBusy || Inventory is null || !Inventory.HasSmartStorageExtension)"
+                                      class="mop-button-authority" />
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? AssemblyAddress { get; set; }
+
+    private StorageInventoriesDetails? Inventory { get; set; }
+    private StorageUnitDetails? Storage { get; set; }
+
+    private string? Error { get; set; }
+    private string? ActionMessage { get; set; }
+    private bool IsLoading { get; set; }
+    private bool IsBusy { get; set; }
+
+    private List<LedgerRow> Rows { get; set; } = new();
+
+    private long TotalQuantity => Rows.Sum(x => x.Quantity);
+    private long TotalPoints => Rows.Sum(x => x.TotalPoints);
+
+    private bool CanManageStorage => Storage is not null 
+        && AppState.CharacterSummary is not null 
+        && string.Equals(Storage.OwnerCharacterId, AppState.CharacterSummary.CharacterId, StringComparison.OrdinalIgnoreCase);       
+
+    private bool IsOwnerView =>
+        Storage is not null &&
+        AppState.CharacterSummary is not null &&
+        !string.IsNullOrWhiteSpace(Storage.OwnerCharacterId) &&
+        !string.IsNullOrWhiteSpace(AppState.CharacterSummary.CharacterId) &&
+        string.Equals(
+            Storage.OwnerCharacterId,
+            AppState.CharacterSummary.CharacterId,
+            StringComparison.OrdinalIgnoreCase);
+
+    private bool HasDepositableItems => Rows.Any(x => x.Quantity > 0);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadView();
+    }
+
+    private async Task LoadView()
+    {
+        Error = null;
+        ActionMessage = null;
+        Inventory = null;
+        Storage = null;
+        Rows = [];
+        IsLoading = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(AssemblyAddress))
+            {
+                Error = "Assembly address is required.";
+                return;
+            }
+
+            if (AppState.CharacterSummary is null)
+            {
+                Error = "Character information is missing from AppState.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(AppState.CharacterSummary.OwnerCapId))
+            {
+                Error = "Character owner cap id is missing.";
+                return;
+            }
+
+            Storage = await WorldStorageService.GetStorageUnitAsync(AssemblyAddress);
+            if (Storage is null || !Storage.Found)
+            {
+                Error = Storage?.Error ?? "Storage unit lookup failed.";
+                return;
+            }
+
+            Inventory = await StorageInventoryService.GetInventoriesAsync(
+                AssemblyAddress,
+                AppState.CharacterSummary.OwnerCapId);
+
+            if (!Inventory.Found)
+            {
+                Error = Inventory.Error ?? "Inventory lookup failed.";
+                return;
+            }
+
+            var targetInventoryKey = IsOwnerView
+                ? Inventory.OpenInventoryKey
+                : AppState.CharacterSummary.OwnerCapId;
+
+            var targetInventory = Inventory.Inventories
+                .FirstOrDefault(x => x.Key == targetInventoryKey);
+
+            var quantitiesByType = new Dictionary<long, long>();
+
+            if (targetInventory is not null)
+            {
+                foreach (var item in targetInventory.Items)
+                {
+                    if (!long.TryParse(item.ItemId, out var typeId))
+                        continue;
+
+                    var qty = long.TryParse(item.Quantity, out var parsedQty)
+                        ? parsedQty
+                        : 0;
+
+                    quantitiesByType[typeId] = qty;
+                }
+            }
+
+            var configs = await Api.GetItemConfigsAsync();
+
+            Rows = configs
+                .OrderBy(x => x.DisplayName)
+                .Select(cfg =>
+                {
+                    var qty = quantitiesByType.TryGetValue(cfg.ItemId, out var q) ? q : 0;
+                    var pointsEach = (long)cfg.CompliancePoints;
+
+                    return new LedgerRow
+                    {
+                        ItemTypeId = (long)cfg.ItemId,
+                        DisplayName = cfg.DisplayName,
+                        Quantity = qty,
+                        PointsEach = pointsEach,
+                        TotalPoints = pointsEach * qty
+                    };
+                })
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task SetExtension()
+    {
+        if (Storage is null || AppState == null || AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null) return;
+
+        await RunAction(async () =>
+            await WorldStorageTxService.SetSmartStorageExtensionAsync(Storage.ObjectId, AppState.CharacterSummary.CharacterId,
+                Storage.OwnerCapId),
+            "Extension set to SmartStorageAuth.");
+    }
+
+    private async Task SetUrl()
+    {
+        if (AppState.CharacterSummary is null || string.IsNullOrWhiteSpace(AssemblyAddress)
+            || AppState.CharacterSummary.CharacterId == null || AppState.CharacterSummary.OwnerCapId == null)
+            return;
+
+        await RunAction(async () =>
+            await WorldStorageTxService.SetUrlAsync(
+                AssemblyAddress,
+                AppState.CharacterSummary.CharacterId,
+                AppState.CharacterSummary.OwnerCapId,
+                "themop.dev"),
+            "URL updated.");
+    }
+
+    private async Task TransferOpenToMain()
+    {
+        if (AppState.CharacterSummary is null || string.IsNullOrWhiteSpace(AssemblyAddress) 
+            || string.IsNullOrWhiteSpace(AppState.WalletAddress) || AppState.CharacterSummary.CharacterId == null)
+            return;
+
+        var itemIds = Rows
+            .Where(x => x.Quantity > 0)
+            .Select(x => x.ItemTypeId)
+            .ToList();
+
+        var quantities = Rows
+            .Where(x => x.Quantity > 0)
+            .Select(x => x.Quantity)
+            .ToList();
+
+        if (itemIds.Count == 0)
+        {
+            ActionMessage = "No configured items available in open inventory.";
+            return;
+        }
+
+        await RunAction(async () =>
+            await SmartStorageTxService.MoveOpenItemsToMainAsync(
+                AssemblyAddress,
+                AppState.CharacterSummary.CharacterId,
+                AppState.WalletAddress,
+                itemIds,
+                quantities),
+            "Open inventory transferred to main inventory.");
+    }
+
+    private async Task SubmitItemsToOpenInventory()
+    {
+        if (AppState.CharacterSummary is null || string.IsNullOrWhiteSpace(AssemblyAddress)
+            || AppState.CharacterSummary.CharacterId == null || AppState.CharacterSummary.OwnerCapId == null)
+            return;
+
+        var itemIds = Rows
+            .Where(x => x.Quantity > 0)
+            .Select(x => x.ItemTypeId)
+            .ToList();
+
+        var quantities = Rows
+            .Where(x => x.Quantity > 0)
+            .Select(x => x.Quantity)
+            .ToList();
+
+        if (itemIds.Count == 0)
+        {
+            ActionMessage = "No configured items available to submit.";
+            return;
+        }
+
+        await RunAction(async () =>
+            await SmartStorageTxService.DepositConfiguredItemsToOpenAsync(
+                AssemblyAddress,
+                AppState.CharacterSummary.CharacterId,
+                AppState.CharacterSummary.OwnerCapId,
+                itemIds,
+                quantities),
+            "Items submitted to open inventory.");
+    }
+
+    private async Task RunAction(Func<Task<TxResult>> action, string successMessage)
+    {
+        try
+        {
+            IsBusy = true;
+            ActionMessage = null;
+
+            var result = await action();
+
+            if (!result.Success)
+            {
+                ActionMessage = result.Error ?? "Action failed.";
+                return;
+            }
+
+            ActionMessage = successMessage;
+            await LoadView();
+        }
+        catch (Exception ex)
+        {
+            ActionMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private static string ShortId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length < 14)
+            return value ?? "";
+
+        return $"{value[..8]}...{value[^6..]}";
+    }
+
+    private class LedgerRow
+    {
+        public long ItemTypeId { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
+        public long Quantity { get; set; }
+        public long PointsEach { get; set; }
+        public long TotalPoints { get; set; }
+    }
+}

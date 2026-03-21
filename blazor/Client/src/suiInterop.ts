@@ -14,6 +14,7 @@
 } from "@mysten/wallet-standard";
 import { Transaction } from "@mysten/sui/transactions";
 import { fromBase64 } from "@mysten/sui/utils";
+import { bcs } from "@mysten/sui/bcs";
 
 import { type RoleId } from "./constants";
 import { SuiGrpcClient } from "@mysten/sui/grpc";
@@ -105,6 +106,21 @@ function JsonClient(): SuiJsonRpcClient {
 }
 
 // -------------------- Wallet helpers --------------------
+
+export async function getCurrentAddress(): Promise<string | null> {
+    try {
+        const wallet = pickWallet("Eve Vault");
+
+        if (wallet === null) {
+            throw new Error("No Sui wallets found.");
+        }
+
+        return wallet.accounts[0].address ?? null;
+    }
+    catch {
+        return null;
+    }
+}
 
 export function pickWallet(preferredName = preferredWalletName): Wallet {
     const wallets = getWallets().get();
@@ -567,7 +583,7 @@ export async function removeItemConfig(args: {
     return await signAndExecuteClientOnly(network, tx);
 }
 
-// -------------------- Move method calls --------------------
+// -------------------- RESOURCES --------------------
 
 export async function setResourceConfig(args: {
     packageId: string;
@@ -739,6 +755,28 @@ export async function getStorageUnit(storageUnitId: string) {
         const energySource = extractOptionValue(fields.energy_source_id);
         const extension = extractOptionValue(fields.extension);
 
+        let ownerCharacterId = "";
+
+        if (fields?.owner_cap_id) {
+            const ownerCapResult = await client.getObject({
+                id: fields.owner_cap_id,
+                options: {
+                    showOwner: true,
+                },
+            });
+
+            const ownerCapData: any = ownerCapResult?.data;
+            const owner = ownerCapData?.owner;
+
+            if (owner?.AddressOwner) {
+                ownerCharacterId = owner.AddressOwner;
+            } else if (owner?.ObjectOwner) {
+                ownerCharacterId = owner.ObjectOwner;
+            } else if (typeof owner === "string") {
+                ownerCharacterId = owner;
+            }
+        }
+
         return {
             found: true,
             objectId: data.objectId ?? storageUnitId,
@@ -763,6 +801,7 @@ export async function getStorageUnit(storageUnitId: string) {
                 : "",
             inventoryKeys: Array.isArray(fields?.inventory_keys) ? fields.inventory_keys : [],
             rawJson: JSON.stringify(fields, null, 2),
+            ownerCharacterId: ownerCharacterId
         };
     } catch (err) {
         return {
@@ -1042,6 +1081,57 @@ export async function updateStorageUnitUrl(args: {
     return await signAndExecuteClientOnly(network, tx);
 }
 
+export async function depositConfiguredItemsToOpen(args: {
+    theMopPackageId: string;
+    worldPackageId: string;
+    smartStorageRegistryId: string;
+    itemConfigRegistryId: string;
+    storageUnitId: string;
+    characterId: string;
+    characterOwnerCapId: string;
+    itemIds: number[];
+    quantities: number[];
+}) {
+    const { network } = requireInit();
+
+    const tx = new Transaction();
+    tx.setGasBudget(50_000_000);
+
+    const [characterOwnerCap, returnReceipt] = tx.moveCall({
+        target: `${args.worldPackageId}::character::borrow_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::character::Character`],
+        arguments: [
+            tx.object(args.characterId),
+            tx.object(args.characterOwnerCapId),
+        ],
+    });
+
+    tx.moveCall({
+        target: `${args.theMopPackageId}::smart_storage::move_configured_player_items_to_open`,
+        arguments: [
+            tx.object(args.smartStorageRegistryId),
+            tx.object(args.itemConfigRegistryId),
+            tx.object(args.storageUnitId),
+            tx.object(args.characterId),
+            characterOwnerCap,
+            tx.pure.vector("u64", args.itemIds),
+            tx.pure.vector("u32", args.quantities),
+        ],
+    });
+
+    tx.moveCall({
+        target: `${args.worldPackageId}::character::return_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::character::Character`],
+        arguments: [
+            tx.object(args.characterId),
+            characterOwnerCap,
+            returnReceipt,
+        ],
+    });
+
+    return await signAndExecuteClientOnly(network, tx);
+}
+
 function extractString(value: any): string {
     if (value == null) return "";
     if (typeof value === "string") return value;
@@ -1059,28 +1149,50 @@ function tryGetField(fields: any, ...names: string[]): any {
     return null;
 }
 
+function normalizeTypeName(value: any): string {
+    if (!value) return "";
+
+    if (typeof value === "string") {
+        try {
+            const parsed = JSON.parse(value);
+
+            if (parsed?.fields?.name) {
+                return String(parsed.fields.name);
+            }
+        } catch {
+            return value;
+        }
+
+        return value;
+    }
+
+    if (value?.fields?.name) {
+        return String(value.fields.name);
+    }
+
+    return JSON.stringify(value);
+}
+
 function normalizeStorageMetadata(fields: any) {
     const metadata = extractOptionValue(fields?.metadata);
     const extension = extractOptionValue(fields?.extension);
 
     return {
         metadataUrl: metadata?.fields?.url ?? metadata?.url ?? "",
-        extensionType: extension
-            ? typeof extension === "string"
-                ? extension
-                : JSON.stringify(extension)
-            : "",
+        extensionType: normalizeTypeName(extension),
     };
 }
 
 function normalizeInventoryLabel(
     key: string,
     storageOwnerCapId: string,
-    characterOwnerCapId: string
+    characterOwnerCapId: string,
+    openInventoryKey: string
 ): string {
     if (key === storageOwnerCapId) return "Main Inventory";
+    if (key === openInventoryKey) return "Open Inventory";
     if (key === characterOwnerCapId) return "Player Inventory";
-    return "Open Inventory";
+    return "Other Player Inventory";
 }
 
 async function loadInventoryItems(
@@ -1159,10 +1271,42 @@ async function loadInventoryItems(
     };
 }
 
+export async function moveOpenItemsToMain(args: {
+    theMopPackageId: string;
+    smartStorageRegistryId: string;
+    itemConfigRegistryId: string;
+    roleCapId: string;
+    storageUnitId: string;
+    characterId: string;
+    itemIds: number[];
+    quantities: number[];
+}) {
+    const { network } = requireInit();
+
+    const tx = new Transaction();
+    tx.setGasBudget(50_000_000);
+
+    tx.moveCall({
+        target: `${args.theMopPackageId}::smart_storage::move_open_items_to_main`,
+        arguments: [
+            tx.object(args.smartStorageRegistryId),
+            tx.object(args.itemConfigRegistryId),
+            tx.object(args.roleCapId),
+            tx.object(args.storageUnitId),
+            tx.object(args.characterId),
+            tx.pure.vector("u64", args.itemIds),
+            tx.pure.vector("u32", args.quantities),
+        ],
+    });
+
+    return await signAndExecuteClientOnly(network, tx);
+}
+
 export async function getStorageInventories(args: {
     storageUnitId: string;
     characterOwnerCapId: string;
     theMopPackageId: string;
+    worldPackageId: string;
 }) {
     try {
         const client = JsonClient();
@@ -1186,10 +1330,18 @@ export async function getStorageInventories(args: {
         const storageFields = (storageData.content as any)?.fields ?? {};
         const meta = normalizeStorageMetadata(storageFields);
 
-        const expectedExtension =
-            `${args.theMopPackageId}::smart_storage::SmartStorageAuth`;
+        const expectedPkg = args.theMopPackageId.toLowerCase().replace(/^0x/, "");
+        const extensionType = meta.extensionType ?? "";
+
+        const hasSmartStorageExtension =
+            extensionType.toLowerCase().includes("smart_storage::smartstorageauth") &&
+            extensionType.toLowerCase().includes(expectedPkg);
 
         const storageOwnerCapId = extractString(storageFields?.owner_cap_id);
+        const openInventoryKey = await getOpenStorageKey(
+            client,
+            args.worldPackageId,
+            args.storageUnitId);
 
         const dynamicFieldsResult = await client.getDynamicFields({
             parentId: args.storageUnitId,
@@ -1198,8 +1350,7 @@ export async function getStorageInventories(args: {
         const inventories: any[] = [];
         const inventoryKeys: string[] = [];
 
-        for (const entry of dynamicFieldsResult.data ?? []) {            
-            const keyType = extractString((entry as any)?.name?.type);
+        for (const entry of dynamicFieldsResult.data ?? []) {
             const keyValue =
                 extractString((entry as any)?.name?.value) ||
                 extractString((entry as any)?.name);
@@ -1217,9 +1368,7 @@ export async function getStorageInventories(args: {
             });
 
             const data: any = obj?.data;
-
             const contentFields = (data?.content as any)?.fields ?? {};
-
             const itemsContents = contentFields?.value?.fields?.items?.fields?.contents ?? [];
 
             const items = itemsContents.map((x: any) => ({
@@ -1234,23 +1383,25 @@ export async function getStorageInventories(args: {
                 label: normalizeInventoryLabel(
                     keyValue,
                     storageOwnerCapId,
-                    args.characterOwnerCapId
+                    args.characterOwnerCapId,
+                    openInventoryKey
                 ),
                 hasInventory: true,
                 inventoryObjectId: "",
                 items,
-                usedCapacity: extractString(contentFields?.used_capacity),
-                maxCapacity: extractString(contentFields?.max_capacity),
+                usedCapacity: extractString(contentFields?.value?.fields?.used_capacity),
+                maxCapacity: extractString(contentFields?.value?.fields?.max_capacity),
             });
         }
 
         return {
             found: true,
-            hasSmartStorageExtension: meta.extensionType === expectedExtension,
+            hasSmartStorageExtension,
             hasThemopUrl: meta.metadataUrl === "themop.dev",
             metadataUrl: meta.metadataUrl,
             extensionType: meta.extensionType,
             storageOwnerCapId,
+            openInventoryKey,
             inventoryKeys,
             inventories,
         };
@@ -1260,6 +1411,59 @@ export async function getStorageInventories(args: {
             error: err instanceof Error ? err.message : String(err),
         };
     }
+}
+
+async function resolveDevInspectSender(): Promise<string> {
+    return (await getCurrentAddress()) ?? "0x0";
+}
+
+async function devInspectMoveCallFirstReturnValueBytes(
+    client: SuiJsonRpcClient,
+    params: {
+        target: string;
+        typeArguments?: string[];
+        arguments: (tx: Transaction) => any[];
+    }
+): Promise<Uint8Array | null> {
+    const tx = new Transaction();
+
+    tx.moveCall({
+        target: params.target,
+        typeArguments: params.typeArguments,
+        arguments: params.arguments(tx),
+    });
+
+    const result = await client.devInspectTransactionBlock({
+        sender: await resolveDevInspectSender(),
+        transactionBlock: tx,
+    });
+
+    if (result.effects?.status?.status !== "success") {
+        return null;
+    }
+
+    const returnValues = result.results?.[0]?.returnValues;
+    if (!returnValues?.length) return null;
+
+    const [valueBytes] = returnValues[0];
+    return Uint8Array.from(valueBytes);
+}
+
+async function getOpenStorageKey(
+    client: SuiJsonRpcClient,
+    worldPackageId: string,
+    storageUnitId: string
+): Promise<string> {
+    const bytes = await devInspectMoveCallFirstReturnValueBytes(client, {
+        target: `${worldPackageId}::storage_unit::open_storage_key`,
+        arguments: (tx) => [tx.object(storageUnitId)],
+    });
+
+    if (!bytes) {
+        return "";
+    }
+
+    return bcs.Address.parse(bytes);
 }
 
 export { };

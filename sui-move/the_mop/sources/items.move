@@ -265,3 +265,11 @@ public fun borrow_item_config(
         item_key(item_id)
     )
 }
+
+public fun compliance_points(config: &ItemConfig): u64 {
+    config.compliance_points
+}
+
+public fun essential_multiplier(config: &ItemConfig): u64 {
+    config.essential_multiplier
+}

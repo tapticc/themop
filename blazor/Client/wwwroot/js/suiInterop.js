@@ -26031,6 +26031,17 @@ function JsonClient() {
   }
   return jsonRpcClient;
 }
+async function getCurrentAddress() {
+  try {
+    const wallet = pickWallet("Eve Vault");
+    if (wallet === null) {
+      throw new Error("No Sui wallets found.");
+    }
+    return wallet.accounts[0].address ?? null;
+  } catch {
+    return null;
+  }
+}
 function pickWallet(preferredName = preferredWalletName) {
   const wallets2 = getWallets().get();
   if (!wallets2.length) {
@@ -26464,6 +26475,24 @@ async function getStorageUnit(storageUnitId) {
     const metadata = extractOptionValue(fields.metadata);
     const energySource = extractOptionValue(fields.energy_source_id);
     const extension = extractOptionValue(fields.extension);
+    let ownerCharacterId = "";
+    if (fields?.owner_cap_id) {
+      const ownerCapResult = await client.getObject({
+        id: fields.owner_cap_id,
+        options: {
+          showOwner: true
+        }
+      });
+      const ownerCapData = ownerCapResult?.data;
+      const owner = ownerCapData?.owner;
+      if (owner?.AddressOwner) {
+        ownerCharacterId = owner.AddressOwner;
+      } else if (owner?.ObjectOwner) {
+        ownerCharacterId = owner.ObjectOwner;
+      } else if (typeof owner === "string") {
+        ownerCharacterId = owner;
+      }
+    }
     return {
       found: true,
       objectId: data.objectId ?? storageUnitId,
@@ -26483,7 +26512,8 @@ async function getStorageUnit(storageUnitId) {
       energySourceId: energySource ?? "",
       extensionType: extension ? typeof extension === "string" ? extension : JSON.stringify(extension) : "",
       inventoryKeys: Array.isArray(fields?.inventory_keys) ? fields.inventory_keys : [],
-      rawJson: JSON.stringify(fields, null, 2)
+      rawJson: JSON.stringify(fields, null, 2),
+      ownerCharacterId
     };
   } catch (err) {
     return {
@@ -26688,6 +26718,41 @@ async function updateStorageUnitUrl(args) {
   });
   return await signAndExecuteClientOnly(network, tx);
 }
+async function depositConfiguredItemsToOpen(args) {
+  const { network } = requireInit();
+  const tx = new Transaction3();
+  tx.setGasBudget(5e7);
+  const [characterOwnerCap, returnReceipt] = tx.moveCall({
+    target: `${args.worldPackageId}::character::borrow_owner_cap`,
+    typeArguments: [`${args.worldPackageId}::character::Character`],
+    arguments: [
+      tx.object(args.characterId),
+      tx.object(args.characterOwnerCapId)
+    ]
+  });
+  tx.moveCall({
+    target: `${args.theMopPackageId}::smart_storage::move_configured_player_items_to_open`,
+    arguments: [
+      tx.object(args.smartStorageRegistryId),
+      tx.object(args.itemConfigRegistryId),
+      tx.object(args.storageUnitId),
+      tx.object(args.characterId),
+      characterOwnerCap,
+      tx.pure.vector("u64", args.itemIds),
+      tx.pure.vector("u32", args.quantities)
+    ]
+  });
+  tx.moveCall({
+    target: `${args.worldPackageId}::character::return_owner_cap`,
+    typeArguments: [`${args.worldPackageId}::character::Character`],
+    arguments: [
+      tx.object(args.characterId),
+      characterOwnerCap,
+      returnReceipt
+    ]
+  });
+  return await signAndExecuteClientOnly(network, tx);
+}
 function extractString(value) {
   if (value == null)
     return "";
@@ -26698,20 +26763,59 @@ function extractString(value) {
   }
   return JSON.stringify(value);
 }
+function normalizeTypeName(value) {
+  if (!value)
+    return "";
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed?.fields?.name) {
+        return String(parsed.fields.name);
+      }
+    } catch {
+      return value;
+    }
+    return value;
+  }
+  if (value?.fields?.name) {
+    return String(value.fields.name);
+  }
+  return JSON.stringify(value);
+}
 function normalizeStorageMetadata(fields) {
   const metadata = extractOptionValue(fields?.metadata);
   const extension = extractOptionValue(fields?.extension);
   return {
     metadataUrl: metadata?.fields?.url ?? metadata?.url ?? "",
-    extensionType: extension ? typeof extension === "string" ? extension : JSON.stringify(extension) : ""
+    extensionType: normalizeTypeName(extension)
   };
 }
-function normalizeInventoryLabel(key, storageOwnerCapId, characterOwnerCapId) {
+function normalizeInventoryLabel(key, storageOwnerCapId, characterOwnerCapId, openInventoryKey) {
   if (key === storageOwnerCapId)
     return "Main Inventory";
+  if (key === openInventoryKey)
+    return "Open Inventory";
   if (key === characterOwnerCapId)
     return "Player Inventory";
-  return "Open Inventory";
+  return "Other Player Inventory";
+}
+async function moveOpenItemsToMain(args) {
+  const { network } = requireInit();
+  const tx = new Transaction3();
+  tx.setGasBudget(5e7);
+  tx.moveCall({
+    target: `${args.theMopPackageId}::smart_storage::move_open_items_to_main`,
+    arguments: [
+      tx.object(args.smartStorageRegistryId),
+      tx.object(args.itemConfigRegistryId),
+      tx.object(args.roleCapId),
+      tx.object(args.storageUnitId),
+      tx.object(args.characterId),
+      tx.pure.vector("u64", args.itemIds),
+      tx.pure.vector("u32", args.quantities)
+    ]
+  });
+  return await signAndExecuteClientOnly(network, tx);
 }
 async function getStorageInventories(args) {
   try {
@@ -26732,15 +26836,21 @@ async function getStorageInventories(args) {
     }
     const storageFields = storageData.content?.fields ?? {};
     const meta = normalizeStorageMetadata(storageFields);
-    const expectedExtension = `${args.theMopPackageId}::smart_storage::SmartStorageAuth`;
+    const expectedPkg = args.theMopPackageId.toLowerCase().replace(/^0x/, "");
+    const extensionType = meta.extensionType ?? "";
+    const hasSmartStorageExtension = extensionType.toLowerCase().includes("smart_storage::smartstorageauth") && extensionType.toLowerCase().includes(expectedPkg);
     const storageOwnerCapId = extractString(storageFields?.owner_cap_id);
+    const openInventoryKey = await getOpenStorageKey(
+      client,
+      args.worldPackageId,
+      args.storageUnitId
+    );
     const dynamicFieldsResult = await client.getDynamicFields({
       parentId: args.storageUnitId
     });
     const inventories = [];
     const inventoryKeys = [];
     for (const entry of dynamicFieldsResult.data ?? []) {
-      const keyType = extractString(entry?.name?.type);
       const keyValue = extractString(entry?.name?.value) || extractString(entry?.name);
       if (!keyValue)
         continue;
@@ -26766,22 +26876,24 @@ async function getStorageInventories(args) {
         label: normalizeInventoryLabel(
           keyValue,
           storageOwnerCapId,
-          args.characterOwnerCapId
+          args.characterOwnerCapId,
+          openInventoryKey
         ),
         hasInventory: true,
         inventoryObjectId: "",
         items,
-        usedCapacity: extractString(contentFields?.used_capacity),
-        maxCapacity: extractString(contentFields?.max_capacity)
+        usedCapacity: extractString(contentFields?.value?.fields?.used_capacity),
+        maxCapacity: extractString(contentFields?.value?.fields?.max_capacity)
       });
     }
     return {
       found: true,
-      hasSmartStorageExtension: meta.extensionType === expectedExtension,
+      hasSmartStorageExtension,
       hasThemopUrl: meta.metadataUrl === "themop.dev",
       metadataUrl: meta.metadataUrl,
       extensionType: meta.extensionType,
       storageOwnerCapId,
+      openInventoryKey,
       inventoryKeys,
       inventories
     };
@@ -26792,13 +26904,48 @@ async function getStorageInventories(args) {
     };
   }
 }
+async function resolveDevInspectSender() {
+  return await getCurrentAddress() ?? "0x0";
+}
+async function devInspectMoveCallFirstReturnValueBytes(client, params) {
+  const tx = new Transaction3();
+  tx.moveCall({
+    target: params.target,
+    typeArguments: params.typeArguments,
+    arguments: params.arguments(tx)
+  });
+  const result = await client.devInspectTransactionBlock({
+    sender: await resolveDevInspectSender(),
+    transactionBlock: tx
+  });
+  if (result.effects?.status?.status !== "success") {
+    return null;
+  }
+  const returnValues = result.results?.[0]?.returnValues;
+  if (!returnValues?.length)
+    return null;
+  const [valueBytes] = returnValues[0];
+  return Uint8Array.from(valueBytes);
+}
+async function getOpenStorageKey(client, worldPackageId, storageUnitId) {
+  const bytes = await devInspectMoveCallFirstReturnValueBytes(client, {
+    target: `${worldPackageId}::storage_unit::open_storage_key`,
+    arguments: (tx) => [tx.object(storageUnitId)]
+  });
+  if (!bytes) {
+    return "";
+  }
+  return suiBcs2.Address.parse(bytes);
+}
 export {
   authorizeSmartStorageExtension,
   connectSui,
   debugWalletFeatures,
+  depositConfiguredItemsToOpen,
   extractCreatedRoleCapId,
   findOwnedObjectIdByType,
   findOwnedRoleCaps,
+  getCurrentAddress,
   getObjectDump,
   getOwnedObjects,
   getRoleCapId,
@@ -26808,6 +26955,7 @@ export {
   grantRole,
   hasRole,
   init,
+  moveOpenItemsToMain,
   offlineStorageUnit,
   onlineStorageUnit,
   pickWallet,

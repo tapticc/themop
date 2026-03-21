@@ -8,8 +8,8 @@
         public string RawJson { get; set; } = string.Empty;
 
         public string DisplayName { get; set; } = string.Empty;
-        public ulong PointsPerUnit { get; set; }
-        public ulong TotalPoints { get; set; }
+        public long PointsPerUnit { get; set; }
+        public long TotalPoints { get; set; }
         public bool IsConfigured { get; set; }
     }
 }

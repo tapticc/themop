@@ -24,6 +24,14 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
         return await module.InvokeAsync<string>("connectSui");
     }
 
+    public async Task<string?> GetCurrentAddressAsync()
+    {
+        var module = await _moduleTask.Value;
+
+        return await module.InvokeAsync<string?>(
+            "getCurrentAddress");
+    }
+
     public async Task<string> FindOwnedObjectIdByTypeAsync(string packageId, string moduleName, string objectName)
     {
         var module = await _moduleTask.Value;
@@ -162,10 +170,17 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
         return await module.InvokeAsync<TxResult>("updateStorageUnitUrl", request);
     }
 
+    public async Task<TxResult> DepositConfiguredItemsToOpenAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("depositConfiguredItemsToOpen", request);
+    }
+
     public async Task<StorageInventoriesDetails> GetStorageInventoriesAsync(
         string storageUnitId,
         string characterOwnerCapId,
-        string theMopPackageId)
+        string theMopPackageId,
+        string worldPackageId)
     {
         var module = await _moduleTask.Value;
 
@@ -175,7 +190,13 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
             {
                 storageUnitId,
                 characterOwnerCapId,
-                theMopPackageId
+                theMopPackageId,
+                worldPackageId
             });
+    }
+    public async Task<TxResult> MoveOpenItemsToMainAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("moveOpenItemsToMain", request);
     }
 }

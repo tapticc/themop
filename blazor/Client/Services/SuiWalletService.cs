@@ -11,13 +11,17 @@
             return await _suiInterop.ConnectSuiAsync();
         }
 
+        public async Task<string?> GetCurrentAddressAsync()
+        {
+            return await _suiInterop.GetCurrentAddressAsync();
+        }
+
         public Task DisconnectAsync()
         {
-            // optional later if you add a reset/exported TS function
             return Task.CompletedTask;
         }
 
-        public Task ResetAsync()
+        public static Task ResetAsync()
         {
             return Task.CompletedTask;
         }

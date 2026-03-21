@@ -326,7 +326,7 @@ namespace Api.Services.Sui
 
             // Character fields
             string characterAddress = GetString(fields, "character_address");
-            ulong tribeId = GetUInt64(fields, "tribe_id");
+            long tribeId = GetUInt64(fields, "tribe_id");
             string ownerCapId = GetString(fields, "owner_cap_id");
 
             // key: { item_id, tenant }
@@ -374,11 +374,11 @@ namespace Api.Services.Sui
                 ? (el.ValueKind == JsonValueKind.String ? (el.GetString() ?? "") : el.GetRawText())
                 : "";
 
-        static ulong GetUInt64(JsonElement obj, string name)
+        static long GetUInt64(JsonElement obj, string name)
         {
             if (!obj.TryGetProperty(name, out var el)) return 0;
-            if (el.ValueKind == JsonValueKind.Number && el.TryGetUInt64(out var n)) return n;
-            if (el.ValueKind == JsonValueKind.String && ulong.TryParse(el.GetString(), out var s)) return s;
+            if (el.ValueKind == JsonValueKind.Number && el.TryGetInt64(out var n)) return n;
+            if (el.ValueKind == JsonValueKind.String && long.TryParse(el.GetString(), out var s)) return s;
             return 0;
         }
     }

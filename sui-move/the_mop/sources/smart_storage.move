@@ -57,6 +57,26 @@ public struct ApprovalPolicyUpdatedEvent has copy, drop {
     updated_by: address,
 }
 
+public struct PlayerDepositItemEvent has copy, drop {
+    storage_unit_id: ID,
+    character_id: ID,
+    character_address: address,
+    item_id: u64,
+    quantity: u32,
+    points_awarded: u64,
+    moved_by: address,
+}
+
+public struct PlayerDepositBatchEvent has copy, drop {
+    storage_unit_id: ID,
+    character_id: ID,
+    character_address: address,
+    item_count: u64,
+    total_quantity: u64,
+    total_points_awarded: u64,
+    moved_by: address,
+}
+
 // === Errors ===
 
 const EVectorLengthMismatch: u64 = 0;
@@ -194,8 +214,15 @@ public fun move_configured_player_items_to_open(
     assert_same_length(&item_ids, &quantities);
     assert_item_registry_linked(registry, item_registry);
 
+    let storage_unit_id = object::id(storage_unit);
+    let character_id = object::id(character);
+
     let mut i = 0;
     let len = vector::length(&item_ids);
+
+    let mut moved_item_count: u64 = 0;
+    let mut moved_total_quantity: u64 = 0;
+    let mut moved_total_points: u64 = 0;
 
     while (i < len) {
         let item_id = *vector::borrow(&item_ids, i);
@@ -221,14 +248,40 @@ public fun move_configured_player_items_to_open(
                 ctx,
             );
 
-            event::emit(ItemMovedToOpenEvent {
+            let cfg = items::borrow_item_config(item_registry, item_id);
+            let points_awarded =
+                items::compliance_points(cfg) *
+                items::essential_multiplier(cfg) *
+                (quantity as u64);
+
+            event::emit(PlayerDepositItemEvent {
+                storage_unit_id,
+                character_id,
+                character_address: character.character_address(),
                 item_id,
                 quantity,
+                points_awarded,
                 moved_by: ctx.sender(),
             });
+
+            moved_item_count = moved_item_count + 1;
+            moved_total_quantity = moved_total_quantity + (quantity as u64);
+            moved_total_points = moved_total_points + points_awarded;
         };
 
         i = i + 1;
+    };
+
+    if (moved_item_count > 0) {
+        event::emit(PlayerDepositBatchEvent {
+            storage_unit_id,
+            character_id,
+            character_address: character.character_address(),
+            item_count: moved_item_count,
+            total_quantity: moved_total_quantity,
+            total_points_awarded: moved_total_points,
+            moved_by: ctx.sender(),
+        });
     };
 }
 

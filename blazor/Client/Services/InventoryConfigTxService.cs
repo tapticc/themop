@@ -14,10 +14,10 @@ namespace Client.Services
         private readonly SuiContractOptions _contracts = contracts.Value;
 
         public async Task<TxResult> SetItemConfigAsync(
-            ulong itemId,
+            long itemId,
             string displayName,
-            ulong compliancePoints,
-            ulong essentialMultiplier,
+            long compliancePoints,
+            long essentialMultiplier,
             bool isEnabled,
             string walletAddress)
         {
@@ -49,7 +49,7 @@ namespace Client.Services
             }
         }
 
-        public async Task<TxResult> RemoveItemConfigAsync(ulong itemId, string walletAddress)
+        public async Task<TxResult> RemoveItemConfigAsync(long itemId, string walletAddress)
         {
             try
             {

@@ -1,4 +1,4 @@
-﻿@page "/storage-inventory/{AssemblyAddress}"
+﻿@page "/storage-inventory-demo/{AssemblyAddress}"
 @using Client.Models
 @using Client.Services
 @using Common.Storage
@@ -105,71 +105,100 @@ else if (Inventory is not null && Inventory.Found)
         </div>
     </div>
 
-    @foreach (var inv in Inventory.Inventories)
+    @if (Inventory is not null && Inventory.Found)
     {
         <div class="mop-section">
             <div class="mop-dossier">
-                <div class="mop-dossier-title">@inv.Label</div>
+                <div class="mop-dossier-title">Configured Inventory Summary</div>
 
                 <div class="mop-dossier-row">
-                    <div class="mop-dossier-key">Key</div>
-                    <div class="mop-dossier-value">@inv.Key</div>
+                    <div class="mop-dossier-key">Total Qty</div>
+                    <div class="mop-dossier-value">@GrandTotalQuantity</div>
                 </div>
 
                 <div class="mop-dossier-row">
-                    <div class="mop-dossier-key">Inventory Object ID</div>
-                    <div class="mop-dossier-value">@inv.InventoryObjectId</div>
+                    <div class="mop-dossier-key">Total Points</div>
+                    <div class="mop-dossier-value">@GrandTotalPoints</div>
                 </div>
-
-                <div class="mop-dossier-row">
-                    <div class="mop-dossier-key">Capacity</div>
-                    <div class="mop-dossier-value">@inv.UsedCapacity / @inv.MaxCapacity</div>
-                </div>
-
-                @if (inv.Items.Count == 0)
-                {
-                    <p class="eve-text-muted mt-3 mb-0">No items found.</p>
-                }
-                else
-                {
-                    <ul class="mb-0 mt-3">
-                        @foreach (var item in inv.Items)
-                        {
-                            <li class="mb-3">
-                                <div><b>Item ID:</b> @item.ItemId</div>
-                                <div><b>Quantity:</b> @item.Quantity</div>
-                                @if (!string.IsNullOrWhiteSpace(item.ObjectId))
-                                {
-                                    <div><b>Object ID:</b> @item.ObjectId</div>
-                                }
-                                <details class="mt-1">
-                                    <summary>Raw</summary>
-                                    <pre class="mop-json">@item.RawJson</pre>
-                                </details>
-                            </li>
-                        }
-                    </ul>
-
-                    <ul class="mb-0 mt-3">
-                        @foreach (var item in inv.Items)
-                        {
-                            <li class="mb-3">
-                                <div><b>Name:</b> @item.DisplayName</div>
-                                <div><b>Type ID:</b> @item.ItemId</div>
-                                <div><b>Quantity:</b> @item.Quantity</div>
-                                <div><b>Points Each:</b> @item.PointsPerUnit</div>
-                                <div><b>Total Points:</b> @item.TotalPoints</div>
-
-                                <details class="mt-1">
-                                    <summary>Raw</summary>
-                                    <pre class="mop-json">@item.RawJson</pre>
-                                </details>
-                            </li>
-                        }
-                    </ul>
-                }
             </div>
         </div>
+
+        @foreach (var inv in Inventory.Inventories)
+        {
+            <div class="mop-section">
+                <div class="mop-dossier">
+                    <div class="mop-dossier-title">@inv.Label</div>
+
+                    <div class="mop-dossier-row">
+                        <div class="mop-dossier-key">Key</div>
+                        <div class="mop-dossier-value">@inv.Key</div>
+                    </div>
+
+                    <div class="mop-dossier-row">
+                        <div class="mop-dossier-key">Inventory Object ID</div>
+                        <div class="mop-dossier-value">@inv.InventoryObjectId</div>
+                    </div>
+
+                    <div class="mop-dossier-row">
+                        <div class="mop-dossier-key">Capacity</div>
+                        <div class="mop-dossier-value">@inv.UsedCapacity / @inv.MaxCapacity</div>
+                    </div>
+
+                    <div class="mop-dossier-row">
+                        <div class="mop-dossier-key">Configured Item Qty</div>
+                        <div class="mop-dossier-value">@inv.TotalQuantity</div>
+                    </div>
+
+                    <div class="mop-dossier-row">
+                        <div class="mop-dossier-key">Configured Points</div>
+                        <div class="mop-dossier-value">@inv.TotalPoints</div>
+                    </div>
+
+                    @if (inv.Items.Count == 0)
+                    {
+                        <p class="eve-text-muted mt-3 mb-0">No items found.</p>
+                    }
+                    else
+                    {
+                        <ul class="mb-0 mt-3">
+                            @foreach (var item in inv.Items)
+                            {
+                                <li class="mb-3">
+                                    <div><b>Item ID:</b> @item.ItemId</div>
+                                    <div><b>Quantity:</b> @item.Quantity</div>
+                                    @if (!string.IsNullOrWhiteSpace(item.ObjectId))
+                                    {
+                                        <div><b>Object ID:</b> @item.ObjectId</div>
+                                    }
+                                    <details class="mt-1">
+                                        <summary>Raw</summary>
+                                        <pre class="mop-json">@item.RawJson</pre>
+                                    </details>
+                                </li>
+                            }
+                        </ul>
+
+                        <ul class="mb-0 mt-3">
+                            @foreach (var item in inv.Items)
+                            {
+                                <li class="mb-3">
+                                    <div><b>Name:</b> @item.DisplayName</div>
+                                    <div><b>Type ID:</b> @item.ItemId</div>
+                                    <div><b>Quantity:</b> @item.Quantity</div>
+                                    <div><b>Points Each:</b> @item.PointsPerUnit</div>
+                                    <div><b>Total Points:</b> @item.TotalPoints</div>
+
+                                    <details class="mt-1">
+                                        <summary>Raw</summary>
+                                        <pre class="mop-json">@item.RawJson</pre>
+                                    </details>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        }
     }
 }
 
@@ -182,6 +211,9 @@ else if (Inventory is not null && Inventory.Found)
     private string? ActionMessage { get; set; }
     private bool IsLoading { get; set; }
     private bool IsBusy { get; set; }
+
+    private long GrandTotalQuantity => Inventory?.Inventories.Sum(x => x.TotalQuantity) ?? 0;
+    private long GrandTotalPoints => Inventory?.Inventories.Sum(x => x.TotalPoints) ?? 0;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -222,6 +254,36 @@ else if (Inventory is not null && Inventory.Found)
             if (!Inventory.Found)
             {
                 Error = Inventory.Error ?? "Inventory lookup failed.";
+            }
+
+            var configs = await Api.GetItemConfigsAsync();
+            var configMap = configs.ToDictionary(x => x.ItemId);
+
+            foreach (var inv in Inventory.Inventories)
+            {
+                var filtered = new List<StorageInventoryItem>();
+
+                foreach (var item in inv.Items)
+                {
+                    if (!long.TryParse(item.ItemId, out var itemId))
+                        continue;
+
+                    if (!configMap.TryGetValue(itemId, out var cfg))
+                        continue;
+
+                    long.TryParse(item.Quantity, out var qty);
+
+                    item.IsConfigured = true;
+                    item.DisplayName = cfg.DisplayName;
+                    item.PointsPerUnit = cfg.CompliancePoints;
+                    item.TotalPoints = cfg.CompliancePoints * qty;
+
+                    filtered.Add(item);
+                }
+
+                inv.Items = filtered;
+                inv.TotalQuantity = filtered.Sum(x => long.TryParse(x.Quantity, out var q) ? q : 0L);
+                inv.TotalPoints = filtered.Sum(x => x.TotalPoints);
             }
         }
         catch (Exception ex)

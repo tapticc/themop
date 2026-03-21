@@ -15,7 +15,7 @@
             bool IsShared,
             string InitialSharedVersion,
             string CharacterAddress,
-            ulong TribeId,
+            long TribeId,
             string Tenant,
             string ItemId,
             string Name,

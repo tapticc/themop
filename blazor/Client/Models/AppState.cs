@@ -19,7 +19,7 @@ namespace Client.Models
         public void SetWallet(WalletType type, string address)
         {
             ConnectedWallet = type;
-            WalletAddress = address;
+            WalletAddress = address;            
             Notify();
         }
 
@@ -36,7 +36,7 @@ namespace Client.Models
         }
 
 
-        public void Clear()
+        public void ResetSession()
         {
             WalletAddress = null;
             ConnectedWallet = null;

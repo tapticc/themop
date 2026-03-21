@@ -160,7 +160,7 @@ namespace Api.Services.GraphQL
             CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(_options.Packages.TheMopPackageId))
-                return new();
+                return [];
 
             var mopPackageId = _options.Packages.TheMopPackageId;
 
@@ -337,10 +337,10 @@ namespace Api.Services.GraphQL
 
                     return new ItemConfigDto
                     {
-                        ItemId = ulong.Parse(data?.ItemId ?? "0"),
+                        ItemId = long.Parse(data?.ItemId ?? "0"),
                         DisplayName = data?.DisplayName ?? "",
-                        CompliancePoints = ulong.Parse(data?.CompliancePoints ?? "0"),
-                        EssentialMultiplier = ulong.Parse(data?.EssentialMultiplier ?? "0"),
+                        CompliancePoints = long.Parse(data?.CompliancePoints ?? "0"),
+                        EssentialMultiplier = long.Parse(data?.EssentialMultiplier ?? "0"),
                         IsEnabled = data?.IsEnabled ?? false
                     };
                 })

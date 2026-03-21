@@ -120,31 +120,6 @@
 		Network.OnChanged -= HandleNetworkChanged;
 	}
 
-	async Task ConnectWalletOLD()
-	{
-		try
-		{
-			_connecting = true;
-
-			_address = await WalletService.ConnectAsync();
-
-			AppState.SetWallet(WalletType.EveFrontier, _address);
-
-			await Task.Delay(500);
-
-			//Nav.NavigateTo("/directives");
-			Nav.NavigateTo("/");
-		}
-		catch (Exception ex)
-		{
-			_error = ex.Message;
-		}
-		finally
-		{
-			_connecting = false;
-		}
-	}
-
 	async Task ConnectWallet()
 	{
 		try
@@ -155,6 +130,7 @@
 			_address = await WalletService.ConnectAsync();
 
 			AppState.SetWallet(WalletType.EveFrontier, _address);
+			Network.NotifyWalletChanged(_address);
 
 			var character = await Api.GetCharacterFromWalletAsync(_address);
 
@@ -190,7 +166,7 @@
 		catch (Exception ex)
 		{
 			_error = ex.Message;
-			AppState.Clear();
+			AppState.ResetSession();
 		}
 		finally
 		{

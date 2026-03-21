@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Client.Models;
+using Microsoft.Extensions.Options;
 
 namespace Client.Services
 {
@@ -15,11 +16,15 @@ namespace Client.Services
     public class SuiNetworkService
     {
         private readonly SuiOptions _options;
+        private readonly AppState _appState;
 
-        public SuiNetworkService(IOptions<SuiOptions> options)
+        private string? _currentWalletAddress;
+
+        public SuiNetworkService(IOptions<SuiOptions> options, AppState appState)
         {
             _options = options.Value;
-            SetNetwork(_options.DefaultNetwork);
+            _appState = appState;
+            SetNetwork(_options.DefaultNetwork);            
         }
 
         public SuiNetwork Current { get; private set; } = default!;
@@ -36,6 +41,18 @@ namespace Client.Services
                 PreferredWallet = _options.PreferredWallets[network]
             };
 
+            OnChanged?.Invoke();
+        }
+
+        public void NotifyWalletChanged(string walletAddress)
+        {
+            if (string.Equals(_currentWalletAddress, walletAddress,
+                StringComparison.OrdinalIgnoreCase))
+                return;
+
+            _currentWalletAddress = walletAddress;
+
+            _appState?.ResetSession(); // optional if injected
             OnChanged?.Invoke();
         }
 

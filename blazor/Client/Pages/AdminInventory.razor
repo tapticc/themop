@@ -166,7 +166,7 @@
     private string? _message;
     private bool _busy;
     private bool _isEditMode;
-    private ulong? _selectedItemId;
+    private long? _selectedItemId;
     private ItemConfigDto? _confirmDeleteItem;
 
     private bool IsAuthorized =>
@@ -279,10 +279,10 @@
             _message = null;
 
             var tx = await InventoryConfigTxService.SetItemConfigAsync(
-                (ulong)_edit.ItemId,
+                (long)_edit.ItemId,
                 _edit.DisplayName,
-                (ulong)_edit.CompliancePoints,
-                (ulong)_edit.EssentialMultiplier,
+                (long)_edit.CompliancePoints,
+                (long)_edit.EssentialMultiplier,
                 _edit.IsEnabled,
                 AppState.WalletAddress);
 
@@ -296,7 +296,7 @@
 
             await Load();
 
-            _selectedItemId = (ulong)_edit.ItemId;
+            _selectedItemId = (long)_edit.ItemId;
             _isEditMode = true;
         }
         catch (Exception ex)

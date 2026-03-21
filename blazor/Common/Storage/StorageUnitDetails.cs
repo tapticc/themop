@@ -28,5 +28,6 @@
         public string StatusJson { get; set; } = string.Empty;
         public string LocationJson { get; set; } = string.Empty;
         public string RawJson { get; set; } = string.Empty;
+        public string OwnerCharacterId { get; set; } = string.Empty;
     }
 }
