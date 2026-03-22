@@ -1,0 +1,165 @@
+﻿@page "/points"
+@using Client.Models
+@using Common.Events
+@inject AppState AppState
+@inject Client.Services.SuiApiClient Api
+
+<PageTitle>Ministry Profile</PageTitle>
+
+<div class="mop-profile-shell">
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="alert alert-danger">@Error</div>
+    }
+    else if (IsLoading)
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-muted">Loading ministry profile...</div>
+        </div>
+    }
+    else if (Profile is not null)
+    {
+        <div class="mop-profile-card mop-profile-header">
+            <div class="mop-profile-title">Ministry Profile</div>
+            <div class="mop-profile-name">@Profile.CharacterName</div>
+            <div class="mop-profile-sub">@ShortId(Profile.CharacterId)</div>
+        </div>
+
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Standing</div>
+
+            <div class="mop-profile-stat-grid">
+                <div class="mop-profile-stat">
+                    <div class="mop-profile-stat-label">Compliance Points</div>
+                    <div class="mop-profile-stat-value">@AppState.CharacterSummary?.CompliancePoints</div>
+                </div>
+
+                <div class="mop-profile-stat">
+                    <div class="mop-profile-stat-label">Ministry Points</div>
+                    <div class="mop-profile-stat-value">@AppState.CharacterSummary?.MinistryPoints</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Recent Activity</div>
+
+            @if (Profile.RecentDeposits.Count == 0)
+            {
+                <div class="mop-profile-muted">No recent deposit activity.</div>
+            }
+            else
+            {
+                @foreach (var row in Profile.RecentDeposits)
+                {
+                    <div class="mop-profile-activity">
+                        <div class="mop-profile-activity-head">
+                            <span>@FormatTime(row.TimestampMs)</span>
+                            <span>@ShortId(row.StorageUnitId)</span>
+                        </div>
+
+                        <div class="mop-profile-activity-row">
+                            <span>Item Types</span>
+                            <span>@row.ItemCount</span>
+                        </div>
+
+                        <div class="mop-profile-activity-row">
+                            <span>Quantity</span>
+                            <span>@row.TotalQuantity</span>
+                        </div>
+
+                        <div class="mop-profile-activity-row">
+                            <span>Points</span>
+                            <span>@row.TotalPointsAwarded</span>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Achievement Stamps</div>
+
+            <div class="mop-stamp-grid">
+                @foreach (var stamp in Profile.Stamps.Where(x => x.Unlocked == true))
+                {
+                    <div class="mop-stamp @(stamp.Unlocked ? "mop-stamp-on" : "mop-stamp-off")">
+                        <div class="mop-stamp-title">@stamp.Title</div>
+                        <div class="mop-stamp-desc">@stamp.Description</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private PlayerProfilePointsDto? Profile;
+    private string? Error;
+    private bool IsLoading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfile();
+    }
+
+    private async Task LoadProfile()
+    {
+        Error = null;
+        IsLoading = true;
+
+        try
+        {
+            if (AppState.CharacterSummary is null || string.IsNullOrWhiteSpace(AppState.WalletAddress)
+                || AppState.CharacterSummary.CharacterId == null || AppState.CharacterSummary.CharacterName == null)
+            {
+                Error = "Character session is missing.";
+                return;
+            }
+
+            var points = await Api.GetPlayerPointsAsync(AppState.WalletAddress);
+
+            AppState.CharacterSummary.CompliancePoints = points.CompliancePoints;
+            AppState.CharacterSummary.MinistryPoints = points.MinistryPoints;
+
+            Profile = await Api.GetPlayerProfilePointsAsync(
+                AppState.WalletAddress,
+                AppState.CharacterSummary.CharacterId,
+                AppState.CharacterSummary.CharacterName,
+                points.MinistryPoints);
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private static string ShortId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length < 14)
+            return value ?? "";
+
+        return $"{value[..8]}...{value[^6..]}";
+    }
+
+    private static string FormatTime(string? timestampMs)
+    {
+        if (!long.TryParse(timestampMs, out var ms))
+            return "-";
+
+        try
+        {
+            return DateTimeOffset.FromUnixTimeMilliseconds(ms)
+                .ToLocalTime()
+                .ToString("yyyy-MM-dd HH:mm");
+        }
+        catch
+        {
+            return timestampMs ?? "-";
+        }
+    }
+}

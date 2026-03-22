@@ -3,11 +3,11 @@
     "Name": "New Profile",
     "Projects": [
       {
-        "Path": "Api\\Api.csproj",
+        "Path": "Client\\Client.csproj",
         "Action": "Start"
       },
       {
-        "Path": "Client\\Client.csproj",
+        "Path": "Api\\Api.csproj",
         "Action": "Start"
       }
     ]

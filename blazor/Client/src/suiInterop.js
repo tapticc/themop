@@ -798,6 +798,7 @@ export async function depositConfiguredItemsToOpen(args) {
         arguments: [
             tx.object(args.smartStorageRegistryId),
             tx.object(args.itemConfigRegistryId),
+            tx.object(args.pointsRegistryId),
             tx.object(args.storageUnitId),
             tx.object(args.characterId),
             characterOwnerCap,

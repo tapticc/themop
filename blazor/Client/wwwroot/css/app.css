@@ -1432,3 +1432,158 @@ h1, h2, h3 {
     margin-top: 4px;
     padding-top: 10px;
 }
+
+.mop-ledger-ticket {
+    border-top: 1px dashed rgba(212,175,55,.18);
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.mop-ledger-ticket-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--mop-gold);
+    font-size: .78rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.mop-profile-shell {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 12px 10px 28px;
+}
+
+.mop-profile-card {
+    background: linear-gradient(180deg, rgba(18,24,38,.96), rgba(10,15,23,.96));
+    border: 1px solid rgba(212,175,55,.14);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.35);
+}
+
+.mop-profile-header {
+    text-align: center;
+}
+
+.mop-profile-title {
+    color: var(--mop-gold);
+    font-size: .85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.mop-profile-name {
+    color: var(--eve-text);
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-top: 8px;
+}
+
+.mop-profile-sub {
+    color: var(--eve-text-muted);
+    font-size: .78rem;
+    margin-top: 4px;
+}
+
+.mop-profile-section-title {
+    color: var(--mop-gold);
+    font-size: .84rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 10px;
+}
+
+.mop-profile-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.mop-profile-stat {
+    border: 1px solid rgba(212,175,55,.12);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+}
+
+.mop-profile-stat-label {
+    color: var(--eve-text-muted);
+    font-size: .72rem;
+    text-transform: uppercase;
+}
+
+.mop-profile-stat-value {
+    color: var(--mop-gold);
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-top: 6px;
+}
+
+.mop-profile-activity {
+    border-top: 1px dashed rgba(212,175,55,.16);
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.mop-profile-activity-head,
+.mop-profile-activity-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.mop-profile-activity-head {
+    color: var(--mop-gold);
+    font-size: .76rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.mop-profile-activity-row {
+    color: var(--eve-text);
+    font-size: .84rem;
+    padding: 2px 0;
+}
+
+.mop-profile-muted {
+    color: var(--eve-text-muted);
+    font-size: .88rem;
+}
+
+.mop-stamp-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.mop-stamp {
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+.mop-stamp-on {
+    border-color: rgba(212,175,55,.28);
+    background: rgba(212,175,55,.06);
+}
+
+.mop-stamp-off {
+    opacity: .55;
+}
+
+.mop-stamp-title {
+    font-weight: 700;
+    color: var(--eve-text);
+    margin-bottom: 4px;
+}
+
+.mop-stamp-desc {
+    color: var(--eve-text-muted);
+    font-size: .8rem;
+}
+

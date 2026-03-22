@@ -8,5 +8,7 @@
         public string? OwnerCapId { get; set; }
         public string? PackageId { get; set; }
         public string? DebugData { get; set; }
+        public long CompliancePoints { get; set; }
+        public long MinistryPoints { get; set; }
     }
 }

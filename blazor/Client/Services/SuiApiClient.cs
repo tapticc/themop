@@ -1,4 +1,6 @@
-﻿using Common.Inventory;
+﻿using Common.Events;
+using Common.Inventory;
+using Common.Player;
 using Common.Roles;
 using Common.Sui;
 using Microsoft.Extensions.Options;
@@ -116,6 +118,61 @@ namespace Client.Services
                 "api/sui/item-configs");
 
             return response ?? [];
+        }
+
+        //EVENTS
+
+        public async Task<PlayerDepositEventsResult> GetPlayerDepositEventsAsync(
+            string walletAddress,
+            string? cursor = null,
+            int limit = 25)
+        {
+            var url =
+                $"api/sui/player-deposit-events?walletAddress={Uri.EscapeDataString(walletAddress)}&limit={limit}";
+
+            if (!string.IsNullOrWhiteSpace(cursor))
+            {
+                url += $"&cursor={Uri.EscapeDataString(cursor)}";
+            }
+
+            var result = await _http.GetFromJsonAsync<PlayerDepositEventsResult>(url);
+            return result ?? new PlayerDepositEventsResult
+            {
+                Success = false,
+                Error = "No response from API."
+            };
+        }
+
+        public async Task<PlayerProfilePointsDto> GetPlayerProfilePointsAsync(
+            string walletAddress,
+            string characterId,
+            string characterName,
+            long totalPoints)
+        {
+            var url =
+                $"api/sui/player-profile-points" +
+                $"?walletAddress={Uri.EscapeDataString(walletAddress)}" +
+                $"&characterId={Uri.EscapeDataString(characterId)}" +
+                $"&characterName={Uri.EscapeDataString(characterName)}" +
+                $"&totalPoints={totalPoints}";
+
+            var result = await _http.GetFromJsonAsync<PlayerProfilePointsDto>(url);
+
+            return result ?? new PlayerProfilePointsDto
+            {
+                WalletAddress = walletAddress,
+                CharacterId = characterId,
+                CharacterName = characterName,
+                TotalPoints = totalPoints
+            };
+        }
+
+        public async Task<PlayerPointsDto> GetPlayerPointsAsync(string characterAddress)
+        {
+            var response = await _http.GetFromJsonAsync<PlayerPointsDto>(
+                $"api/sui/player-points?characterAddress={Uri.EscapeDataString(characterAddress)}");
+
+            return response ?? new PlayerPointsDto(characterAddress, 0, 0);
         }
     }
 }

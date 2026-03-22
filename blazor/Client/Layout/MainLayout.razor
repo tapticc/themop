@@ -18,7 +18,7 @@
 
 			<RadzenMenu class="mop-menu">
 				<RadzenMenuItem Text="Dashboard" Path="/" Match="NavLinkMatch.All" />
-				<RadzenMenuItem Text="Styles Demo" Path="/styles-demo" />
+				<RadzenMenuItem Text="Points" Path="/points" />
 				<RadzenMenuItem Text="SSU View" Path="/storage/0x46dc4510debbfee4e3e02c998747f4c33043ce0097c10bb5f25b86251c800cde" />
 				<RadzenMenuItem Text="SSU Demo" Path="/storage-demo/0x46dc4510debbfee4e3e02c998747f4c33043ce0097c10bb5f25b86251c800cde" />
 				<RadzenMenuItem Text="Inventory Demo" Path="/storage-inventory-demo/0x46dc4510debbfee4e3e02c998747f4c33043ce0097c10bb5f25b86251c800cde" />
@@ -29,6 +29,7 @@
 					<RadzenMenuItem Text="Role Admin" Path="/admin-roles" />
 					<RadzenMenuItem Text="Character Search" Path="/character-search" />
 				}
+				<RadzenMenuItem Text="Styles Demo" Path="/styles-demo" />
 				<RadzenMenuItem Text="Reload" Click="ForceFullReload"/>
 			</RadzenMenu>
 		</div>
@@ -57,50 +58,50 @@
 		);
 
 		Network.OnChanged += HandleNetworkChanged;
-		Nav.LocationChanged += HandleLocationChanged;
+		// Nav.LocationChanged += HandleLocationChanged;
 	}
 
-	private async void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
-	{
-		await CheckWalletStillMatchesAsync();
-	}
+	// private async void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+	// {
+	// 	await CheckWalletStillMatchesAsync();
+	// }
 
-	private async Task CheckWalletStillMatchesAsync()
-	{
-		if (_checkingWallet)
-			return;
+	// private async Task CheckWalletStillMatchesAsync()
+	// {
+	// 	if (_checkingWallet)
+	// 		return;
 
-		try
-		{
-			_checkingWallet = true;
+	// 	try
+	// 	{
+	// 		_checkingWallet = true;
 
-			var currentWallet = await WalletService.GetCurrentAddressAsync();
+	// 		var currentWallet = await WalletService.GetCurrentAddressAsync();
 
-			if (string.IsNullOrWhiteSpace(AppState.WalletAddress))
-				return;
+	// 		if (string.IsNullOrWhiteSpace(AppState.WalletAddress))
+	// 			return;
 
-			if (string.IsNullOrWhiteSpace(currentWallet) ||
-				!string.Equals(AppState.WalletAddress, currentWallet, StringComparison.OrdinalIgnoreCase))
-			{
-				AppState.ResetSession();
-				Nav.NavigateTo("/login", true);
-			}
-		}
-		catch
-		{
-			// ignore wallet check failures for now
-		}
-		finally
-		{
-			_checkingWallet = false;
-		}
-	}
+	// 		if (string.IsNullOrWhiteSpace(currentWallet) ||
+	// 			!string.Equals(AppState.WalletAddress, currentWallet, StringComparison.OrdinalIgnoreCase))
+	// 		{
+	// 			AppState.ResetSession();
+	// 			Nav.NavigateTo("/login", true);
+	// 		}
+	// 	}
+	// 	catch
+	// 	{
+			
+	// 	}
+	// 	finally
+	// 	{
+	// 		_checkingWallet = false;
+	// 	}
+	// }
 
 	public void Dispose()
 	{
 		AppState.OnChange -= StateHasChanged;
 		Network.OnChanged -= HandleNetworkChanged;
-		Nav.LocationChanged -= HandleLocationChanged;
+		// Nav.LocationChanged -= HandleLocationChanged;
 	}
 
 	private async void HandleNetworkChanged()
@@ -111,9 +112,7 @@
 			Network.Current.PreferredWallet
 		);
 
-		AppState.ResetSession();
-		Nav.NavigateTo("/login", true);
-		// await InvokeAsync(StateHasChanged);
+		await InvokeAsync(StateHasChanged);
 	}
 
 	private void ForceFullReload(MenuItemEventArgs args)

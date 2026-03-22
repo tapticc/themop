@@ -1,6 +1,6 @@
-﻿using Api.Services.Sui;
+﻿using Api.Services.GraphQL;
+using Api.Services.Sui;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace Api.Endpoints;
 
@@ -40,6 +40,37 @@ public static class SuiEndpoints
                     Status = 400
                 });
             }
+        });
+
+        app.MapGet("/api/sui/player-profile-points",
+        async (
+            string walletAddress,
+            string characterId,
+            string characterName,
+            long totalPoints,
+            SuiGrpcGateway gw,
+            CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(walletAddress))
+                return Results.BadRequest("walletAddress is required.");
+
+            var result = await gw.GetPlayerProfilePointsAsync(
+                walletAddress,
+                characterId,
+                characterName,
+                totalPoints);
+
+            return Results.Ok(result);
+        });
+
+        app.MapGet("/api/sui/player-points",
+        async (string characterAddress, SuiGraphQLService suiGraphQLService, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(characterAddress))
+                return Results.BadRequest("characterAddress is required.");
+
+            var result = await suiGraphQLService.GetPlayerPointsAsync(characterAddress, ct);
+            return Results.Ok(result);
         });
 
         //this was needed for localnet but moved to client grpc

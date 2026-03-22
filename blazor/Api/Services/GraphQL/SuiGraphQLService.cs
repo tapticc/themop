@@ -1,6 +1,7 @@
 ﻿using Api.Services.Models;
 using Api.Services.Sui;
 using Common.Inventory;
+using Common.Player;
 using Common.Roles;
 using Common.Sui;
 using Microsoft.Extensions.Options;
@@ -348,6 +349,80 @@ namespace Api.Services.GraphQL
                 .ToList() ?? [];
 
             return items;
+        }
+
+        //PLAYERS
+
+
+        public async Task<PlayerPointsDto> GetPlayerPointsAsync(
+            string characterAddress,
+            CancellationToken cancellationToken = default)
+        {
+            var root = await _graphql.SendAsync<JsonElement>(
+                SuiQueries.GetPlayerPoints,
+                new
+                {
+                    registry = _options.Packages.PointsRegistryId
+                },
+                cancellationToken);
+
+            if (!root.TryGetProperty("object", out var obj) ||
+                !obj.TryGetProperty("dynamicFields", out var dynamicFields) ||
+                !dynamicFields.TryGetProperty("nodes", out var nodes) ||
+                nodes.ValueKind != JsonValueKind.Array)
+            {
+                return new PlayerPointsDto(characterAddress, 0, 0);
+            }
+
+            foreach (var node in nodes.EnumerateArray())
+            {
+                if (!node.TryGetProperty("name", out var name) ||
+                    !name.TryGetProperty("json", out var nameJson))
+                    continue;
+
+                var nodeCharacterAddress =
+                    nameJson.TryGetProperty("character_address", out var ca)
+                        ? ca.GetString()
+                        : null;
+
+                if (!string.Equals(
+                        nodeCharacterAddress,
+                        characterAddress,
+                        StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (!node.TryGetProperty("value", out var value) ||
+                    !value.TryGetProperty("json", out var json))
+                    continue;
+
+                var compliance = json.TryGetProperty("compliance_points", out var cp)
+                    ? ParseLong(cp)
+                    : 0;
+
+                var ministry = json.TryGetProperty("ministry_points", out var mp)
+                    ? ParseLong(mp)
+                    : 0;
+
+                return new PlayerPointsDto(
+                    characterAddress,
+                    compliance,
+                    ministry);
+            }
+
+            return new PlayerPointsDto(characterAddress, 0, 0);
+        }
+
+        //HELPERS
+
+        private static long ParseLong(JsonElement el)
+        {
+            if (el.ValueKind == JsonValueKind.Number && el.TryGetInt64(out var n))
+                return n;
+
+            if (el.ValueKind == JsonValueKind.String && long.TryParse(el.GetString(), out var s))
+                return s;
+
+            return 0;
         }
 
         public static string? TryGetPackageIdFromType(string? fullType)

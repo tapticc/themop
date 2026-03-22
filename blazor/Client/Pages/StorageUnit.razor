@@ -9,6 +9,7 @@
 @inject Client.Services.WorldStorageTxService WorldStorageTxService
 @inject Client.Services.WorldStorageService WorldStorageService
 @inject Client.Services.SmartStorageTxService SmartStorageTxService
+@implements IDisposable
 
 <PageTitle>Storage</PageTitle>
 
@@ -182,6 +183,9 @@
     private string? ActionMessage { get; set; }
     private bool IsLoading { get; set; }
     private bool IsBusy { get; set; }
+    private PeriodicTimer? _refreshTimer;
+    private CancellationTokenSource? _refreshCts;
+    private bool _refreshRunning;
 
     private List<LedgerRow> Rows { get; set; } = new();
 
@@ -207,6 +211,14 @@
     protected override async Task OnParametersSetAsync()
     {
         await LoadView();
+        StartRefreshLoop();
+    }
+
+    public void Dispose()
+    {
+        _refreshCts?.Cancel();
+        _refreshTimer?.Dispose();
+        _refreshCts?.Dispose();
     }
 
     private async Task LoadView()
@@ -307,6 +319,42 @@
         {
             IsLoading = false;
         }
+    }
+
+    private void StartRefreshLoop()
+    {
+        _refreshCts = new CancellationTokenSource();
+        _refreshTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                while (await _refreshTimer.WaitForNextTickAsync(_refreshCts.Token))
+                {
+                    if (_refreshRunning)
+                        continue;
+
+                    _refreshRunning = true;
+
+                    try
+                    {
+                        await InvokeAsync(async () =>
+                        {
+                            await LoadView();
+                            StateHasChanged();
+                        });
+                    }
+                    finally
+                    {
+                        _refreshRunning = false;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        });
     }
 
     private async Task SetExtension()

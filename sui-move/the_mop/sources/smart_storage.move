@@ -5,6 +5,7 @@ use sui::event;
 use the_mop::config::AdminCap;
 use the_mop::items::{Self as items, ItemConfigRegistry};
 use the_mop::roles::{Self as roles, RoleCap};
+use the_mop::points::{Self as points, PointsRegistry};
 
 use world::access::OwnerCap;
 use world::character::Character;
@@ -24,16 +25,10 @@ public struct SmartStorageAuth has drop {}
 public struct SmartStorageRegistry has key {
     id: UID,
     linked_item_registry_id: Option<ID>,
+    linked_points_registry_id: Option<ID>,
     allow_high_executor_approval: bool,
     allow_treasury_officer_approval: bool,
     allow_logistics_operative_approval: bool,
-}
-
-/// Event: item moved from player-owned inventory into open inventory.
-public struct ItemMovedToOpenEvent has copy, drop {
-    item_id: u64,
-    quantity: u32,
-    moved_by: address,
 }
 
 /// Event: item moved from open inventory into main inventory.
@@ -77,6 +72,11 @@ public struct PlayerDepositBatchEvent has copy, drop {
     moved_by: address,
 }
 
+public struct PointsRegistryLinkedEvent has copy, drop {
+    points_registry_id: ID,
+    updated_by: address,
+}
+
 // === Errors ===
 
 const EVectorLengthMismatch: u64 = 0;
@@ -84,6 +84,8 @@ const EItemRegistryNotLinked: u64 = 1;
 const EItemRegistryMismatch: u64 = 2;
 const ENotAuthorizedForApproval: u64 = 3;
 const EZeroQuantity: u64 = 4;
+const EPointsRegistryNotLinked: u64 = 5;
+const EPointsRegistryMismatch: u64 = 6;
 
 // === Init ===
 
@@ -91,6 +93,7 @@ fun init(ctx: &mut TxContext) {
     let registry = SmartStorageRegistry {
         id: object::new(ctx),
         linked_item_registry_id: option::none(),
+        linked_points_registry_id: option::none(),
         allow_high_executor_approval: true,
         allow_treasury_officer_approval: true,
         allow_logistics_operative_approval: false,
@@ -106,6 +109,16 @@ fun assert_same_length(item_ids: &vector<u64>, quantities: &vector<u32>) {
         vector::length(item_ids) == vector::length(quantities),
         EVectorLengthMismatch
     );
+}
+
+fun assert_points_registry_linked(
+    registry: &SmartStorageRegistry,
+    points_registry: &PointsRegistry,
+) {
+    assert!(option::is_some(&registry.linked_points_registry_id), EPointsRegistryNotLinked);
+
+    let linked_id_ref = option::borrow(&registry.linked_points_registry_id);
+    assert!(*linked_id_ref == object::id(points_registry), EPointsRegistryMismatch);
 }
 
 fun assert_nonzero_quantity(quantity: u32) {
@@ -174,6 +187,20 @@ public fun link_item_registry_as_admin(
     });
 }
 
+public fun link_points_registry_as_admin(
+    registry: &mut SmartStorageRegistry,
+    _: &AdminCap,
+    points_registry: &PointsRegistry,
+    ctx: &TxContext,
+) {
+    registry.linked_points_registry_id = option::some(object::id(points_registry));
+
+    event::emit(PointsRegistryLinkedEvent {
+        points_registry_id: object::id(points_registry),
+        updated_by: ctx.sender(),
+    });
+}
+
 public fun set_approval_policy_as_admin(
     registry: &mut SmartStorageRegistry,
     _: &AdminCap,
@@ -204,6 +231,7 @@ public fun set_approval_policy_as_admin(
 public fun move_configured_player_items_to_open(
     registry: &SmartStorageRegistry,
     item_registry: &ItemConfigRegistry,
+    points_registry: &mut PointsRegistry,
     storage_unit: &mut StorageUnit,
     character: &Character,
     owner_cap: &OwnerCap<Character>,
@@ -213,6 +241,7 @@ public fun move_configured_player_items_to_open(
 ) {
     assert_same_length(&item_ids, &quantities);
     assert_item_registry_linked(registry, item_registry);
+    assert_points_registry_linked(registry, points_registry);
 
     let storage_unit_id = object::id(storage_unit);
     let character_id = object::id(character);
@@ -254,6 +283,13 @@ public fun move_configured_player_items_to_open(
                 items::essential_multiplier(cfg) *
                 (quantity as u64);
 
+            points::award_points(
+                points_registry,
+                character.character_address(),
+                points_awarded,
+                ctx.sender(),
+            );
+            
             event::emit(PlayerDepositItemEvent {
                 storage_unit_id,
                 character_id,

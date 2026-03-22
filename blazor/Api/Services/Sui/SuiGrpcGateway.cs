@@ -1,4 +1,6 @@
-﻿using Google.Protobuf;
+﻿using Common.Events;
+using Common.Player;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Grpc.Net.Client;
@@ -9,9 +11,10 @@ using static Api.Services.Sui.ApiDtos;
 
 namespace Api.Services.Sui
 {
-    public class SuiGrpcGateway
+    public class SuiGrpcGateway(RecentDepositStore recentDepositStore)
     {
         private readonly ConcurrentDictionary<string, GrpcChannel> _channels = new();
+        private readonly RecentDepositStore _recentDepositStore = recentDepositStore;
 
         private static string GetGraphQLUrl(string network) => network switch
         {
@@ -363,6 +366,62 @@ namespace Api.Services.Sui
                 Url: url,
                 OwnerCapId: ownerCapId
             );
+        }
+
+        public Task<PlayerProfilePointsDto> GetPlayerProfilePointsAsync(
+            string walletAddress,
+            string characterId,
+            string characterName,
+            long totalPoints)
+        {
+            var recent = _recentDepositStore.GetRecent(walletAddress);
+
+            var dto = new PlayerProfilePointsDto
+            {
+                WalletAddress = walletAddress,
+                CharacterId = characterId,
+                CharacterName = characterName,
+                TotalPoints = totalPoints,
+                RecentDeposits = recent,
+                Stamps = BuildStamps(totalPoints, recent.Count)
+            };
+
+            return Task.FromResult(dto);
+        }
+
+        private static List<AchievementStampDto> BuildStamps(long ministryPoints, int recentDepositCount)
+        {
+            return
+            [
+                new AchievementStampDto
+                {
+                    Code = "FIRST_DEPOSIT",
+                    Title = "First Deposit",
+                    Description = "Submitted your first ministry deposit.",
+                    Unlocked = recentDepositCount > 0 || ministryPoints > 0
+                },
+                new AchievementStampDto
+                {
+                    Code = "POINTS_100",
+                    Title = "100 Ministry Points",
+                    Description = "Reached 100 ministry points.",
+                    Unlocked = ministryPoints >= 100
+                },
+                new AchievementStampDto
+                {
+                    Code = "POINTS_500",
+                    Title = "500 Ministry Points",
+                    Description = "Reached 500 ministry points.",
+                    Unlocked = ministryPoints >= 500
+                },
+                new AchievementStampDto
+                {
+                    Code = "POINTS_1000",
+                    Title = "1,000 Ministry Points",
+                    Description = "Reached 1,000 ministry points.",
+                    Unlocked = ministryPoints >= 1000
+                }
+            ];
         }
 
         // ---- local helpers ----

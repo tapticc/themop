@@ -8,5 +8,6 @@
         public string ItemConfigRegistryId { get; set; } = string.Empty;
         public string EnergyConfigId { get; set; } = string.Empty;
         public string SmartStorageRegistryId { get; set; } = string.Empty;
+        public string PointsRegistryId { get; set; } = string.Empty;
     }
 }

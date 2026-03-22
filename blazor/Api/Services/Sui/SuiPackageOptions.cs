@@ -5,5 +5,6 @@
         public string World { get; set; } = string.Empty;
         public string TheMopPackageId { get; set; } = string.Empty;
         public string ItemConfigRegistryId { get; set; } = string.Empty;
+        public string PointsRegistryId { get; set; } = string.Empty;
     }
 }

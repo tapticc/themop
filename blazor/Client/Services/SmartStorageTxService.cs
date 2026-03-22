@@ -24,6 +24,7 @@ namespace Client.Services
                 worldPackageId = _contracts.WorldPackageId,
                 smartStorageRegistryId = _contracts.SmartStorageRegistryId,
                 itemConfigRegistryId = _contracts.ItemConfigRegistryId,
+                pointsRegistryId = _contracts.PointsRegistryId,
                 storageUnitId,
                 characterId,
                 characterOwnerCapId,

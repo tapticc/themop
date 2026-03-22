@@ -94,5 +94,28 @@
         }
         """;
 
+        public const string GetPlayerPoints = """
+        query GetPlayerPoints($registry: SuiAddress!) {
+          object(address: $registry) {
+            dynamicFields(first: 50) {
+              nodes {
+                name {
+                  type {
+                    repr
+                  }
+                  json
+                }
+                value {
+                  __typename
+                  ... on MoveValue {
+                    json
+                  }
+                }
+              }
+            }
+          }
+        }
+        """;
+
     }
 }
