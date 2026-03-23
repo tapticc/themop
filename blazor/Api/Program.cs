@@ -19,6 +19,8 @@ builder.Services.AddScoped<RoleService>();
 
 builder.Services.AddHttpClient<GraphQLClient>();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddCors(o =>
 {
     o.AddDefaultPolicy(p =>

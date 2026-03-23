@@ -45,5 +45,17 @@ namespace Api.Services.Sui
                     : [];
             }
         }
+
+        public List<PlayerDepositEventRow> GetRecentGlobal(int count = 10)
+        {
+            lock (_gate)
+            {
+                return _rows
+                    .SelectMany(x => x.Value)
+                    .OrderByDescending(x => x.TimestampMs)
+                    .Take(count)
+                    .ToList();
+            }
+        }
     }
 }

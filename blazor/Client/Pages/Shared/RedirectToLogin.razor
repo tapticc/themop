@@ -1,8 +1,18 @@
-﻿@inject NavigationManager Nav
+﻿@using Client.Models
+@inject NavigationManager Navigation
+@inject AppState AppState
 
 @code {
+
     protected override void OnInitialized()
     {
-        Nav.NavigateTo("/login", replace: true);
+        var relativeUrl = Navigation.Uri.Replace(Navigation.BaseUri, "/");
+
+        if (!relativeUrl.StartsWith("/login"))
+        {
+            AppState.ReturnUrl = relativeUrl;
+        }
+
+        Navigation.NavigateTo("/login", false);
     }
 }

@@ -9,6 +9,7 @@
         public long TotalPoints { get; set; }
 
         public List<PlayerDepositEventRow> RecentDeposits { get; set; } = [];
+        public List<PlayerDepositEventRow> GlobalRecent { get; set; } = [];
         public List<AchievementStampDto> Stamps { get; set; } = [];
-    }
+    }   
 }

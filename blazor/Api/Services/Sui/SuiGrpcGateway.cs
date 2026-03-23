@@ -4,6 +4,7 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Grpc.Net.Client;
+using Microsoft.Extensions.Caching.Memory;
 using Sui.Rpc.V2;
 using System.Collections.Concurrent;
 using System.Text.Json;
@@ -11,10 +12,11 @@ using static Api.Services.Sui.ApiDtos;
 
 namespace Api.Services.Sui
 {
-    public class SuiGrpcGateway(RecentDepositStore recentDepositStore)
+    public class SuiGrpcGateway(RecentDepositStore recentDepositStore, IMemoryCache cache)
     {
         private readonly ConcurrentDictionary<string, GrpcChannel> _channels = new();
         private readonly RecentDepositStore _recentDepositStore = recentDepositStore;
+        private readonly IMemoryCache _cache = cache;
 
         private static string GetGraphQLUrl(string network) => network switch
         {
@@ -383,10 +385,37 @@ namespace Api.Services.Sui
                 CharacterName = characterName,
                 TotalPoints = totalPoints,
                 RecentDeposits = recent,
+                GlobalRecent = _recentDepositStore.GetRecentGlobal(10),
                 Stamps = BuildStamps(totalPoints, recent.Count)
             };
 
             return Task.FromResult(dto);
+        }
+
+        private async Task<string> ResolveCharacterNameAsync(
+            string characterId,
+            CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(characterId))
+                return string.Empty;
+
+            var cacheKey = $"character-name:{characterId}";
+
+            if (_cache.TryGetValue<string>(cacheKey, out var cached) && !string.IsNullOrWhiteSpace(cached))
+                return cached;
+
+            try
+            {
+                var character = await GetCharacterAsync(characterId, "testnet", ct);
+                var name = character.Name ?? string.Empty;
+
+                _cache.Set(cacheKey, name, TimeSpan.FromMinutes(10));
+                return name;
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         private static List<AchievementStampDto> BuildStamps(long ministryPoints, int recentDepositCount)

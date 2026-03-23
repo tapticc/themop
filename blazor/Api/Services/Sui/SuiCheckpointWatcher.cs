@@ -2,6 +2,7 @@
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Net.Client;
+using Microsoft.Extensions.Caching.Memory;
 using Sui.Rpc.V2;
 using System.Text.Json;
 
@@ -9,10 +10,12 @@ namespace Api.Services.Sui
 {
     public sealed class SuiCheckpointWatcher(
         ILogger<SuiCheckpointWatcher> logger,
-        RecentDepositStore store) : BackgroundService
+        RecentDepositStore store,
+        IMemoryCache cache) : BackgroundService
     {
         private readonly ILogger<SuiCheckpointWatcher> _logger = logger;
         private readonly RecentDepositStore _store = store;
+        private readonly IMemoryCache _cache = cache;
 
         private const string Network = "testnet";
 
@@ -139,73 +142,51 @@ namespace Api.Services.Sui
                 if (checkpoint is null)
                     continue;
 
-                ProcessCheckpoint(checkpoint);
+                await ProcessCheckpointAsync(ledger, checkpoint, ct);
             }
         }
 
-        private void ProcessCheckpoint(Checkpoint checkpoint)
-        {
-            ProcessCheckpoint(checkpoint, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-        }
+        //new JsonSerializerOptions
+        //    {
+        //    WriteIndented = true
+        //    }
 
-        private void ProcessCheckpoint(Checkpoint checkpoint, JsonSerializerOptions options)
+        private async Task ProcessCheckpointAsync(
+            LedgerService.LedgerServiceClient ledger,
+            Checkpoint checkpoint,
+            CancellationToken ct)
         {
             foreach (var tx in checkpoint.Transactions)
             {
                 var events = tx.Events?.Events;
-
-                //_logger.LogInformation("Processing tx {Digest} with timestamp {Ts}", tx.Digest, tx.Timestamp?.ToDateTimeOffset());
-
                 if (events is null || events.Count == 0)
-                {
-                    //_logger.LogInformation("No events");
                     continue;
-                }
-
-                //_logger.LogInformation("Processing tx {Digest} with {Count} events", tx.Digest, events.Count);
 
                 foreach (var evt in events)
                 {
-                    //_logger.LogInformation("Found event with type: {Type}", evt.EventType);
-
                     var eventType = evt.EventType ?? "";
-                    //_logger.LogInformation("Found event type: {Type}", eventType);  // log ALL types to see what's coming
+
                     if (!eventType.Contains("::smart_storage::PlayerDepositBatchEvent", StringComparison.Ordinal))
                         continue;
 
-                    //_logger.LogInformation("Found event with type containing '::smart_storage::': {Type}", eventType);
-
-                    //if (!eventType.Contains("::smart_storage::PlayerDepositBatchEvent", StringComparison.Ordinal))
-                    //    continue;
-
                     if (evt.Json is null)
-                    {
-                        _logger.LogWarning(
-                            "Matched PlayerDepositBatchEvent but JSON payload was null. Tx={Digest}",
-                            tx.Digest);
                         continue;
-                    }
 
                     var jsonText = JsonFormatter.Default.Format(evt.Json);
-
-                    //_logger.LogInformation(
-                    //    "Processing PlayerDepositBatchEvent. Tx={Digest} JSON={Json}",
-                    //    tx.Digest,
-                    //    jsonText);
-
                     using var doc = JsonDocument.Parse(jsonText);
                     var root = doc.RootElement;
+
+                    var characterId = GetString(root, "character_id");
+                    var characterAddress = GetString(root, "character_address");
+                    var characterName = await ResolveCharacterNameAsync(ledger, characterId, ct);
 
                     var row = new PlayerDepositEventRow
                     {
                         Id = BuildStableId(
                             tx.Digest ?? "",
                             eventType,
-                            GetString(root, "character_address"),
-                            GetString(root, "character_id"),
+                            characterAddress,
+                            characterId,
                             GetString(root, "storage_unit_id"),
                             GetStringOrRaw(root, "item_count"),
                             GetStringOrRaw(root, "total_quantity"),
@@ -214,24 +195,18 @@ namespace Api.Services.Sui
                         EventSeq = "",
                         PackageId = evt.PackageId ?? "",
                         TimestampMs = tx.Timestamp?.ToDateTimeOffset().ToUnixTimeMilliseconds().ToString() ?? "",
-                        CharacterAddress = GetString(root, "character_address"),
-                        CharacterId = GetString(root, "character_id"),
+                        CharacterAddress = characterAddress,
+                        CharacterId = characterId,
+                        CharacterName = characterName,
                         StorageUnitId = GetString(root, "storage_unit_id"),
                         ItemCount = GetStringOrRaw(root, "item_count"),
                         TotalQuantity = GetStringOrRaw(root, "total_quantity"),
                         TotalPointsAwarded = GetStringOrRaw(root, "total_points_awarded"),
                         MovedBy = GetString(root, "moved_by"),
-                        RawJson = JsonSerializer.Serialize(root, options)
+                        RawJson = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true })
                     };
 
                     _store.Add(row);
-
-                    //_logger.LogInformation(
-                    //    "Indexed PlayerDepositBatchEvent tx={Digest} character={CharacterAddress} qty={Qty} points={Points}",
-                    //    row.TxDigest,
-                    //    row.CharacterAddress,
-                    //    row.TotalQuantity,
-                    //    row.TotalPointsAwarded);
                 }
             }
         }
@@ -290,6 +265,58 @@ namespace Api.Services.Sui
                 cancellationToken: ct);
 
             return response.Checkpoint;
+        }
+
+        private async Task<string> ResolveCharacterNameAsync(
+            LedgerService.LedgerServiceClient ledger,
+            string characterId,
+            CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(characterId))
+                return string.Empty;
+
+            var cacheKey = $"character-name:{characterId}";
+            if (_cache.TryGetValue<string>(cacheKey, out var cached) && !string.IsNullOrWhiteSpace(cached))
+                return cached;
+
+            try
+            {
+                var req = new GetObjectRequest
+                {
+                    ObjectId = characterId,
+                    ReadMask = new FieldMask
+                    {
+                        Paths = { "json" }
+                    }
+                };
+
+                var resp = await ledger.GetObjectAsync(req, cancellationToken: ct);
+                if (resp.Object?.Json is null)
+                    return string.Empty;
+
+                var jsonText = JsonFormatter.Default.Format(resp.Object.Json);
+                using var doc = JsonDocument.Parse(jsonText);
+                var root = doc.RootElement;
+
+                string name = string.Empty;
+
+                if (root.TryGetProperty("metadata", out var metadata) &&
+                    metadata.TryGetProperty("name", out var nameEl))
+                {
+                    name = nameEl.GetString() ?? string.Empty;
+                }
+
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    _cache.Set(cacheKey, name, TimeSpan.FromMinutes(10));
+                }
+
+                return name;
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         private static string GetString(JsonElement obj, string name)

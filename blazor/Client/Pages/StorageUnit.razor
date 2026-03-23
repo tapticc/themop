@@ -9,6 +9,8 @@
 @inject Client.Services.WorldStorageTxService WorldStorageTxService
 @inject Client.Services.WorldStorageService WorldStorageService
 @inject Client.Services.SmartStorageTxService SmartStorageTxService
+@inject NavigationManager Nav
+@inject SuiWalletService WalletService
 @implements IDisposable
 
 <PageTitle>Storage</PageTitle>
@@ -176,6 +178,9 @@
     [Parameter]
     public string? AssemblyAddress { get; set; }
 
+    private bool _checkedAuth;
+    private bool _redirectingToLogin;
+
     private StorageInventoriesDetails? Inventory { get; set; }
     private StorageUnitDetails? Storage { get; set; }
 
@@ -210,6 +215,13 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        await EnsureWalletConnectedAsync();
+
+        if (_redirectingToLogin)
+        {
+            return;
+        }
+
         await LoadView();
         StartRefreshLoop();
     }
@@ -219,6 +231,29 @@
         _refreshCts?.Cancel();
         _refreshTimer?.Dispose();
         _refreshCts?.Dispose();
+    }
+
+    private async Task EnsureWalletConnectedAsync()
+    {
+        if (_checkedAuth)
+            return;
+
+        _checkedAuth = true;
+
+        var currentWallet = await WalletService.GetCurrentAddressAsync();
+
+        if (string.IsNullOrWhiteSpace(currentWallet))
+        {
+            _redirectingToLogin = true;
+
+            var returnUrl = $"/storage/{AssemblyAddress}";
+            var encoded = Uri.EscapeDataString(returnUrl);
+
+            Nav.NavigateTo($"/login?returnUrl={encoded}", true);
+            return;
+        }
+
+        AppState.SetWallet(WalletType.EveFrontier, currentWallet);
     }
 
     private async Task LoadView()
@@ -253,9 +288,12 @@
             Storage = await WorldStorageService.GetStorageUnitAsync(AssemblyAddress);
             if (Storage is null || !Storage.Found)
             {
+                AppState.SetAssembly(string.Empty);
                 Error = Storage?.Error ?? "Storage unit lookup failed.";
                 return;
             }
+
+            AppState.SetAssembly(Storage.ObjectId);
 
             Inventory = await StorageInventoryService.GetInventoriesAsync(
                 AssemblyAddress,

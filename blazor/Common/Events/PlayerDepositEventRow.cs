@@ -9,6 +9,7 @@
         public string TimestampMs { get; set; } = string.Empty;
 
         public string CharacterAddress { get; set; } = string.Empty;
+        public string CharacterName { get; set; } = string.Empty;
         public string CharacterId { get; set; } = string.Empty;
         public string StorageUnitId { get; set; } = string.Empty;
 

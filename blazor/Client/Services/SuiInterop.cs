@@ -7,7 +7,7 @@ namespace Client.Services;
 
 public class SuiInterop(IJSRuntime js) : IAsyncDisposable
 {
-    private const string JsVersion = "20260320-2";
+    private const string JsVersion = "20260323-1";
 
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
         js.InvokeAsync<IJSObjectReference>("import", $"/js/suiInterop.js?v={JsVersion}").AsTask());
@@ -97,7 +97,6 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
         return await module.InvokeAsync<object>("setFullItemConfig", args);
     }
 
-
     //ROLES
 
     public async Task<TxResult> GrantRoleAsync(GrantRoleTxRequest request)
@@ -168,6 +167,12 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
     {
         var module = await _moduleTask.Value;
         return await module.InvokeAsync<TxResult>("updateStorageUnitUrl", request);
+    }
+
+    public async Task<TxResult> ConfigureStorageAssemblyAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("configureStorageAssembly", request);
     }
 
     public async Task<TxResult> DepositConfiguredItemsToOpenAsync(object request)

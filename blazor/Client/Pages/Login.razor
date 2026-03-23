@@ -82,6 +82,9 @@
 </div>
 
 @code {
+	[SupplyParameterFromQuery]
+	public string? ReturnUrl { get; set; }
+
 	bool _connecting;
 	string? _address;
 	private string? _error;
@@ -89,11 +92,12 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+		var uri = Nav.ToAbsoluteUri(Nav.Uri);
+
 		await SuiInterop.InitAsync(
 			Network.Current.Network.ToString().ToLowerInvariant(),
 			Network.Current.RpcUrl,
 			Network.Current.PreferredWallet
-
 		);
 
 		Network.OnChanged += HandleNetworkChanged;
@@ -109,7 +113,6 @@
 			Network.Current.Network.ToString().ToLowerInvariant(),
 			Network.Current.RpcUrl,
 			Network.Current.PreferredWallet
-
 		);
 
 		await InvokeAsync(StateHasChanged);
@@ -160,8 +163,18 @@
 				AppState.SetRoleContext(null);
 			}
 
+			AppState.AuthResolved = true;
+
 			await Task.Delay(500);
-			Nav.NavigateTo("/");
+
+			if (!string.IsNullOrWhiteSpace(ReturnUrl))
+			{
+				Nav.NavigateTo(ReturnUrl, false);
+			}
+			else
+			{
+				Nav.NavigateTo("/", false);
+			}			
 		}
 		catch (Exception ex)
 		{

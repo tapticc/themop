@@ -143,11 +143,26 @@ namespace Client.Services
             };
         }
 
+        public async Task<PlayerPointsDto> GetPlayerPointsAsync(string characterAddress, bool forceRefresh = false)
+        {
+            var url =
+                $"api/sui/player-points?characterAddress={Uri.EscapeDataString(characterAddress)}";
+
+            if (forceRefresh)
+            {
+                url += $"&t={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            }
+
+            var response = await _http.GetFromJsonAsync<PlayerPointsDto>(url);
+            return response ?? new PlayerPointsDto(characterAddress, 0, 0);
+        }
+
         public async Task<PlayerProfilePointsDto> GetPlayerProfilePointsAsync(
             string walletAddress,
             string characterId,
             string characterName,
-            long totalPoints)
+            long totalPoints,
+            bool forceRefresh = false)
         {
             var url =
                 $"api/sui/player-profile-points" +
@@ -155,6 +170,11 @@ namespace Client.Services
                 $"&characterId={Uri.EscapeDataString(characterId)}" +
                 $"&characterName={Uri.EscapeDataString(characterName)}" +
                 $"&totalPoints={totalPoints}";
+
+            if (forceRefresh)
+            {
+                url += $"&t={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            }
 
             var result = await _http.GetFromJsonAsync<PlayerProfilePointsDto>(url);
 
@@ -165,14 +185,6 @@ namespace Client.Services
                 CharacterName = characterName,
                 TotalPoints = totalPoints
             };
-        }
-
-        public async Task<PlayerPointsDto> GetPlayerPointsAsync(string characterAddress)
-        {
-            var response = await _http.GetFromJsonAsync<PlayerPointsDto>(
-                $"api/sui/player-points?characterAddress={Uri.EscapeDataString(characterAddress)}");
-
-            return response ?? new PlayerPointsDto(characterAddress, 0, 0);
         }
     }
 }

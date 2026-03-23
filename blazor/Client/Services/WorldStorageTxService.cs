@@ -70,5 +70,19 @@ namespace Client.Services
                 ownerCapId,
                 url
             });
+
+        public Task<TxResult> ConfigureAssemblyAsync(string storageUnitId, string characterId, string storageOwnerCapId,
+            string name, string description, string url) =>
+            _interop.ConfigureStorageAssemblyAsync(new
+            {
+                worldPackageId = _contracts.WorldPackageId,
+                theMopPackageId = _contracts.TheMopPackageId,
+                storageUnitId,
+                characterId,
+                storageOwnerCapId,
+                name,
+                description,
+                url
+            });        
     }
 }

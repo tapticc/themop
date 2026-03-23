@@ -1,0 +1,178 @@
+﻿@page "/Roles"
+@using Client.Models
+@using Common.Roles
+@using Common.Sui
+@inject Client.Services.SuiApiClient Api
+@inject AppState AppState
+
+<PageTitle>The Ministry of Passage</PageTitle>
+
+<div class="mop-section">
+    <h1 class="mop-directive-title">The Ministry of Passage</h1>
+    <div class="mop-section-rule"></div>
+
+    <p class="eve-text-muted">
+        Connected to EVE Frontier with wallet address:
+        <b>@AppState.WalletAddress</b>
+    </p>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="alert alert-danger mt-3">
+        @Error
+    </div>
+}
+
+@if (Character is not null)
+{
+    <div class="mop-section">
+        <div class="mop-section-title">Citizen Dossier</div>
+        <div class="mop-section-rule"></div>
+
+        <div class="mop-dossier">
+            <div class="mop-dossier-title">Character Record</div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Player Profile ID</div>
+                <div class="mop-dossier-value">@Character.PlayerProfileId</div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Character ID</div>
+                <div class="mop-dossier-value">@Character.CharacterId</div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Character Name</div>
+                <div class="mop-dossier-value">@Character.CharacterName</div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Owner Cap ID</div>
+                <div class="mop-dossier-value">@Character.OwnerCapId</div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Debug Data</div>
+                <div class="mop-dossier-value">@Character.DebugData</div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (AppState.RoleContext is not null)
+{
+    <div class="mop-section">
+        <div class="mop-section-title">Role Summary</div>
+        <div class="mop-section-rule"></div>
+
+        <div class="mop-dossier">
+            <div class="mop-dossier-title">Ministry Clearance</div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">High Executor</div>
+                <div class="mop-dossier-value">
+                    <span class="mop-role-status mop-label @(HasRole(RoleIds.HighExecutor) ? "mop-label-success" : "mop-label-warning")">
+                        @YesNo(HasRole(RoleIds.HighExecutor))
+                    </span>
+                </div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Compliance Officer</div>
+                <div class="mop-dossier-value">
+                    <span class="mop-role-status mop-label @(HasRole(RoleIds.ComplianceOfficer) ? "mop-label-success" : "mop-label-warning")">
+                        @YesNo(HasRole(RoleIds.ComplianceOfficer))
+                    </span>
+                </div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Logistics Operative</div>
+                <div class="mop-dossier-value">
+                    <span class="mop-role-status mop-label @(HasRole(RoleIds.LogisticsOperative) ? "mop-label-success" : "mop-label-warning")">
+                        @YesNo(HasRole(RoleIds.LogisticsOperative))
+                    </span>
+                </div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Recon Operative</div>
+                <div class="mop-dossier-value">
+                    <span class="mop-role-status mop-label @(HasRole(RoleIds.ReconOperative) ? "mop-label-success" : "mop-label-warning")">
+                        @YesNo(HasRole(RoleIds.ReconOperative))
+                    </span>
+                </div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Treasury Officer</div>
+                <div class="mop-dossier-value">
+                    <span class="mop-role-status mop-label @(HasRole(RoleIds.TreasuryOfficer) ? "mop-label-success" : "mop-label-warning")">
+                        @YesNo(HasRole(RoleIds.TreasuryOfficer))
+                    </span>
+                </div>
+            </div>
+
+            <div class="mop-dossier-row">
+                <div class="mop-dossier-key">Registered Citizen</div>
+                <div class="mop-dossier-value">
+                    <span class="mop-role-status mop-label @(HasRole(RoleIds.RegisteredCitizen) ? "mop-label-success" : "mop-label-warning")">
+                        @YesNo(HasRole(RoleIds.RegisteredCitizen))
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private CharacterSummary? Character { get; set; }
+    private string? Error { get; set; }
+    private bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCharacterData();
+    }
+
+    private async Task LoadCharacterData()
+    {
+        Error = string.Empty;
+        Character = null;
+        IsLoading = true;
+
+        if (AppState.WalletAddress == null)
+        {
+            IsLoading = false;
+            return;
+        }
+
+        try
+        {
+            var data = await Api.GetCharacterFromWalletAsync(AppState.WalletAddress);
+            Character = data ?? new();
+        }
+        catch (Exception ex)
+        {
+            Error = $"Error loading character: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+
+        if (Character is null)
+        {
+            Error = "No PlayerProfile or Character object was found for that wallet.";
+        }
+    }
+
+    private bool HasRole(byte roleId)
+    {
+        return AppState.RoleContext?.RoleIds?.Contains(roleId) == true;
+    }
+
+    private static string YesNo(bool value) => value ? "AUTHORIZED" : "DENIED";
+}

@@ -51,8 +51,6 @@ namespace Client.Services
                 return;
 
             _currentWalletAddress = walletAddress;
-
-            _appState?.ResetSession(); // optional if injected
             OnChanged?.Invoke();
         }
 

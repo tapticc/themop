@@ -42,34 +42,17 @@ public static class SuiEndpoints
             }
         });
 
-        app.MapGet("/api/sui/player-profile-points",
-        async (
-            string walletAddress,
-            string characterId,
-            string characterName,
-            long totalPoints,
-            SuiGrpcGateway gw,
-            CancellationToken ct) =>
+        app.MapGet("/api/sui/player-points",
+        async (string characterAddress, long? t, SuiGraphQLService suiGraphQLService, CancellationToken ct) =>
         {
-            if (string.IsNullOrWhiteSpace(walletAddress))
-                return Results.BadRequest("walletAddress is required.");
-
-            var result = await gw.GetPlayerProfilePointsAsync(
-                walletAddress,
-                characterId,
-                characterName,
-                totalPoints);
-
+            var result = await suiGraphQLService.GetPlayerPointsAsync(characterAddress, ct);
             return Results.Ok(result);
         });
 
-        app.MapGet("/api/sui/player-points",
-        async (string characterAddress, SuiGraphQLService suiGraphQLService, CancellationToken ct) =>
+        app.MapGet("/api/sui/player-profile-points",
+        async (string walletAddress, string characterId, string characterName, long totalPoints, long? t, SuiGrpcGateway gw, CancellationToken ct) =>
         {
-            if (string.IsNullOrWhiteSpace(characterAddress))
-                return Results.BadRequest("characterAddress is required.");
-
-            var result = await suiGraphQLService.GetPlayerPointsAsync(characterAddress, ct);
+            var result = await gw.GetPlayerProfilePointsAsync(walletAddress, characterId, characterName, totalPoints);
             return Results.Ok(result);
         });
 

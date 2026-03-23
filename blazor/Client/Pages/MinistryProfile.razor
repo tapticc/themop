@@ -3,163 +3,287 @@
 @using Common.Events
 @inject AppState AppState
 @inject Client.Services.SuiApiClient Api
+@implements IAsyncDisposable
 
 <PageTitle>Ministry Profile</PageTitle>
 
 <div class="mop-profile-shell">
-    @if (!string.IsNullOrWhiteSpace(Error))
-    {
-        <div class="alert alert-danger">@Error</div>
-    }
-    else if (IsLoading)
-    {
-        <div class="mop-profile-card">
-            <div class="mop-profile-muted">Loading ministry profile...</div>
-        </div>
-    }
-    else if (Profile is not null)
-    {
-        <div class="mop-profile-card mop-profile-header">
-            <div class="mop-profile-title">Ministry Profile</div>
-            <div class="mop-profile-name">@Profile.CharacterName</div>
-            <div class="mop-profile-sub">@ShortId(Profile.CharacterId)</div>
-        </div>
+	@if (!string.IsNullOrWhiteSpace(Error))
+	{
+		<div class="alert alert-danger">@Error</div>
+	}
+	else if (IsLoading)
+	{
+		<div class="mop-profile-card">
+			<div class="mop-profile-muted">Loading ministry profile...</div>
+		</div>
+	}
+	else if (Profile is not null)
+	{
+		<div class="mop-profile-card mop-profile-header">
+			<div class="mop-profile-title">Ministry Profile</div>
+			<div class="mop-profile-name">@Profile.CharacterName</div>
+			<div class="mop-profile-sub">@ShortId(Profile.CharacterId)</div>
+		</div>
 
-        <div class="mop-profile-card">
-            <div class="mop-profile-section-title">Standing</div>
+		<div class="mop-profile-card">
+			<div class="mop-profile-section-title">Standing</div>
 
-            <div class="mop-profile-stat-grid">
-                <div class="mop-profile-stat">
-                    <div class="mop-profile-stat-label">Compliance Points</div>
-                    <div class="mop-profile-stat-value">@AppState.CharacterSummary?.CompliancePoints</div>
-                </div>
+			<div class="mop-profile-stat-grid">
+				<div class="mop-profile-stat">
+					<div class="mop-profile-stat-label">Compliance Points</div>
+					<div class="mop-profile-stat-value">@AppState.CharacterSummary?.CompliancePoints</div>
+				</div>
 
-                <div class="mop-profile-stat">
-                    <div class="mop-profile-stat-label">Ministry Points</div>
-                    <div class="mop-profile-stat-value">@AppState.CharacterSummary?.MinistryPoints</div>
-                </div>
-            </div>
-        </div>
+				<div class="mop-profile-stat">
+					<div class="mop-profile-stat-label">Ministry Points</div>
+					<div class="mop-profile-stat-value">@AppState.CharacterSummary?.MinistryPoints</div>
+				</div>
+			</div>
+		</div>
 
-        <div class="mop-profile-card">
-            <div class="mop-profile-section-title">Recent Activity</div>
+		<div class="mop-profile-card">
+			<div class="mop-profile-section-title">Ministry Activity</div>
 
-            @if (Profile.RecentDeposits.Count == 0)
-            {
-                <div class="mop-profile-muted">No recent deposit activity.</div>
-            }
-            else
-            {
-                @foreach (var row in Profile.RecentDeposits)
-                {
-                    <div class="mop-profile-activity">
-                        <div class="mop-profile-activity-head">
-                            <span>@FormatTime(row.TimestampMs)</span>
-                            <span>@ShortId(row.StorageUnitId)</span>
-                        </div>
+			@if (Profile.GlobalRecent.Count == 0)
+			{
+				<div class="mop-profile-muted">No recent ministry activity.</div>
+			}
+			else
+			{
+				@foreach (var row in Profile.GlobalRecent)
+				{
+					<div class="mop-profile-activity-global">
+						<div class="mop-profile-activity-line">
+							@if (IsCurrentPlayer(row.CharacterAddress))
+							{
+								<span class="mop-profile-highlight">You</span>
+							}
+							else
+							{
+								<span class="mop-profile-highlight">
+									@DisplayPlayerName(row)
+								</span>
+							}
 
-                        <div class="mop-profile-activity-row">
-                            <span>Item Types</span>
-                            <span>@row.ItemCount</span>
-                        </div>
+							<span> just earned </span>
 
-                        <div class="mop-profile-activity-row">
-                            <span>Quantity</span>
-                            <span>@row.TotalQuantity</span>
-                        </div>
+							<span class="mop-profile-highlight">
+								@row.TotalPointsAwarded
+							</span>
 
-                        <div class="mop-profile-activity-row">
-                            <span>Points</span>
-                            <span>@row.TotalPointsAwarded</span>
-                        </div>
-                    </div>
-                }
-            }
-        </div>
+							<span> points by depositing items.</span>
 
-        <div class="mop-profile-card">
-            <div class="mop-profile-section-title">Achievement Stamps</div>
+							@* <span class="mop-profile-highlight">
+								@row.ItemCount
+							</span> *@
 
-            <div class="mop-stamp-grid">
-                @foreach (var stamp in Profile.Stamps.Where(x => x.Unlocked == true))
-                {
-                    <div class="mop-stamp @(stamp.Unlocked ? "mop-stamp-on" : "mop-stamp-off")">
-                        <div class="mop-stamp-title">@stamp.Title</div>
-                        <div class="mop-stamp-desc">@stamp.Description</div>
-                    </div>
-                }
-            </div>
-        </div>
-    }
+							@* <span> items.</span> *@
+						</div>
+					</div>
+				}
+			}
+		</div>
+
+		<div class="mop-profile-card">
+			<div class="mop-profile-section-title">Achievement Stamps</div>
+
+			<div class="mop-stamp-grid">
+				@foreach (var stamp in Profile.Stamps.Where(x => x.Unlocked == true))
+				{
+					<div class="mop-stamp @(stamp.Unlocked ? "mop-stamp-on" : "mop-stamp-off")">
+						<div class="mop-stamp-title">@stamp.Title</div>
+						<div class="mop-stamp-desc">@stamp.Description</div>
+					</div>
+				}
+			</div>
+		</div>
+	}
 </div>
 
 @code {
-    private PlayerProfilePointsDto? Profile;
-    private string? Error;
-    private bool IsLoading;
+	private PlayerProfilePointsDto? Profile;
+	private string? Error;
+	private bool IsLoading;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadProfile();
-    }
+	private PeriodicTimer? _refreshTimer;
+	private CancellationTokenSource? _refreshCts;
+	private bool _refreshRunning;
+	private bool _refreshStarted;
 
-    private async Task LoadProfile()
-    {
-        Error = null;
-        IsLoading = true;
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadProfile();
+	}
 
-        try
-        {
-            if (AppState.CharacterSummary is null || string.IsNullOrWhiteSpace(AppState.WalletAddress)
-                || AppState.CharacterSummary.CharacterId == null || AppState.CharacterSummary.CharacterName == null)
-            {
-                Error = "Character session is missing.";
-                return;
-            }
+	protected override Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender && !_refreshStarted)
+		{
+			_refreshStarted = true;
+			StartRefreshLoop();
+		}
 
-            var points = await Api.GetPlayerPointsAsync(AppState.WalletAddress);
+		return Task.CompletedTask;
+	}
 
-            AppState.CharacterSummary.CompliancePoints = points.CompliancePoints;
-            AppState.CharacterSummary.MinistryPoints = points.MinistryPoints;
+	private void StartRefreshLoop()
+	{
+		_refreshCts = new CancellationTokenSource();
+		_refreshTimer = new PeriodicTimer(TimeSpan.FromSeconds(10));
 
-            Profile = await Api.GetPlayerProfilePointsAsync(
-                AppState.WalletAddress,
-                AppState.CharacterSummary.CharacterId,
-                AppState.CharacterSummary.CharacterName,
-                points.MinistryPoints);
-        }
-        catch (Exception ex)
-        {
-            Error = ex.Message;
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				while (await _refreshTimer.WaitForNextTickAsync(_refreshCts.Token))
+				{
+					if (_refreshRunning)
+						continue;
 
-    private static string ShortId(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value) || value.Length < 14)
-            return value ?? "";
+					_refreshRunning = true;
 
-        return $"{value[..8]}...{value[^6..]}";
-    }
+					try
+					{
+						await InvokeAsync(async () =>
+						{
+							await LoadProfile(forceRefresh: true);
+							StateHasChanged();
+						});
+					}
+					finally
+					{
+						_refreshRunning = false;
+					}
+				}
+			}
+			catch (OperationCanceledException)
+			{
+			}
+		});
+	}
 
-    private static string FormatTime(string? timestampMs)
-    {
-        if (!long.TryParse(timestampMs, out var ms))
-            return "-";
+	public async ValueTask DisposeAsync()
+	{
+		if (_refreshCts is not null)
+		{
+			await _refreshCts.CancelAsync();
+			_refreshCts.Dispose();
+		}
 
-        try
-        {
-            return DateTimeOffset.FromUnixTimeMilliseconds(ms)
-                .ToLocalTime()
-                .ToString("yyyy-MM-dd HH:mm");
-        }
-        catch
-        {
-            return timestampMs ?? "-";
-        }
-    }
+		_refreshTimer?.Dispose();
+	}
+
+	private bool IsCurrentPlayer(string? address) =>
+		!string.IsNullOrWhiteSpace(address) &&
+		string.Equals(address, AppState.WalletAddress, StringComparison.OrdinalIgnoreCase);
+
+	private string DisplayPlayerName(PlayerDepositEventRow row)
+	{
+		if (!string.IsNullOrWhiteSpace(row.CharacterName))
+			return row.CharacterName;
+
+		return ShortId(row.CharacterAddress);
+	}
+
+	private static string RelativeTime(string? timestampMs)
+	{
+		if (!long.TryParse(timestampMs, out var ms))
+			return "-";
+
+		var ts = DateTimeOffset.FromUnixTimeMilliseconds(ms);
+		var delta = DateTimeOffset.UtcNow - ts;
+
+		if (delta.TotalSeconds < 60)
+			return $"{Math.Max(1, (int)delta.TotalSeconds)}s ago";
+
+		if (delta.TotalMinutes < 60)
+			return $"{(int)delta.TotalMinutes}m ago";
+
+		if (delta.TotalHours < 24)
+			return $"{(int)delta.TotalHours}h ago";
+
+		return $"{(int)delta.TotalDays}d ago";
+	}
+
+	public void Dispose()
+	{
+		_refreshCts?.Cancel();
+		_refreshTimer?.Dispose();
+		_refreshCts?.Dispose();
+	}
+
+	private async Task LoadProfile(bool forceRefresh = false)
+	{
+		Error = null;
+		IsLoading = Profile is null;
+
+		try
+		{
+			if (AppState.CharacterSummary is null || string.IsNullOrWhiteSpace(AppState.WalletAddress)
+				|| AppState.CharacterSummary.CharacterId == null)
+			{
+				Error = "Character session is missing.";
+				return;
+			}
+
+			var points = await Api.GetPlayerPointsAsync(
+				AppState.WalletAddress,
+				forceRefresh);
+
+			AppState.CharacterSummary.CompliancePoints = points.CompliancePoints;
+			AppState.CharacterSummary.MinistryPoints = points.MinistryPoints;
+
+			Profile = await Api.GetPlayerProfilePointsAsync(
+				AppState.WalletAddress,
+				AppState.CharacterSummary.CharacterId,
+				AppState.CharacterSummary.CharacterName ?? "Unknown",
+				points.MinistryPoints,
+				forceRefresh);
+		}
+		catch (Exception ex)
+		{
+			Error = ex.Message;
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
+
+	private static string ShortId(string? value)
+	{
+		if (string.IsNullOrWhiteSpace(value) || value.Length < 14)
+			return value ?? "";
+
+		return $"{value[..8]}...{value[^6..]}";
+	}
+
+	private static string FormatTime(string? timestampMs)
+	{
+		if (!long.TryParse(timestampMs, out var ms))
+			return "-";
+
+		try
+		{
+			return DateTimeOffset.FromUnixTimeMilliseconds(ms)
+				.ToLocalTime()
+				.ToString("yyyy-MM-dd HH:mm");
+		}
+		catch
+		{
+			return timestampMs ?? "-";
+		}
+	}
+
+	private string GetPlayerName(string address)
+	{
+		if (string.Equals(
+			address,
+			AppState.WalletAddress,
+			StringComparison.OrdinalIgnoreCase))
+			return AppState.CharacterSummary?.CharacterName ?? "You";
+
+		return ShortId(address);
+	}
 }

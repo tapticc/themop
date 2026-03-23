@@ -13,8 +13,17 @@ namespace Client.Models
         public WalletRoleContext? RoleContext { get; private set; }
 
         public bool IsConnected => ConnectedWallet != null;
-
         public event Action? OnChange;
+        public bool AuthResolved { get; set; }
+
+        public string? CurrentAssemblyAddress { get; set; }
+        public string? ReturnUrl { get; set; }
+
+        public void SetAssembly(string assembly)
+        {
+            CurrentAssemblyAddress = assembly;
+            OnChange?.Invoke();
+        }
 
         public void SetWallet(WalletType type, string address)
         {

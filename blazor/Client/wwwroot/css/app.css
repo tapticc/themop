@@ -1568,8 +1568,9 @@ h1, h2, h3 {
 }
 
 .mop-stamp-on {
-    border-color: rgba(212,175,55,.28);
     background: rgba(212,175,55,.06);
+    color: #9fe0a7;
+    border-color: rgba(159,224,167,.35);
 }
 
 .mop-stamp-off {
@@ -1578,7 +1579,6 @@ h1, h2, h3 {
 
 .mop-stamp-title {
     font-weight: 700;
-    color: var(--eve-text);
     margin-bottom: 4px;
 }
 
@@ -1587,3 +1587,101 @@ h1, h2, h3 {
     font-size: .8rem;
 }
 
+.mop-profile-activity-global {
+    border-top: 1px dashed rgba(212,175,55,.15);
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.mop-profile-activity-line {
+    font-size: .85rem;
+    color: var(--eve-text);
+    line-height: 1.4;
+}
+
+.mop-profile-highlight {
+    color: var(--mop-gold);
+    font-weight: 700;
+}
+
+.mop-profile-activity-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 6px;
+    color: var(--eve-text-muted);
+    font-size: .74rem;
+}
+
+.mop-config-shell {
+    max-width: 420px;
+    margin: auto;
+    padding: 16px;
+    text-align: center;
+}
+
+.mop-config-image {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(212,175,55,.2);
+}
+
+.mop-config-card {
+    background: linear-gradient(180deg, rgba(18,24,38,.95), rgba(10,15,23,.95));
+    border: 1px solid rgba(212,175,55,.15);
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 6px 22px rgba(0,0,0,.45);
+}
+
+.mop-config-title {
+    color: var(--mop-gold);
+    font-weight: 800;
+    letter-spacing: .5px;
+    margin-bottom: 12px;
+}
+
+.mop-config-text {
+    color: var(--eve-text);
+    font-size: .9rem;
+    margin-bottom: 12px;
+}
+
+.mop-config-text-small {
+    color: var(--eve-text-muted);
+    font-size: .8rem;
+    margin-bottom: 14px;
+}
+
+.mop-highlight {
+    color: var(--mop-gold);
+    font-weight: 700;
+}
+
+.mop-input {
+    width: 100%;
+    padding: 10px;
+    background: #0b1119;
+    border: 1px solid rgba(212,175,55,.25);
+    border-radius: 6px;
+    color: white;
+    margin-bottom: 12px;
+}
+
+.mop-btn {
+    width: 100%;
+    background: linear-gradient(180deg, rgba(212,175,55,.9), rgba(160,130,30,.9));
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    font-weight: 700;
+    color: black;
+    cursor: pointer;
+}
+
+.mop-error {
+    margin-top: 10px;
+    color: #ff6b6b;
+    font-size: .8rem;
+}

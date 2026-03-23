@@ -26754,6 +26754,61 @@ async function depositConfiguredItemsToOpen(args) {
   });
   return await signAndExecuteClientOnly(network, tx);
 }
+async function configureStorageAssembly(args) {
+  const { network } = requireInit();
+  const tx = new Transaction3();
+  tx.setGasBudget(5e7);
+  const [storageOwnerCap, returnReceipt] = tx.moveCall({
+    target: `${args.worldPackageId}::character::borrow_owner_cap`,
+    typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+    arguments: [
+      tx.object(args.characterId),
+      tx.object(args.storageOwnerCapId)
+    ]
+  });
+  tx.moveCall({
+    target: `${args.worldPackageId}::storage_unit::authorize_extension`,
+    typeArguments: [`${args.theMopPackageId}::smart_storage::SmartStorageAuth`],
+    arguments: [
+      tx.object(args.storageUnitId),
+      storageOwnerCap
+    ]
+  });
+  tx.moveCall({
+    target: `${args.worldPackageId}::storage_unit::update_metadata_name`,
+    arguments: [
+      tx.object(args.storageUnitId),
+      storageOwnerCap,
+      tx.pure.string(args.name)
+    ]
+  });
+  tx.moveCall({
+    target: `${args.worldPackageId}::storage_unit::update_metadata_description`,
+    arguments: [
+      tx.object(args.storageUnitId),
+      storageOwnerCap,
+      tx.pure.string(args.description)
+    ]
+  });
+  tx.moveCall({
+    target: `${args.worldPackageId}::storage_unit::update_metadata_url`,
+    arguments: [
+      tx.object(args.storageUnitId),
+      storageOwnerCap,
+      tx.pure.string(args.url)
+    ]
+  });
+  tx.moveCall({
+    target: `${args.worldPackageId}::character::return_owner_cap`,
+    typeArguments: [`${args.worldPackageId}::storage_unit::StorageUnit`],
+    arguments: [
+      tx.object(args.characterId),
+      storageOwnerCap,
+      returnReceipt
+    ]
+  });
+  return await signAndExecuteClientOnly(network, tx);
+}
 function extractString(value) {
   if (value == null)
     return "";
@@ -26890,7 +26945,7 @@ async function getStorageInventories(args) {
     return {
       found: true,
       hasSmartStorageExtension,
-      hasThemopUrl: meta.metadataUrl === "themop.dev",
+      hasThemopUrl: meta.metadataUrl.startsWith("themop.dev"),
       metadataUrl: meta.metadataUrl,
       extensionType: meta.extensionType,
       storageOwnerCapId,
@@ -26940,6 +26995,7 @@ async function getOpenStorageKey(client, worldPackageId, storageUnitId) {
 }
 export {
   authorizeSmartStorageExtension,
+  configureStorageAssembly,
   connectSui,
   debugWalletFeatures,
   depositConfiguredItemsToOpen,
