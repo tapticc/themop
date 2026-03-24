@@ -1,0 +1,93 @@
+﻿@page "/gate/{AssemblyAddress}"
+@using Client.Models
+@using Client.Services
+@inject NavigationManager Nav
+@inject AppState AppState
+@inject GateTxService GateTx
+@inject GateService GateService
+
+<PageTitle>Configure Gate</PageTitle>
+
+<div class="mop-config-shell">
+    <div class="mop-config-card">
+        <div class="mop-config-title">Gate Compliance Setup</div>
+
+        <div class="mop-config-text">
+            Citizen, this gate must be registered with the Ministry before permits can be issued.
+        </div>
+
+        <div class="mop-config-text-small">
+            Assembly: @ShortId(AssemblyAddress)
+        </div>
+
+        <button class="mop-btn"
+                disabled="@IsWorking"
+                @onclick="Configure">
+            @(IsWorking ? "Configuring..." : "Configure Gate")
+        </button>
+
+        @if (!string.IsNullOrWhiteSpace(Error))
+        {
+            <div class="mop-error">@Error</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? AssemblyAddress { get; set; }
+
+    private bool IsWorking;
+    private string? Error;
+
+    private async Task Configure()
+    {
+        Error = null;
+
+        if (string.IsNullOrWhiteSpace(AssemblyAddress))
+            return;
+
+        if (AppState.CharacterSummary is null || AppState.CharacterSummary.CharacterId == null)
+        {
+            Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString($"/gate/{AssemblyAddress}")}", false);
+            return;
+        }
+
+        try
+        {
+            IsWorking = true;
+
+            var shortId = AssemblyAddress.Length > 5 ? AssemblyAddress[^5..] : AssemblyAddress;
+            var name = $"MOP GATE {shortId}";
+            var url = $"themop.dev/gateview/{AssemblyAddress}";
+
+            var result = await GateTx.ConfigureGateAsync(
+                AssemblyAddress,
+                AppState.CharacterSummary.CharacterId,
+                name,
+                "Property of The Ministry of Passage",
+                url);
+
+            if (!result.Success)
+            {
+                Error = result.Error ?? "Configuration failed.";
+                return;
+            }
+
+            AppState.SetGateAssembly(AssemblyAddress);
+
+            Nav.NavigateTo($"/gateview/{AssemblyAddress}", false);
+        }
+        finally
+        {
+            IsWorking = false;
+        }
+    }
+
+    private static string ShortId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length < 14)
+            return value ?? "";
+
+        return $"{value[..8]}...{value[^6..]}";
+    }
+}

@@ -4,9 +4,9 @@
 
 [published.testnet_utopia]
 chain-id = "4c78adac"
-published-at = "0x4ec85a986b203625d894ad12ca14fd0c7fdd6b009b9da9a866c580e247c1e9b3"
-original-id = "0x4ec85a986b203625d894ad12ca14fd0c7fdd6b009b9da9a866c580e247c1e9b3"
+published-at = "0xfe4a71f0a56eda03c298311065fed8eda2c6c07ce9a71ca505e31f419289f7df"
+original-id = "0xfe4a71f0a56eda03c298311065fed8eda2c6c07ce9a71ca505e31f419289f7df"
 version = 1
 toolchain-version = "1.68.0"
 build-config = { flavor = "sui", edition = "2024" }
-upgrade-capability = "0x065ff855234e485288758b57edbb8de702ac6e5bddce0dd281df1db529a76877"
+upgrade-capability = "0x0f33b9a189488b63503e12f88777ceb3e2a272b35a8e497730fe5e7d3519cfdb"

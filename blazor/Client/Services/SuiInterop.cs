@@ -1,4 +1,5 @@
-﻿using Common.Inventory;
+﻿using Common.Gates;
+using Common.Inventory;
 using Common.Roles;
 using Common.Storage;
 using Microsoft.JSInterop;
@@ -7,7 +8,7 @@ namespace Client.Services;
 
 public class SuiInterop(IJSRuntime js) : IAsyncDisposable
 {
-    private const string JsVersion = "20260323-1";
+    private const string JsVersion = "20260324-1";
 
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
         js.InvokeAsync<IJSObjectReference>("import", $"/js/suiInterop.js?v={JsVersion}").AsTask());
@@ -204,4 +205,33 @@ public class SuiInterop(IJSRuntime js) : IAsyncDisposable
         var module = await _moduleTask.Value;
         return await module.InvokeAsync<TxResult>("moveOpenItemsToMain", request);
     }
+
+    ///////////////////////// GATES
+    
+    public async Task<GateDetails> GetGateAsync(string gateId)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<GateDetails>("getGate", gateId);
+    }
+
+    public async Task<TxResult> ConfigureGateAssemblyAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("configureGateAssembly", request);
+    }
+
+    public async Task<GatePermitConfigDto> GetGatePermitConfigAsync(string registryId)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<GatePermitConfigDto>(
+            "getGatePermitConfig",
+            new { registryId });
+    }
+
+    public async Task<TxResult> PurchaseJumpPermitAsync(object request)
+    {
+        var module = await _moduleTask.Value;
+        return await module.InvokeAsync<TxResult>("purchaseJumpPermit", request);
+    }
+
 }

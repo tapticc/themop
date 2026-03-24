@@ -1,0 +1,203 @@
+﻿@page "/gateview/{AssemblyAddress}"
+@using Client.Models
+@using Client.Services
+@using Common.Gates
+@inject NavigationManager Nav
+@inject AppState AppState
+@inject GateService GateService
+@inject GateTxService GateTxService
+@inject SuiApiClient Api
+@inject SuiWalletService WalletService
+
+<PageTitle>Gate</PageTitle>
+
+<div class="mop-receipt-shell">
+    @if (IsLoading)
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-muted">Loading gate...</div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="alert alert-danger">@Error</div>
+    }
+    else if (Gate is not null)
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-title">Ministry Gate</div>
+            <div class="mop-profile-name">@Gate.MetadataName</div>
+            <div class="mop-profile-sub">@AssemblyAddress</div>
+        </div>
+
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Permit Status</div>
+
+            <div class="mop-profile-activity-row">
+                <span>Compliance Points</span>
+                <span>@CompliancePoints</span>
+            </div>
+
+            <div class="mop-profile-activity-row">
+                <span>Permit Cost</span>
+                <span>@PermitCost</span>
+            </div>
+
+            <div class="mop-profile-activity-row">
+                <span>Status</span>
+                <span>@(CanAffordPermit ? "Eligible" : "Insufficient Points")</span>
+            </div>
+        </div>
+
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Permit Purchase</div>
+
+            <div class="mop-profile-muted">
+                Purchase a jump permit for this gate. The game client will consume the permit when the jump is executed.
+            </div>
+
+            <div class="mop-receipt-actions" style="margin-top:12px;">
+                <button class="mop-btn"
+                        disabled="@(!CanAffordPermit || IsWorking)"
+                        @onclick="PurchasePermit">
+                    @(IsWorking ? "Processing..." : "Purchase Jump Permit")
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(ActionMessage))
+            {
+                <div class="mop-profile-muted" style="margin-top:12px;">
+                    @ActionMessage
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? AssemblyAddress { get; set; }
+
+    private GateDetails? Gate;
+    private GatePermitConfigDto? PermitConfig;
+    private string? Error;
+    private string? ActionMessage;
+    private bool IsLoading;
+    private bool IsWorking;
+
+    private long CompliancePoints;
+    private long PermitCost => PermitConfig?.PermitCostCompliancePoints ?? 0;
+    private bool CanAffordPermit => CompliancePoints >= PermitCost && PermitCost > 0;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await EnsureWalletConnectedAsync();
+
+        if (!string.IsNullOrWhiteSpace(Error))
+            return;
+
+        await LoadGateAsync();
+    }
+
+    private async Task EnsureWalletConnectedAsync()
+    {
+        var currentWallet = await WalletService.GetCurrentAddressAsync();
+
+        if (string.IsNullOrWhiteSpace(currentWallet))
+        {
+            var returnUrl = $"/gateview/{AssemblyAddress}";
+            Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(returnUrl)}", false);
+            Error = "Redirecting to login...";
+            return;
+        }
+
+        AppState.SetWallet(WalletType.EveFrontier, currentWallet);
+    }
+
+    private async Task LoadGateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(AssemblyAddress))
+            return;
+
+        IsLoading = true;
+        Error = null;
+        ActionMessage = null;
+
+        try
+        {
+            Gate = await GateService.GetGateAsync(AssemblyAddress);
+
+            if (!Gate.Found)
+            {
+                Error = Gate.Error ?? "Gate not found.";
+                return;
+            }
+
+            AppState.SetGateAssembly(AssemblyAddress);
+
+            PermitConfig = await GateService.GetPermitConfigAsync();
+
+            if (PermitConfig is null || !PermitConfig.Found)
+            {
+                Error = PermitConfig?.Error ?? "Permit config not found.";
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(AppState.WalletAddress))
+            {
+                var points = await Api.GetPlayerPointsAsync(AppState.WalletAddress, true);
+                CompliancePoints = points.CompliancePoints;
+
+                if (AppState.CharacterSummary is not null)
+                {
+                    AppState.CharacterSummary.CompliancePoints = points.CompliancePoints;
+                    AppState.CharacterSummary.MinistryPoints = points.MinistryPoints;
+                }
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task PurchasePermit()
+    {
+        if (string.IsNullOrWhiteSpace(AssemblyAddress) || AppState.CharacterSummary is null || Gate == null
+            || AppState.CharacterSummary.CharacterId == null)
+            return;
+
+        try
+        {
+            IsWorking = true;
+            ActionMessage = null;
+
+            var destinationGateId = Gate.LinkedGateId;
+            if (string.IsNullOrWhiteSpace(destinationGateId))
+            {
+                ActionMessage = "Linked destination gate not found.";
+                return;
+            }
+
+            var expires = DateTimeOffset.UtcNow.AddMinutes(5);
+
+            var result = await GateTxService.PurchaseJumpPermitAsync(
+                AssemblyAddress,
+                destinationGateId,
+                AppState.CharacterSummary.CharacterId,
+                expires);
+
+            if (!result.Success)
+            {
+                ActionMessage = result.Error ?? "Permit purchase failed.";
+                return;
+            }
+
+            ActionMessage = "Jump permit purchased.";
+            await LoadGateAsync();
+        }
+        finally
+        {
+            IsWorking = false;
+        }
+    }
+}

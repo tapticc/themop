@@ -16,19 +16,26 @@ namespace Client.Models
         public event Action? OnChange;
         public bool AuthResolved { get; set; }
 
-        public string? CurrentAssemblyAddress { get; set; }
         public string? ReturnUrl { get; set; }
 
+        public string? CurrentAssemblyAddress { get; set; }
         public void SetAssembly(string assembly)
         {
             CurrentAssemblyAddress = assembly;
             OnChange?.Invoke();
         }
 
+        public string? CurrentGateAssemblyAddress { get; set; }
+        public void SetGateAssembly(string assembly)
+        {
+            CurrentGateAssemblyAddress = assembly;
+            OnChange?.Invoke();
+        }
+
         public void SetWallet(WalletType type, string address)
         {
             ConnectedWallet = type;
-            WalletAddress = address;            
+            WalletAddress = address;
             Notify();
         }
 
@@ -43,7 +50,6 @@ namespace Client.Models
             RoleContext = context;
             Notify();
         }
-
 
         public void ResetSession()
         {

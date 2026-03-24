@@ -1541,4 +1541,220 @@ async function getOpenStorageKey(
     return bcs.Address.parse(bytes);
 }
 
+//////////////////// GATES
+
+export async function getGate(gateId: string) {
+    try {
+        const client = JsonClient();
+
+        const result = await client.getObject({
+            id: gateId,
+            options: {
+                showType: true,
+                showOwner: true,
+                showContent: true,
+            },
+        });
+
+        const data: any = result?.data;
+        if (!data) {
+            return {
+                found: false,
+                error: "Gate not found.",
+            };
+        }
+
+        const fields = (data.content as any)?.fields ?? {};
+        const metadata = extractOptionValue(fields.metadata);
+        const extension = extractOptionValue(fields.extension);
+
+        let ownerCharacterId = "";
+
+        if (fields?.owner_cap_id) {
+            const ownerCapResult = await client.getObject({
+                id: fields.owner_cap_id,
+                options: { showOwner: true },
+            });
+
+            const ownerCapData: any = ownerCapResult?.data;
+            const owner = ownerCapData?.owner;
+
+            if (owner?.AddressOwner) {
+                ownerCharacterId = owner.AddressOwner;
+            } else if (owner?.ObjectOwner) {
+                ownerCharacterId = owner.ObjectOwner;
+            }
+        }
+
+        const linkedGate =
+            fields?.linked_gate_id?.fields?.vec?.[0] ??
+            fields?.linked_gate_id?.vec?.[0] ??
+            "";
+
+        return {
+            found: true,
+            objectId: data.objectId ?? gateId,
+            ownerCapId: fields?.owner_cap_id ?? "",
+            ownerCharacterId,
+            metadataName: metadata?.fields?.name ?? metadata?.name ?? "",
+            metadataDescription: metadata?.fields?.description ?? metadata?.description ?? "",
+            metadataUrl: metadata?.fields?.url ?? metadata?.url ?? "",
+            extensionType: extension
+                ? typeof extension === "string"
+                    ? extension
+                    : JSON.stringify(extension)
+                : "",
+            rawJson: JSON.stringify(fields, null, 2),
+            linkedGateId: linkedGate,
+        };
+    } catch (err) {
+        return {
+            found: false,
+            error: err instanceof Error ? err.message : String(err),
+        };
+    }
+}
+
+export async function configureGateAssembly(args: {
+    worldPackageId: string;
+    theMopPackageId: string;
+    gateId: string;
+    characterId: string;
+    gateOwnerCapId: string;
+    name: string;
+    description: string;
+    url: string;
+}) {
+    const { network } = requireInit();
+
+    const tx = new Transaction();
+    tx.setGasBudget(50_000_000);
+
+    const [gateOwnerCap, returnReceipt] = tx.moveCall({
+        target: `${args.worldPackageId}::character::borrow_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::gate::Gate`],
+        arguments: [
+            tx.object(args.characterId),
+            tx.object(args.gateOwnerCapId),
+        ],
+    });
+
+    tx.moveCall({
+        target: `${args.worldPackageId}::gate::authorize_extension`,
+        typeArguments: [`${args.theMopPackageId}::gate_config::GateAuth`],
+        arguments: [
+            tx.object(args.gateId),
+            gateOwnerCap,
+        ],
+    });
+
+    tx.moveCall({
+        target: `${args.worldPackageId}::gate::update_metadata_name`,
+        arguments: [
+            tx.object(args.gateId),
+            gateOwnerCap,
+            tx.pure.string(args.name),
+        ],
+    });
+
+    tx.moveCall({
+        target: `${args.worldPackageId}::gate::update_metadata_description`,
+        arguments: [
+            tx.object(args.gateId),
+            gateOwnerCap,
+            tx.pure.string(args.description),
+        ],
+    });
+
+    tx.moveCall({
+        target: `${args.worldPackageId}::gate::update_metadata_url`,
+        arguments: [
+            tx.object(args.gateId),
+            gateOwnerCap,
+            tx.pure.string(args.url),
+        ],
+    });
+
+    tx.moveCall({
+        target: `${args.worldPackageId}::character::return_owner_cap`,
+        typeArguments: [`${args.worldPackageId}::gate::Gate`],
+        arguments: [
+            tx.object(args.characterId),
+            gateOwnerCap,
+            returnReceipt,
+        ],
+    });
+
+    return await signAndExecuteClientOnly(network, tx);
+}
+
+export async function getGatePermitConfig(args: {
+    registryId: string;
+}) {
+    try {
+        const client = JsonClient();
+
+        const result = await client.getObject({
+            id: args.registryId,
+            options: {
+                showContent: true,
+            },
+        });
+
+        const data: any = result?.data;
+        if (!data) {
+            return {
+                found: false,
+                error: "Gate permit registry not found.",
+            };
+        }
+
+        const fields = (data.content as any)?.fields ?? {};
+
+        return {
+            found: true,
+            permitCostCompliancePoints: Number(fields?.permit_cost_compliance_points ?? 0),
+            linkedPointsRegistryId:
+                fields?.linked_points_registry_id?.fields?.vec?.[0] ??
+                fields?.linked_points_registry_id ??
+                "",
+            rawJson: JSON.stringify(fields, null, 2),
+        };
+    } catch (err) {
+        return {
+            found: false,
+            error: err instanceof Error ? err.message : String(err),
+        };
+    }
+}
+
+export async function purchaseJumpPermit(args: {
+    theMopPackageId: string;
+    gatePermitRegistryId: string;
+    pointsRegistryId: string;
+    sourceGateId: string;
+    destinationGateId: string;
+    characterId: string;
+    expiresAtTimestampMs: string;
+}) {
+    const { network } = requireInit();
+
+    const tx = new Transaction();
+    tx.setGasBudget(50_000_000);
+
+    tx.moveCall({
+        target: `${args.theMopPackageId}::gate_permits::purchase_jump_permit`,
+        arguments: [
+            tx.object(args.gatePermitRegistryId),
+            tx.object(args.pointsRegistryId),
+            tx.object(args.sourceGateId),
+            tx.object(args.destinationGateId),
+            tx.object(args.characterId),
+            tx.pure.u64(args.expiresAtTimestampMs),
+        ],
+    });
+
+    return await signAndExecuteClientOnly(network, tx);
+}
+
 export { };

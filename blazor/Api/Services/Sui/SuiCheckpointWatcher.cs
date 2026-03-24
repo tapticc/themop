@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace Api.Services.Sui
 {
-    public sealed class SuiCheckpointWatcher(
+    public class SuiCheckpointWatcher(
         ILogger<SuiCheckpointWatcher> logger,
         RecentDepositStore store,
         IMemoryCache cache) : BackgroundService
