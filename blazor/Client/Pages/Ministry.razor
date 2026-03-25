@@ -1,0 +1,123 @@
+﻿@page "/ministry"
+@using Client.Models
+@using Client.Services
+@using Common.Player
+@inject SuiApiClient Api
+@inject AppState AppState
+
+<PageTitle>Ministry Rankings</PageTitle>
+
+<div class="mop-profile-shell">
+
+    <div class="mop-profile-card mop-profile-header">
+        <div class="mop-profile-title">Ministry Rankings</div>
+        <div class="mop-profile-sub">Lifetime Ministry Points</div>
+    </div>
+
+    @if (Leaderboard is null)
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-muted">Loading rankings...</div>
+        </div>
+    }
+    else if (Leaderboard.Count == 0)
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-muted">No rankings available.</div>
+        </div>
+    }
+    else
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Podium</div>
+
+            <div class="mop-podium">
+                @if (Second is not null)
+                {
+                    <div class="mop-podium-slot mop-podium-silver">
+                        <div class="mop-podium-medal">II</div>
+                        <div class="mop-podium-name">@DisplayName(Second)</div>
+                        <div class="mop-podium-points">@Second.MinistryPoints</div>
+                    </div>
+                }
+
+                @if (First is not null)
+                {
+                    <div class="mop-podium-slot mop-podium-gold">
+                        <div class="mop-podium-medal">I</div>
+                        <div class="mop-podium-name">@DisplayName(First)</div>
+                        <div class="mop-podium-points">@First.MinistryPoints</div>
+                    </div>
+                }
+
+                @if (Third is not null)
+                {
+                    <div class="mop-podium-slot mop-podium-bronze">
+                        <div class="mop-podium-medal">III</div>
+                        <div class="mop-podium-name">@DisplayName(Third)</div>
+                        <div class="mop-podium-points">@Third.MinistryPoints</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Citizen Rankings</div>
+
+            @{
+                var rank = 1;
+            }
+
+            @foreach (var entry in Leaderboard)
+            {
+                var isYou = IsYou(entry);
+
+                <div class="mop-leaderboard-row @(isYou ? "mop-leaderboard-row-you" : "")">
+                    <div class="mop-leaderboard-left">
+                        <span class="mop-leaderboard-rank">#@rank</span>
+                        <span class="mop-leaderboard-name">
+                            @(isYou ? "You" : DisplayName(entry))
+                        </span>
+                    </div>
+
+                    <div class="mop-leaderboard-right">
+                        <span class="mop-leaderboard-points">@entry.MinistryPoints</span>
+                    </div>
+                </div>
+
+                rank++;
+            }
+        </div>
+    }
+
+</div>
+
+@code {
+    private List<MinistryLeaderboardEntry>? Leaderboard;
+
+    private MinistryLeaderboardEntry? First => Leaderboard?.ElementAtOrDefault(0);
+    private MinistryLeaderboardEntry? Second => Leaderboard?.ElementAtOrDefault(1);
+    private MinistryLeaderboardEntry? Third => Leaderboard?.ElementAtOrDefault(2);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Leaderboard = await Api.GetMinistryLeaderboardAsync();
+    }
+
+    private bool IsYou(MinistryLeaderboardEntry entry) =>
+        !string.IsNullOrWhiteSpace(AppState.WalletAddress) &&
+        string.Equals(entry.CharacterAddress, AppState.WalletAddress, StringComparison.OrdinalIgnoreCase);
+
+    private static string DisplayName(MinistryLeaderboardEntry entry)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.CharacterName))
+            return entry.CharacterName;
+
+        if (string.IsNullOrWhiteSpace(entry.CharacterAddress))
+            return "Unknown";
+
+        return entry.CharacterAddress.Length > 12
+            ? $"{entry.CharacterAddress[..8]}...{entry.CharacterAddress[^4..]}"
+            : entry.CharacterAddress;
+    }
+}

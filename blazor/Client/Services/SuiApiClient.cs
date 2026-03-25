@@ -2,6 +2,7 @@
 using Common.Inventory;
 using Common.Player;
 using Common.Roles;
+using Common.Storage;
 using Common.Sui;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
@@ -120,6 +121,14 @@ namespace Client.Services
             return response ?? [];
         }
 
+        public async Task<List<OwnerStoragePickupDto>> GetStoragePickupQueueAsync(string characterId)
+        {
+            var result = await _http.GetFromJsonAsync<List<OwnerStoragePickupDto>>(
+                $"api/sui/owner-storage-pickup?characterId={Uri.EscapeDataString(characterId)}");
+
+            return result ?? [];
+        }
+
         //EVENTS
 
         public async Task<PlayerDepositEventsResult> GetPlayerDepositEventsAsync(
@@ -142,6 +151,8 @@ namespace Client.Services
                 Error = "No response from API."
             };
         }
+
+        //PLAYERS
 
         public async Task<PlayerPointsDto> GetPlayerPointsAsync(string characterAddress, bool forceRefresh = false)
         {
@@ -186,5 +197,13 @@ namespace Client.Services
                 TotalPoints = totalPoints
             };
         }
+
+        public async Task<List<MinistryLeaderboardEntry>> GetMinistryLeaderboardAsync()
+        {
+            var result = await _http.GetFromJsonAsync<List<MinistryLeaderboardEntry>>(
+                    $"api/sui/ministry-leaderboard");
+            return result ?? [];
+        }
+
     }
 }

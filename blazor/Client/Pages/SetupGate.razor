@@ -1,0 +1,142 @@
+﻿@page "/setupgate"
+@using Client.Models
+@using Client.Services
+@inject NavigationManager Nav
+@inject AppState AppState
+@inject GateTxService GateTx
+@inject GateService GateService
+
+<PageTitle>Gate Home</PageTitle>
+
+
+<div class="mop-config-shell">
+
+	<img src="images/ConfigureAssembly.png" class="mop-config-image" />
+
+	<div class="mop-config-card">
+		<div class="mop-config-title">
+			Ministry Gate Compliance Required
+		</div>
+
+		<div class="mop-config-text">
+			<p>
+				Citizen @AppState.CharacterSummary?.CharacterName
+			</p>
+
+			<p>
+				This assembly is currently unregistered!
+			</p>
+
+			<p>
+				All gates must be declared and certified
+				before they may be used for regulated travel.
+			</p>
+
+			<p>
+				Enter your Assembly ID to bring this structure
+				into Ministry compliance.
+			</p>
+		</div>
+
+		<div class="mop-config-text-small">
+			Retrieve your Assembly ID from the gate
+			management interface and enter it below.
+		</div>
+
+		<input class="mop-input"
+			   placeholder="Enter Assembly ID"
+			   @bind="gateId" />
+
+		<div class="mop-profile-card">
+			<button class="mop-btn"
+					disabled="@IsWorking"
+					@onclick="Configure">
+
+				@if (IsWorking)
+				{
+					<span>Configuring...</span>
+				}
+				else
+				{
+					<span>Configure Assembly</span>
+				}
+			</button>
+		</div>
+
+		<div class="mop-profile-card">
+			<button class="mop-btn" @onclick="NavToHome">
+				Home
+			</button>
+		</div>
+
+		@if (!string.IsNullOrEmpty(Error))
+		{
+			<div class="mop-error">
+				@Error
+			</div>
+		}
+	</div>
+</div>
+
+@code {
+    private string gateId = "";
+	bool IsWorking;
+	string? Error;
+
+    private void ContinueToConfigure()
+    {
+        if (string.IsNullOrWhiteSpace(gateId))
+            return;
+
+        Nav.NavigateTo($"/gate/{gateId}", false);
+    }
+
+	async Task Configure()
+	{
+		Error = null;
+
+		if (string.IsNullOrWhiteSpace(gateId))
+			return;
+
+		if (AppState.CharacterSummary is null || AppState.CharacterSummary.CharacterId == null)
+		{
+			Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString($"/gate/{gateId}")}", false);
+			return;
+		}
+
+		try
+		{
+			IsWorking = true;
+
+			var shortId = gateId.Length > 5 ? gateId[^5..] : gateId;
+			var name = $"MOP GATE {shortId}";
+			var url = $"themop.dev/gate/{gateId}";
+
+			var result = await GateTx.ConfigureGateAsync(
+				gateId,
+				AppState.CharacterSummary.CharacterId,
+				name,
+				"Property of The Ministry of Passage",
+				url);
+
+			if (!result.Success)
+			{
+				Error = result.Error ?? "Configuration failed.";
+				return;
+			}
+
+			AppState.SetGateAssembly(gateId);
+
+			Nav.NavigateTo($"/gate/{gateId}", false);
+		}
+		finally
+		{
+			IsWorking = false;
+		}
+	}
+
+	private void NavToHome()
+	{
+		Nav.NavigateTo($"/", false);
+	}
+}

@@ -13,6 +13,7 @@ builder.Services.AddHostedService<SuiCheckpointWatcher>();
 
 builder.Services.AddSingleton<RecentDepositStore>();
 builder.Services.AddSingleton<SuiGrpcGateway>();
+builder.Services.AddSingleton<CharacterNameIndex>();
 
 builder.Services.AddScoped<SuiGraphQLService>();
 builder.Services.AddScoped<RoleService>();

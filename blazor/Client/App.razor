@@ -32,14 +32,15 @@
 @code {
 	private static readonly HashSet<Type> PublicPages =
 	[
-		typeof(Pages.Home),
 		typeof(Pages.Login),
+		typeof(Pages.SetupGate),
+		typeof(Pages.SetupSSU),
 		typeof(Pages.StylesDemo),
-		typeof(Pages.StorageUnit),
 		typeof(Pages.UnauthorisedAccess),
-		typeof(Pages.GateHome),
+		//below need permission so can redirect to login and return to current page
 		typeof(Pages.Gate),
-		typeof(Pages.GateView)
+		typeof(Pages.StorageUnit),
+
 	];
 
 	private bool IsPublic(RouteData routeData)

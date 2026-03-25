@@ -1,0 +1,107 @@
+﻿@page "/pickup"
+@using Client.Models
+@using Client.Services
+@using Common.Storage
+@inject SuiApiClient Api
+@inject AppState AppState
+@inject NavigationManager Nav
+
+<PageTitle>Pickup Queue</PageTitle>
+
+<div class="mop-profile-shell">
+
+    <div class="mop-profile-card mop-profile-header">
+        <div class="mop-profile-title">Pickup Queue</div>
+        <div class="mop-profile-sub">Owner Collection Overview</div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-muted">Checking storage units...</div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="alert alert-danger">@Error</div>
+    }
+    else if (Items.Count == 0)
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-muted">No owned storage units found.</div>
+        </div>
+    }
+    else
+    {
+        @foreach (var item in Items)
+        {
+            <div class="mop-profile-card">
+                <div class="mop-profile-section-title">
+                    @item.StorageName
+                </div>
+                
+                <div class="mop-profile-activity-row">
+                    <span>Assembly</span>
+                    <span>@ShortId(item.StorageUnitId)</span>
+                </div>
+
+                <div class="mop-receipt-actions" style="margin-top:12px;">
+                    <button class="mop-btn"
+                            @onclick="() => OpenStorage(item.StorageUnitId)">
+                        Open Storage
+                    </button>
+                </div>
+            </div>
+        }
+    }
+
+</div>
+
+@code {
+    private List<OwnerStoragePickupDto> Items = [];
+    private bool IsLoading;
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        IsLoading = true;
+        Error = null;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(AppState.WalletAddress))
+            {
+                Error = "Wallet not connected.";
+                return;
+            }
+
+            Items = await Api.GetStoragePickupQueueAsync(AppState.CharacterSummary.CharacterId);
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private static string ShortId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length < 14)
+            return value ?? "";
+
+        return $"{value[..8]}...{value[^6..]}";
+    }
+
+    private async Task OpenStorage(string storageUnitId)
+    {
+        Nav.NavigateTo($"/storage/{storageUnitId}", false);
+    }
+}

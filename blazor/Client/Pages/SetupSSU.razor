@@ -1,0 +1,179 @@
+﻿@page "/SetupSSU"
+@using Client.Models
+@using Client.Services
+@using Common.Storage
+@inject NavigationManager Nav
+@inject AppState AppState
+@inject Client.Services.WorldStorageService WorldStorageService
+@inject Client.Services.WorldStorageTxService WorldStorageTxService
+@inject ILogger<SetupSSU> logger
+
+<PageTitle>Ministry Storage</PageTitle>
+
+<div class="mop-config-shell">
+
+	<img src="images/ConfigureAssembly.png" class="mop-config-image" />
+
+	<div class="mop-config-card">
+		<div class="mop-config-title">
+			Ministry Storage Compliance Required
+		</div>
+
+		<div class="mop-config-text">
+			<p>
+				Citizen @AppState.CharacterSummary?.CharacterName
+			</p>
+
+			<p>
+				This assembly is currently unregistered!
+			</p>
+
+			<p>
+				All storage units must be declared and certified
+				before they may be used for regulated deposits.
+			</p>
+
+			<p>
+				Enter your Assembly ID to bring this structure
+				into Ministry compliance.
+			</p>
+		</div>
+
+		<div class="mop-config-text-small">
+			Retrieve your Assembly ID from the storage unit
+			management interface and enter it below.
+		</div>
+
+		<input class="mop-input"
+				placeholder="Enter Assembly ID"
+				@bind="storageUnitId" />
+
+		<div class="mop-profile-card">
+			<button class="mop-btn"
+					disabled="@IsWorking"
+					@onclick="Configure">
+
+				@if (IsWorking)
+				{
+					<span>Configuring...</span>
+				}
+				else
+				{
+					<span>Configure Assembly</span>
+				}
+			</button>
+		</div>
+
+		<div class="mop-profile-card">
+			<button class="mop-btn" @onclick="NavToHome">
+				Home
+			</button>
+		</div>
+
+		@if (!string.IsNullOrEmpty(Error))
+		{
+			<div class="mop-error">
+				@Error
+			</div>
+		}
+	</div>
+</div>
+
+@code {
+	private StorageUnitDetails? Storage { get; set; }
+	string storageUnitId = "";
+	bool IsWorking;
+	string? Error;
+
+	protected override void OnInitialized()
+	{
+		if (!string.IsNullOrWhiteSpace(AppState.CurrentAssemblyAddress))
+		{
+			Nav.NavigateTo($"/storage/{AppState.CurrentAssemblyAddress}", false);
+		}
+	}
+
+	async Task Configure()
+	{
+		Error = null;
+
+		if (string.IsNullOrWhiteSpace(storageUnitId))
+		{
+			Error = "Assembly ID required";
+			return;
+		}
+
+		if (AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null || AppState.CharacterSummary.OwnerCapId == null)
+		{
+			Error = "Unknown user";
+			return;
+		}
+
+		try
+		{
+			IsWorking = true;
+
+			var shortId =
+				storageUnitId.Length > 5
+					? storageUnitId[^5..]
+					: storageUnitId;
+
+			var name = $"MOP {shortId}";
+
+			Storage = await WorldStorageService.GetStorageUnitAsync(storageUnitId);
+
+			if (Storage == null)
+			{
+				Error = "Storage unit is null.";
+				return;
+			}
+
+			// logger.LogInformation("AppState.CharacterSummary.CharacterId: {0}", AppState.CharacterSummary.CharacterId);
+			// logger.LogInformation("Storage.OwnerCapId: {0}", Storage.OwnerCapId);
+			// logger.LogInformation("storageUnitId: {0}", storageUnitId);
+
+			//more for when testing locally as wouldn't normally get here, but if already configured then skip and go straight to the page
+			if (Storage.MetadataDescription == "Property of The Ministry of Passage"
+				&& Storage.MetadataName == name
+				&& Storage.MetadataUrl == $"themop.dev/storage/{storageUnitId}")
+			{
+				AppState.SetAssembly(storageUnitId);
+
+				Nav.NavigateTo($"/storage/{storageUnitId}", false);
+			}
+			else
+			{
+				var result = await WorldStorageTxService.ConfigureAssemblyAsync(storageUnitId,
+					AppState.CharacterSummary.CharacterId,
+					Storage.OwnerCapId,
+					name,
+					"Property of The Ministry of Passage",
+					$"themop.dev/storage/{storageUnitId}"
+				);
+
+				if (!result.Success)
+				{
+					Error = result.Error ?? "Configuration failed.";
+					return;
+				}
+
+				AppState.SetAssembly(storageUnitId);
+
+				Nav.NavigateTo($"/storage/{storageUnitId}", false);
+			}
+		}
+		catch (Exception ex)
+		{
+			Error = ex.Message;
+		}
+		finally
+		{
+			IsWorking = false;
+		}
+	}
+
+	private void NavToHome()
+	{
+		Nav.NavigateTo($"/", false);
+	}
+}

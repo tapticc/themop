@@ -1,168 +1,148 @@
 ﻿@page "/"
 @using Client.Models
-@using Client.Services
-@using Common.Storage
-@inject NavigationManager Nav
+@using Common.Events
 @inject AppState AppState
-@inject Client.Services.WorldStorageService WorldStorageService
-@inject Client.Services.WorldStorageTxService WorldStorageTxService
-@inject ILogger<Home> logger
+@inject Client.Services.SuiApiClient Api
+@inject NavigationManager Nav
 
-<PageTitle>Ministry Storage</PageTitle>
+<PageTitle>Ministry Profile</PageTitle>
 
-<div class="mop-config-shell">
+<div class="mop-profile-shell">
+	@if (!string.IsNullOrWhiteSpace(Error))
+	{
+		<div class="alert alert-danger">@Error</div>
+	}
+	else if (IsLoading)
+	{
+		<div class="mop-profile-card">
+			<div class="mop-profile-muted">Loading ministry profile...</div>
+		</div>
+	}
+	else if (Profile is not null)
+	{
+		<div class="mop-profile-card mop-profile-header">
+			<div class="mop-profile-title">Ministry Profile</div>
+			<div class="mop-profile-name">@Profile.CharacterName</div>
+			<div class="mop-profile-sub">@ShortId(Profile.CharacterId)</div>
+		</div>
 
-    <img src="images/ConfigureAssembly.png" class="mop-config-image" />
+		<div class="mop-profile-card">
+			<div class="mop-profile-section-title">Standing</div>
 
-    <div class="mop-config-card">
+			<div class="mop-profile-stat-grid">
+				<div class="mop-profile-stat">
+					<div class="mop-profile-stat-label">Compliance Points</div>
+					<div class="mop-profile-stat-value">@AppState.CharacterSummary?.CompliancePoints</div>
+				</div>
 
-        <div class="mop-config-title">
-            Ministry Storage Compliance Required
-        </div>
+				<div class="mop-profile-stat">
+					<div class="mop-profile-stat-label">Ministry Points</div>
+					<div class="mop-profile-stat-value">@AppState.CharacterSummary?.MinistryPoints</div>
+				</div>
+			</div>
+		</div>
 
-        <div class="mop-config-text">
-            <p>
-                Citizen @AppState.CharacterSummary?.CharacterName
-            </p>
+		<div class="mop-profile-card">
+			<button class="mop-btn" @onclick="NavToSetupSSU">
+				Setup SSU
+			</button>
+		</div>
 
-            <p>
-                This assembly is currently unregistered!
-            </p>
-
-            <p>
-                All storage units must be declared and certified
-                before they may be used for regulated deposits.
-            </p>
-
-            <p>
-                Enter your Assembly ID to bring this structure
-                into Ministry compliance.
-            </p>
-        </div>
-
-        <div class="mop-config-text-small">
-            Retrieve your Assembly ID from the storage unit
-            management interface and enter it below.
-        </div>
-
-        <input class="mop-input"
-               placeholder="Enter Assembly ID"
-               @bind="storageUnitId" />
-
-        <button class="mop-btn"
-                disabled="@IsWorking"
-                @onclick="Configure">
-
-            @if (IsWorking)
-            {
-                <span>Configuring...</span>
-            }
-            else
-            {
-                <span>Configure Assembly</span>
-            }
-
-        </button>
-
-        @if (!string.IsNullOrEmpty(Error))
-        {
-            <div class="mop-error">
-                @Error
-            </div>
-        }
-    </div>
+		<div class="mop-profile-card">
+			<button class="mop-btn" @onclick="NavToSetupGate">
+				Setup Gate
+			</button>
+		</div>
+	}
 </div>
 
 @code {
-    private StorageUnitDetails? Storage { get; set; }
-    string storageUnitId = "";
-    bool IsWorking;
-    string? Error;
+	private PlayerProfilePointsDto? Profile;
+	private string? Error;
+	private bool IsLoading;
 
-    protected override void OnInitialized()
-    {
-        if (!string.IsNullOrWhiteSpace(AppState.CurrentAssemblyAddress))
-        {
-            Nav.NavigateTo($"/storage/{AppState.CurrentAssemblyAddress}", false);
-        }
-    }
 
-    async Task Configure()
-    {
-        Error = null;
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadProfile();
+	}
 
-        if (string.IsNullOrWhiteSpace(storageUnitId))
-        {
-            Error = "Assembly ID required";
-            return;
-        }
+	private bool IsCurrentPlayer(string? address) =>
+		!string.IsNullOrWhiteSpace(address) &&
+		string.Equals(address, AppState.WalletAddress, StringComparison.OrdinalIgnoreCase);
 
-        if (AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null || AppState.CharacterSummary.OwnerCapId == null)
-        {
-            Error = "Unknown user";
-            return;
-        }
+	private string DisplayPlayerName(PlayerDepositEventRow row)
+	{
+		if (!string.IsNullOrWhiteSpace(row.CharacterName))
+			return row.CharacterName;
 
-        try
-        {
-            IsWorking = true;
+		return ShortId(row.CharacterAddress);
+	}
 
-            var shortId =
-                storageUnitId.Length > 5
-                    ? storageUnitId[^5..]
-                    : storageUnitId;
+	private async Task LoadProfile(bool forceRefresh = false)
+	{
+		Error = null;
+		IsLoading = Profile is null;
 
-            var name = $"MOP {shortId}";
+		try
+		{
+			if (AppState.CharacterSummary is null || string.IsNullOrWhiteSpace(AppState.WalletAddress)
+				|| AppState.CharacterSummary.CharacterId == null)
+			{
+				Error = "Character session is missing.";
+				return;
+			}
 
-            Storage = await WorldStorageService.GetStorageUnitAsync(storageUnitId);
+			var points = await Api.GetPlayerPointsAsync(
+				AppState.WalletAddress,
+				forceRefresh);
 
-            if (Storage == null)
-            {
-                Error = "Storage unit is null.";
-                return;
-            }
+			AppState.CharacterSummary.CompliancePoints = points.CompliancePoints;
+			AppState.CharacterSummary.MinistryPoints = points.MinistryPoints;
 
-            // logger.LogInformation("AppState.CharacterSummary.CharacterId: {0}", AppState.CharacterSummary.CharacterId);
-            // logger.LogInformation("Storage.OwnerCapId: {0}", Storage.OwnerCapId);
-            // logger.LogInformation("storageUnitId: {0}", storageUnitId);
+			Profile = await Api.GetPlayerProfilePointsAsync(
+				AppState.WalletAddress,
+				AppState.CharacterSummary.CharacterId,
+				AppState.CharacterSummary.CharacterName ?? "Unknown",
+				points.MinistryPoints,
+				forceRefresh);
+		}
+		catch (Exception ex)
+		{
+			Error = ex.Message;
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
 
-            //more for when testing locally as wouldn't normally get here, but if already configured then skip and go straight to the page
-            if (Storage.MetadataDescription == "Property of The Ministry of Passage"
-                && Storage.MetadataName == name
-                && Storage.MetadataUrl == $"themop.dev/storage/{storageUnitId}")
-            {
-                AppState.SetAssembly(storageUnitId);
+	private static string ShortId(string? value)
+	{
+		if (string.IsNullOrWhiteSpace(value) || value.Length < 14)
+			return value ?? "";
 
-                Nav.NavigateTo($"/storage/{storageUnitId}", false);
-            }
-            else
-            {
-                var result = await WorldStorageTxService.ConfigureAssemblyAsync(storageUnitId,
-                    AppState.CharacterSummary.CharacterId,
-                    Storage.OwnerCapId,
-                    name,
-                    "Property of The Ministry of Passage",
-                    $"themop.dev/storage/{storageUnitId}"
-                );
+		return $"{value[..8]}...{value[^6..]}";
+	}
 
-                if (!result.Success)
-                {
-                    Error = result.Error ?? "Configuration failed.";
-                    return;
-                }
+	private string GetPlayerName(string address)
+	{
+		if (string.Equals(
+			address,
+			AppState.WalletAddress,
+			StringComparison.OrdinalIgnoreCase))
+			return AppState.CharacterSummary?.CharacterName ?? "You";
 
-                AppState.SetAssembly(storageUnitId);
+		return ShortId(address);
+	}
 
-                Nav.NavigateTo($"/storage/{storageUnitId}", false);
-            }
-        }
-        catch (Exception ex)
-        {
-            Error = ex.Message;
-        }
-        finally
-        {
-            IsWorking = false;
-        }
-    }
+	private void NavToSetupSSU()
+	{
+		Nav.NavigateTo($"/setupssu", false);
+	}
+
+	private void NavToSetupGate()
+	{
+		Nav.NavigateTo($"/setupgate", false);
+	}
 }

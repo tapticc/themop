@@ -1151,14 +1151,12 @@ export async function getGate(gateId) {
                 ownerCharacterId = owner.ObjectOwner;
             }
         }
-        const linkedGate = fields?.linked_gate_id?.fields?.vec?.[0] ??
-            fields?.linked_gate_id?.vec?.[0] ??
-            "";
         return {
             found: true,
             objectId: data.objectId ?? gateId,
             ownerCapId: fields?.owner_cap_id ?? "",
             ownerCharacterId,
+            linkedGateId: fields?.linked_gate_id ?? "",
             metadataName: metadata?.fields?.name ?? metadata?.name ?? "",
             metadataDescription: metadata?.fields?.description ?? metadata?.description ?? "",
             metadataUrl: metadata?.fields?.url ?? metadata?.url ?? "",
@@ -1168,7 +1166,6 @@ export async function getGate(gateId) {
                     : JSON.stringify(extension)
                 : "",
             rawJson: JSON.stringify(fields, null, 2),
-            linkedGateId: linkedGate,
         };
     }
     catch (err) {

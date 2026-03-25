@@ -117,5 +117,23 @@
         }
         """;
 
+        public const string GetMinistryLeaderboard = """
+        query GetMinistryLeaderboard($registry: SuiAddress!) {
+          object(address:$registry){
+            dynamicFields(first:50){
+              nodes{
+                name{
+                  json
+                }
+                value{
+                  ... on MoveValue{
+                    json
+                  }
+                }
+              }
+            }
+          }
+        }
+        """;
     }
 }

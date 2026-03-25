@@ -1,5 +1,4 @@
 ﻿using Common.Events;
-using Common.Player;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -12,11 +11,12 @@ using static Api.Services.Sui.ApiDtos;
 
 namespace Api.Services.Sui
 {
-    public class SuiGrpcGateway(RecentDepositStore recentDepositStore, IMemoryCache cache)
+    public class SuiGrpcGateway(RecentDepositStore recentDepositStore, IMemoryCache cache, CharacterNameIndex characterNameIndex)
     {
         private readonly ConcurrentDictionary<string, GrpcChannel> _channels = new();
         private readonly RecentDepositStore _recentDepositStore = recentDepositStore;
         private readonly IMemoryCache _cache = cache;
+        private readonly CharacterNameIndex _characterNameIndex = characterNameIndex;
 
         private static string GetGraphQLUrl(string network) => network switch
         {
@@ -42,8 +42,11 @@ namespace Api.Services.Sui
             _ => "https://fullnode.testnet.sui.io:443",
         };
 
+        //private GrpcChannel Channel(string network) =>
+        //    _channels.GetOrAdd(network, n => GrpcChannel.ForAddress(GetGraphQLUrl(n)));
+
         private GrpcChannel Channel(string network) =>
-            _channels.GetOrAdd(network, n => GrpcChannel.ForAddress(GetGraphQLUrl(n)));
+            _channels.GetOrAdd(network, n => GrpcChannel.ForAddress(GetFullNodeUrl(n)));
 
         private static readonly HttpClient _http = new();
 
@@ -354,6 +357,11 @@ namespace Api.Services.Sui
                 url = GetString(mdEl, "url");
             }
 
+            _characterNameIndex.Upsert(
+                characterAddress,
+                oid,
+                name);
+
             return new CharacterDto(
                 ObjectId: oid,
                 Type: type,
@@ -377,6 +385,18 @@ namespace Api.Services.Sui
             long totalPoints)
         {
             var recent = _recentDepositStore.GetRecent(walletAddress);
+            var globalRecent = _recentDepositStore.GetRecentGlobal(10);
+
+            foreach (var row in globalRecent)
+            {
+                if (!string.IsNullOrWhiteSpace(row.CharacterName))
+                    continue;
+
+                if (_characterNameIndex.TryGet(row.CharacterAddress, out var record))
+                {
+                    row.CharacterName = record.CharacterName;
+                }
+            }
 
             var dto = new PlayerProfilePointsDto
             {
@@ -385,37 +405,11 @@ namespace Api.Services.Sui
                 CharacterName = characterName,
                 TotalPoints = totalPoints,
                 RecentDeposits = recent,
-                GlobalRecent = _recentDepositStore.GetRecentGlobal(10),
+                GlobalRecent = globalRecent,
                 Stamps = BuildStamps(totalPoints, recent.Count)
             };
 
             return Task.FromResult(dto);
-        }
-
-        private async Task<string> ResolveCharacterNameAsync(
-            string characterId,
-            CancellationToken ct)
-        {
-            if (string.IsNullOrWhiteSpace(characterId))
-                return string.Empty;
-
-            var cacheKey = $"character-name:{characterId}";
-
-            if (_cache.TryGetValue<string>(cacheKey, out var cached) && !string.IsNullOrWhiteSpace(cached))
-                return cached;
-
-            try
-            {
-                var character = await GetCharacterAsync(characterId, "testnet", ct);
-                var name = character.Name ?? string.Empty;
-
-                _cache.Set(cacheKey, name, TimeSpan.FromMinutes(10));
-                return name;
-            }
-            catch
-            {
-                return string.Empty;
-            }
         }
 
         private static List<AchievementStampDto> BuildStamps(long ministryPoints, int recentDepositCount)

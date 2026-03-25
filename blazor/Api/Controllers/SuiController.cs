@@ -1,6 +1,7 @@
 ﻿using Api.Services.GraphQL;
 using Common.Inventory;
 using Common.Roles;
+using Common.Storage;
 using Common.Sui;
 using Microsoft.AspNetCore.Mvc;
 
@@ -76,6 +77,16 @@ namespace Api.Controllers
         {
             var result = await _suiGraphQLService.GetItemConfigsAsync(cancellationToken);
             return Ok(result);
+        }
+
+        [HttpGet("owner-storage-pickup")]
+        public async Task<List<OwnerStoragePickupDto>> GetOwnerStoragePickup(
+            [FromQuery] string characterId,
+            CancellationToken ct)
+        {
+            return await _suiGraphQLService.GetOwnerStorageWithOpenItemsAsync(
+                characterId,
+                ct);
         }
     }
 }

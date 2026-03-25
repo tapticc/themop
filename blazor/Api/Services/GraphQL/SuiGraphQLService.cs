@@ -3,17 +3,27 @@ using Api.Services.Sui;
 using Common.Inventory;
 using Common.Player;
 using Common.Roles;
+using Common.Storage;
 using Common.Sui;
+using Google.Protobuf;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace Api.Services.GraphQL
 {
-    public class SuiGraphQLService(GraphQLClient graphql, IOptions<SuiOptions> options, ILogger<SuiGraphQLService> logger)
+    public class SuiGraphQLService(
+        GraphQLClient graphql,
+        IOptions<SuiOptions> options,
+        ILogger<SuiGraphQLService> logger,
+        CharacterNameIndex characterNameIndex,
+        SuiGrpcGateway gw)
     {
         private readonly GraphQLClient _graphql = graphql;
         private readonly SuiOptions _options = options.Value;
         private readonly ILogger<SuiGraphQLService> _logger = logger;
+        private readonly Dictionary<string, string> _characterNameCache = [];
+        private readonly CharacterNameIndex _characterNameIndex = characterNameIndex;
+        private readonly SuiGrpcGateway _gw = gw;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -412,7 +422,293 @@ namespace Api.Services.GraphQL
             return new PlayerPointsDto(characterAddress, 0, 0);
         }
 
+        public async Task<List<MinistryLeaderboardEntry>> GetMinistryLeaderboardAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var root = await _graphql.SendAsync<JsonElement>(
+                SuiQueries.GetMinistryLeaderboard,
+                new
+                {
+                    registry = _options.Packages.PointsRegistryId
+                },
+                cancellationToken);
+
+            if (!root.TryGetProperty("object", out var obj) ||
+                !obj.TryGetProperty("dynamicFields", out var dynamicFields) ||
+                !dynamicFields.TryGetProperty("nodes", out var nodes) ||
+                nodes.ValueKind != JsonValueKind.Array)
+            {
+                return new List<MinistryLeaderboardEntry>();
+            }
+
+            var list = new List<MinistryLeaderboardEntry>();
+
+            foreach (var node in nodes.EnumerateArray())
+            {
+                if (!node.TryGetProperty("name", out var name) ||
+                    !name.TryGetProperty("json", out var nameJson))
+                    continue;
+
+                if (!node.TryGetProperty("value", out var value) ||
+                    !value.TryGetProperty("json", out var valueJson))
+                    continue;
+
+                var address =
+                    nameJson.TryGetProperty("character_address", out var addr)
+                        ? addr.GetString() ?? ""
+                        : "";
+
+                var ministry =
+                    valueJson.TryGetProperty("ministry_points", out var mp)
+                        ? ParseLong(mp)
+                        : 0;
+
+                list.Add(new MinistryLeaderboardEntry
+                {
+                    CharacterAddress = address,
+                    MinistryPoints = ministry
+                });
+            }
+
+            foreach (var entry in list)
+            {
+                entry.CharacterName = await ResolveCharacterNameAsync(
+                    entry.CharacterAddress,
+                    cancellationToken);
+            }
+
+            return list
+                .OrderByDescending(x => x.MinistryPoints)
+                .Take(25)
+                .ToList();
+        }
+
+        public async Task<List<OwnerStoragePickupDto>> GetOwnerStorageWithOpenItemsAsync(
+            string characterId,
+            CancellationToken ct = default)
+        {
+            var result = new List<OwnerStoragePickupDto>();
+
+            var ownedObjects = await _gw.ListOwnedObjectsAsync(
+                characterId,
+                "testnet",
+                100,
+                null);
+
+            //_logger.LogInformation(
+            //    "Found {Count} owned objects for wallet {WalletAddress}",
+            //    ownedObjects.Objects.Count,
+            //    characterId);
+
+            foreach (var obj in ownedObjects.Objects)
+            {
+                if (string.IsNullOrWhiteSpace(obj.ObjectType))
+                    continue;
+
+                //_logger.LogInformation(
+                //    "Checking object {ObjectId} of type {ObjectType}",
+                //    obj.ObjectId,
+                //    obj.ObjectType);
+
+                if (!obj.ObjectType.Contains("::storage_unit::StorageUnit"))
+                    continue;
+
+                var storage = await _gw.GetObjectAsync("testnet", obj.ObjectId);
+
+                if (storage?.Object?.Json is null)
+                    continue;
+
+                var json = JsonFormatter.Default.Format(storage.Object.Json);
+
+                _logger.LogInformation(
+                    "Checking storage unit {ObjectId} with JSON: {Json}",
+                    obj.ObjectId,
+                    json);
+
+                using var doc = JsonDocument.Parse(json);
+                var fields = doc.RootElement;
+
+                // Get metadata name
+                string name = "";
+
+                if (fields.TryGetProperty("metadata", out var md) &&
+                    md.TryGetProperty("name", out var nm))
+                {
+                    name = nm.GetString() ?? "";
+                }
+
+                // Get inventory keys
+                if (!fields.TryGetProperty("inventory_keys", out var invKeys) ||
+                    invKeys.ValueKind != JsonValueKind.Array)
+                    continue;
+
+                // Open inventory usually index 0
+                var openInventoryId = invKeys[0].GetString();
+
+                if (string.IsNullOrWhiteSpace(openInventoryId))
+                    continue;
+
+                var inventoryObj = await _gw.GetObjectAsync(
+                    "testnet",
+                    openInventoryId);
+
+                if (inventoryObj?.Object?.Json is null)
+                    continue;
+
+                var invJson = JsonFormatter.Default.Format(inventoryObj.Object.Json);
+
+                using var invDoc = JsonDocument.Parse(invJson);
+
+                if (!invDoc.RootElement.TryGetProperty("items", out var items) ||
+                    !items.TryGetProperty("contents", out var contents))
+                    continue;
+
+                if (contents.GetArrayLength() == 0)
+                    continue;
+
+                result.Add(new OwnerStoragePickupDto
+                {
+                    StorageUnitId = obj.ObjectId,
+                    StorageName = string.IsNullOrWhiteSpace(name)
+                        ? obj.ObjectId[^6..]
+                        : name
+                });
+            }
+
+            return result;
+        }
+
         //HELPERS
+
+        private async Task<string> ResolveCharacterNameAsync(
+            string walletAddress,
+            CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(walletAddress))
+                return "";
+
+            if (_characterNameCache.TryGetValue(walletAddress, out var cached))
+                return cached;
+
+            if (_characterNameIndex.TryGet(walletAddress, out var indexed) &&
+                !string.IsNullOrWhiteSpace(indexed.CharacterName))
+            {
+                _characterNameCache[walletAddress] = indexed.CharacterName;
+                return indexed.CharacterName;
+            }
+
+            try
+            {
+                var objects = await _gw.ListOwnedObjectsAsync(
+                    walletAddress,
+                    "testnet",
+                    50,
+                    null);
+
+                foreach (var obj in objects.Objects)
+                {
+                    if (string.IsNullOrWhiteSpace(obj.ObjectType))
+                        continue;
+
+                    // Direct Character ownership
+                    if (obj.ObjectType.Contains("::character::Character", StringComparison.Ordinal))
+                    {
+                        var character = await _gw.GetCharacterAsync(
+                            obj.ObjectId,
+                            "testnet",
+                            ct);
+
+                        if (character is not null && !string.IsNullOrWhiteSpace(character.Name))
+                        {
+                            _characterNameCache[walletAddress] = character.Name;
+
+                            _characterNameIndex.Upsert(
+                                walletAddress,
+                                character.ObjectId,
+                                character.Name);
+
+                            return character.Name;
+                        }
+                    }
+
+                    // PlayerProfile ownership -> follow character_id
+                    if (obj.ObjectType.Contains("::character::PlayerProfile", StringComparison.Ordinal))
+                    {
+                        var profileName = await TryResolveCharacterNameFromPlayerProfileAsync(
+                            obj.ObjectId,
+                            ct);
+
+                        if (!string.IsNullOrWhiteSpace(profileName))
+                        {
+                            _characterNameCache[walletAddress] = profileName;
+
+                            _characterNameIndex.Upsert(
+                                walletAddress,
+                                "",
+                                profileName);
+
+                            return profileName;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Failed to resolve character name for wallet {WalletAddress}",
+                    walletAddress);
+            }
+
+            return "";
+        }
+
+        private async Task<string?> TryResolveCharacterNameFromPlayerProfileAsync(
+            string playerProfileObjectId,
+            CancellationToken ct)
+        {
+            try
+            {
+                var resp = await _gw.GetObjectAsync("testnet", playerProfileObjectId);
+                var obj = resp.Object;
+
+                if (obj?.Json is null)
+                    return null;
+
+                var jsonText = JsonFormatter.Default.Format(obj.Json);
+                using var doc = JsonDocument.Parse(jsonText);
+                var root = doc.RootElement;
+
+                // Try direct profile metadata name first
+                if (root.TryGetProperty("metadata", out var metadata) &&
+                    metadata.ValueKind == JsonValueKind.Object &&
+                    metadata.TryGetProperty("name", out var nameEl))
+                {
+                    var directName = nameEl.GetString();
+                    if (!string.IsNullOrWhiteSpace(directName))
+                        return directName;
+                }
+
+                // Otherwise follow character_id -> Character object
+                if (root.TryGetProperty("character_id", out var characterIdEl))
+                {
+                    var characterId = characterIdEl.GetString();
+                    if (!string.IsNullOrWhiteSpace(characterId))
+                    {
+                        var character = await _gw.GetCharacterAsync(characterId, "testnet", ct);
+                        if (character is not null && !string.IsNullOrWhiteSpace(character.Name))
+                            return character.Name;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Failed to resolve character name from player profile {PlayerProfileObjectId}",
+                    playerProfileObjectId);
+            }
+
+            return null;
+        }
 
         private static long ParseLong(JsonElement el)
         {

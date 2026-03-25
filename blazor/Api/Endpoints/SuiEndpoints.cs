@@ -56,6 +56,14 @@ public static class SuiEndpoints
             return Results.Ok(result);
         });
 
+        app.MapGet("/api/sui/ministry-leaderboard",
+        async (SuiGraphQLService suiGraphQLService, SuiGrpcGateway gw, CancellationToken ct) =>
+        {
+            var result = await suiGraphQLService.GetMinistryLeaderboardAsync(ct);
+
+            return Results.Ok(result);
+        });
+
         //this was needed for localnet but moved to client grpc
         //app.MapPost("/api/sui/execute", async (ExecuteTxRequest body, SuiGrpcGateway gw) =>
         //{

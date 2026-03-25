@@ -1685,3 +1685,174 @@ h1, h2, h3 {
     color: #ff6b6b;
     font-size: .8rem;
 }
+
+
+.mop-bulletin-bar {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin: 10px 0 14px;
+    padding: 10px 12px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(24, 32, 48, 0.96), rgba(10, 15, 24, 0.98)), repeating-linear-gradient( 180deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px );
+    box-shadow: inset 0 0 18px rgba(212, 175, 55, 0.05), 0 4px 16px rgba(0,0,0,0.35);
+    text-align: center;
+}
+
+.mop-bulletin-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.mop-bulletin-label {
+    flex: 0 0 auto;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    background: linear-gradient(180deg,#f3da8a,#c79a2a);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 6px rgba(212,175,55,.35), 0 0 14px rgba(212,175,55,.12);
+}
+
+.mop-bulletin-separator {
+    color: rgba(212, 175, 55, 0.45);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.mop-bulletin-text {
+    color: #d7dee7;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    letter-spacing: 0.15px;
+    text-shadow: 0 0 10px rgba(140, 180, 255, 0.05);
+}
+
+.mop-bulletin-glow {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient( 90deg, transparent 0%, rgba(212, 175, 55, 0.03) 20%, rgba(212, 175, 55, 0.08) 50%, rgba(212, 175, 55, 0.03) 80%, transparent 100% );
+    animation: mop-bulletin-sweep 5.5s linear infinite;
+}
+
+@keyframes mop-bulletin-sweep {
+    0% {
+        transform: translateX(-60%);
+    }
+
+    100% {
+        transform: translateX(60%);
+    }
+}
+
+
+.mop-podium {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr 1fr;
+    gap: 10px;
+    align-items: end;
+}
+
+.mop-podium-slot {
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,.08);
+    background: linear-gradient(180deg, rgba(24,30,44,.95), rgba(12,18,28,.98));
+    box-shadow: 0 6px 18px rgba(0,0,0,.28);
+}
+
+.mop-podium-gold {
+    border-color: rgba(212,175,55,.35);
+    min-height: 150px;
+}
+
+.mop-podium-silver {
+    border-color: rgba(180,190,210,.26);
+    min-height: 128px;
+}
+
+.mop-podium-bronze {
+    border-color: rgba(184,115,51,.30);
+    min-height: 118px;
+}
+
+.mop-podium-medal {
+    font-size: .74rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: var(--mop-gold);
+}
+
+.mop-podium-name {
+    color: var(--eve-text);
+    font-weight: 700;
+    font-size: .9rem;
+    line-height: 1.25;
+}
+
+.mop-podium-points {
+    margin-top: 10px;
+    color: #9fd4ff;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.mop-leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px dashed rgba(212,175,55,.14);
+}
+
+.mop-leaderboard-row-you {
+    background: rgba(212,175,55,.05);
+    border-radius: 8px;
+    padding: 10px 8px;
+    margin: 2px 0;
+}
+
+.mop-leaderboard-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.mop-leaderboard-right {
+    flex: 0 0 auto;
+}
+
+.mop-leaderboard-rank {
+    color: var(--mop-gold);
+    font-weight: 800;
+    min-width: 34px;
+}
+
+.mop-leaderboard-name {
+    color: var(--eve-text);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mop-leaderboard-points {
+    color: #9fd4ff;
+    font-weight: 800;
+}

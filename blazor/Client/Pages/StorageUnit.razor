@@ -159,14 +159,14 @@
                         <RadzenButton Text="Transfer Open Inventory to Main"
                                       Click="@TransferOpenToMain"
                                       Disabled="@(!HasDepositableItems || IsBusy || Inventory is null || !Inventory.HasSmartStorageExtension)"
-                                      class="mop-button-authority" />
+                                      class="mop-button-authority" Style="width: 100%;" />
                     }
                     else
                     {
                         <RadzenButton Text="Submit Items to Open Inventory"
                                       Click="@SubmitItemsToOpenInventory"
                                       Disabled="@(!HasDepositableItems || IsBusy || Inventory is null || !Inventory.HasSmartStorageExtension)"
-                                      class="mop-button-authority" />
+                                      class="mop-button-authority" Style="width: 100%;" />
                     }
                 </div>
             </div>
@@ -249,7 +249,7 @@
             var returnUrl = $"/storage/{AssemblyAddress}";
             var encoded = Uri.EscapeDataString(returnUrl);
 
-            Nav.NavigateTo($"/login?returnUrl={encoded}", true);
+            Nav.NavigateTo($"/login?returnUrl={encoded}", false);
             return;
         }
 

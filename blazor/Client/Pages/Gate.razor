@@ -1,93 +1,203 @@
 ﻿@page "/gate/{AssemblyAddress}"
 @using Client.Models
 @using Client.Services
+@using Common.Gates
 @inject NavigationManager Nav
 @inject AppState AppState
-@inject GateTxService GateTx
 @inject GateService GateService
+@inject GateTxService GateTxService
+@inject SuiApiClient Api
+@inject SuiWalletService WalletService
 
-<PageTitle>Configure Gate</PageTitle>
+<PageTitle>Gate</PageTitle>
 
-<div class="mop-config-shell">
-    <div class="mop-config-card">
-        <div class="mop-config-title">Gate Compliance Setup</div>
-
-        <div class="mop-config-text">
-            Citizen, this gate must be registered with the Ministry before permits can be issued.
+<div class="mop-receipt-shell">
+    @if (IsLoading)
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-muted">Loading gate...</div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="alert alert-danger">@Error</div>
+    }
+    else if (GateDetails is not null)
+    {
+        <div class="mop-profile-card">
+            <div class="mop-profile-title">Ministry Gate</div>
+            <div class="mop-profile-name">@GateDetails.MetadataName</div>
+            <div class="mop-profile-sub">@AssemblyAddress</div>
         </div>
 
-        <div class="mop-config-text-small">
-            Assembly: @ShortId(AssemblyAddress)
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Permit Status</div>
+
+            <div class="mop-profile-activity-row">
+                <span>Compliance Points</span>
+                <span>@CompliancePoints</span>
+            </div>
+
+            <div class="mop-profile-activity-row">
+                <span>Permit Cost</span>
+                <span>@PermitCost</span>
+            </div>
+
+            <div class="mop-profile-activity-row">
+                <span>Status</span>
+                <span>@(CanAffordPermit ? "Eligible" : "Insufficient Points")</span>
+            </div>
         </div>
 
-        <button class="mop-btn"
-                disabled="@IsWorking"
-                @onclick="Configure">
-            @(IsWorking ? "Configuring..." : "Configure Gate")
-        </button>
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Permit Purchase</div>
 
-        @if (!string.IsNullOrWhiteSpace(Error))
-        {
-            <div class="mop-error">@Error</div>
-        }
-    </div>
+            <div class="mop-profile-muted">
+                Purchase a jump permit for this gate. The game client will consume the permit when the jump is executed.
+            </div>
+
+            <div class="mop-receipt-actions" style="margin-top:12px;">
+                <button class="mop-btn"
+                        disabled="@(!CanAffordPermit || IsWorking)"
+                        @onclick="PurchasePermit">
+                    @(IsWorking ? "Processing..." : "Purchase Jump Permit")
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(ActionMessage))
+            {
+                <div class="mop-profile-muted" style="margin-top:12px;">
+                    @ActionMessage
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @code {
     [Parameter] public string? AssemblyAddress { get; set; }
 
-    private bool IsWorking;
+    private GateDetails? GateDetails;
+    private GatePermitConfigDto? PermitConfig;
     private string? Error;
+    private string? ActionMessage;
+    private bool IsLoading;
+    private bool IsWorking;
 
-    private async Task Configure()
+    private long CompliancePoints;
+    private long PermitCost => PermitConfig?.PermitCostCompliancePoints ?? 0;
+    private bool CanAffordPermit => CompliancePoints >= PermitCost && PermitCost > 0;
+
+    protected override async Task OnParametersSetAsync()
     {
-        Error = null;
+        await EnsureWalletConnectedAsync();
 
-        if (string.IsNullOrWhiteSpace(AssemblyAddress))
+        if (!string.IsNullOrWhiteSpace(Error))
             return;
 
-        if (AppState.CharacterSummary is null || AppState.CharacterSummary.CharacterId == null)
+        await LoadGateAsync();
+    }
+
+    private async Task EnsureWalletConnectedAsync()
+    {
+        var currentWallet = await WalletService.GetCurrentAddressAsync();
+
+        if (string.IsNullOrWhiteSpace(currentWallet))
         {
-            Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString($"/gate/{AssemblyAddress}")}", false);
+            var returnUrl = $"/gate/{AssemblyAddress}";
+            Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(returnUrl)}", false);
+            Error = "Redirecting to login...";
             return;
         }
 
+        AppState.SetWallet(WalletType.EveFrontier, currentWallet);
+    }
+
+    private async Task LoadGateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(AssemblyAddress))
+            return;
+
+        IsLoading = true;
+        Error = null;
+        ActionMessage = null;
+
         try
         {
-            IsWorking = true;
+            GateDetails = await GateService.GetGateAsync(AssemblyAddress);
 
-            var shortId = AssemblyAddress.Length > 5 ? AssemblyAddress[^5..] : AssemblyAddress;
-            var name = $"MOP GATE {shortId}";
-            var url = $"themop.dev/gateview/{AssemblyAddress}";
-
-            var result = await GateTx.ConfigureGateAsync(
-                AssemblyAddress,
-                AppState.CharacterSummary.CharacterId,
-                name,
-                "Property of The Ministry of Passage",
-                url);
-
-            if (!result.Success)
+            if (!GateDetails.Found)
             {
-                Error = result.Error ?? "Configuration failed.";
+                Error = GateDetails.Error ?? "Gate not found.";
                 return;
             }
 
             AppState.SetGateAssembly(AssemblyAddress);
 
-            Nav.NavigateTo($"/gateview/{AssemblyAddress}", false);
+            PermitConfig = await GateService.GetPermitConfigAsync();
+
+            if (PermitConfig is null || !PermitConfig.Found)
+            {
+                Error = PermitConfig?.Error ?? "Permit config not found.";
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(AppState.WalletAddress))
+            {
+                var points = await Api.GetPlayerPointsAsync(AppState.WalletAddress, true);
+                CompliancePoints = points.CompliancePoints;
+
+                if (AppState.CharacterSummary is not null)
+                {
+                    AppState.CharacterSummary.CompliancePoints = points.CompliancePoints;
+                    AppState.CharacterSummary.MinistryPoints = points.MinistryPoints;
+                }
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task PurchasePermit()
+    {
+        if (string.IsNullOrWhiteSpace(AssemblyAddress) || AppState.CharacterSummary is null || GateDetails == null
+            || AppState.CharacterSummary.CharacterId == null)
+            return;
+
+        try
+        {
+            IsWorking = true;
+            ActionMessage = null;
+
+            var destinationGateId = GateDetails.LinkedGateId;
+            if (string.IsNullOrWhiteSpace(destinationGateId))
+            {
+                ActionMessage = "Linked destination gate not found.";
+                return;
+            }
+
+            var expires = DateTimeOffset.UtcNow.AddMinutes(5);
+
+            var result = await GateTxService.PurchaseJumpPermitAsync(
+                AssemblyAddress,
+                destinationGateId,
+                AppState.CharacterSummary.CharacterId,
+                expires);
+
+            if (!result.Success)
+            {
+                ActionMessage = result.Error ?? "Permit purchase failed.";
+                return;
+            }
+
+            ActionMessage = "Jump permit purchased.";
+            await LoadGateAsync();
         }
         finally
         {
             IsWorking = false;
         }
-    }
-
-    private static string ShortId(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value) || value.Length < 14)
-            return value ?? "";
-
-        return $"{value[..8]}...{value[^6..]}";
     }
 }

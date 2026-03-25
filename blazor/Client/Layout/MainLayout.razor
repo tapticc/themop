@@ -19,9 +19,12 @@
 			<RadzenMenu class="mop-menu">
 				@* <RadzenMenuItem Text="Dashboard" Path="/" Match="NavLinkMatch.All" /> *@
 				<RadzenMenuItem Text="Points" Path="/points" />
-				<RadzenMenuItem Text="SSU View" Path="/storage/0x46dc4510debbfee4e3e02c998747f4c33043ce0097c10bb5f25b86251c800cde" />
-				<RadzenMenuItem Text="SSU Demo" Path="/storage-demo/0x46dc4510debbfee4e3e02c998747f4c33043ce0097c10bb5f25b86251c800cde" />
-				<RadzenMenuItem Text="Inventory Demo" Path="/storage-inventory-demo/0x46dc4510debbfee4e3e02c998747f4c33043ce0097c10bb5f25b86251c800cde" />
+				<RadzenMenuItem Text="Ministry" Path="/ministry" />
+				<RadzenMenuItem Text="Pickup" Path="/pickup" />
+				<RadzenMenuItem Text="Gate View" Path="/gate/0x77ba6c681d50c7ca6974fd865d7f01130164aa535a52f2e03c052c848d900e29" />
+				<RadzenMenuItem Text="SSU View" Path="/storage/0x2577d0c73b9afed234b4864ab1325d8342111dbde14e0934f820dcdbdebaacae" />
+				<RadzenMenuItem Text="SSU Demo" Path="/storage-demo/0x2577d0c73b9afed234b4864ab1325d8342111dbde14e0934f820dcdbdebaacae" />
+				<RadzenMenuItem Text="Inventory Demo" Path="/storage-inventory-demo/0x2577d0c73b9afed234b4864ab1325d8342111dbde14e0934f820dcdbdebaacae" />
 				
 				@if (AppState.RoleContext?.Permissions?.CanAssignRoles == true)
 				{
@@ -34,11 +37,23 @@
 				<RadzenMenuItem Text="Reload" Click="ForceFullReload"/>
 			</RadzenMenu>
 		</div>
+		
 	</RadzenHeader>
 
 	<RadzenBody class="eve-body">
 		<div class="eve-content p-3">
 			<div class="mop-page">
+
+				<div class="mop-bulletin-bar">
+					<div class="mop-bulletin-glow"></div>
+
+					<div class="mop-bulletin-inner">
+						<span class="mop-bulletin-label">MINISTRY NOTICE</span>
+						<span class="mop-bulletin-separator">|</span>
+						<span class="mop-bulletin-text">@CurrentBulletin</span>
+					</div>
+				</div>
+
 				@Body
 			</div>
 		</div>
@@ -47,6 +62,66 @@
 
 @code {
 	private bool _checkingWallet;
+
+	private readonly string[] _bulletins = new[]
+		{
+		"Your compliance is noted.",
+		"Passage is a privilege, not a right.",
+		"Submit your forms. Receive your destiny.",
+		"All movement must be justified.",
+		"The Ministry remembers.",
+		"Your route has been approved. For now.",
+		"You may proceed. Don’t make it weird.",
+		"Unauthorized detours will be corrected.",
+		"Efficiency is mandatory.",
+		"Please remain where you are. Temporarily.",
+		"Your contribution has been recorded.",
+		"The queue is eternal. Embrace it.",
+		"A polite citizen pays the toll.",
+		"Report all suspicious shortcuts.",
+		"You have been assigned an acceptable path.",
+		"The Ministry thanks you for your obedience.",
+		"Your travel request is under review. Forever.",
+		"The gate opens for the worthy.",
+		"The gate closes for the curious.",
+		"Civ points spent wisely are civ points spent.",
+		"Stop asking. Start contributing.",
+		"Be productive. Be permitted.",
+		"Your paperwork is in the right hands. Probably.",
+		"The Ministry provides. The Ministry withholds.",
+		"You are free to comply.",
+		"Your hesitation has been documented.",
+		"A citizen who wanders is a citizen who pays.",
+		"Access granted. Gratitude expected.",
+		"Access denied. Reflect accordingly.",
+		"The Ministry does not negotiate with entropy.",
+		"Please stand by for authorization.",
+		"The safest path is the approved path.",
+		"Don’t worry. We’re watching.",
+		"Contribute first. Questions later.",
+		"Your toll has been accepted.",
+		"Your toll has been deemed insufficient.",
+		"Civilization advances one checkbox at a time.",
+		"Order is faster than freedom.",
+		"You have been selected for passage.",
+		"You have been selected for waiting.",
+		"All gates serve the Ministry.",
+		"All roads lead where we say they do.",
+		"Your route is suspiciously creative. Stop that.",
+		"Joy is permitted during authorized travel only.",
+		"The Ministry appreciates your timely conformity.",
+		"Proceed with sanctioned enthusiasm.",
+		"Unauthorized heroics are discouraged.",
+		"You will be redirected for your convenience.",
+		"Your request has been escalated to silence.",
+		"Thank you for building civilization correctly."
+	};
+
+	private int _bulletinIndex;
+	private string CurrentBulletin => _bulletins[_bulletinIndex];
+
+	private PeriodicTimer? _bulletinTimer;
+	private CancellationTokenSource? _bulletinCts;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -60,6 +135,32 @@
 
 		Network.OnChanged += HandleNetworkChanged;
 		Nav.LocationChanged += HandleLocationChanged;
+
+		StartBulletinRotation();
+	}
+
+	private void StartBulletinRotation()
+	{
+		_bulletinCts = new CancellationTokenSource();
+		_bulletinTimer = new PeriodicTimer(TimeSpan.FromSeconds(8));
+
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				while (await _bulletinTimer.WaitForNextTickAsync(_bulletinCts.Token))
+				{
+					_bulletinIndex++;
+					if (_bulletinIndex >= _bulletins.Length)
+						_bulletinIndex = 0;
+
+					await InvokeAsync(StateHasChanged);
+				}
+			}
+			catch (OperationCanceledException)
+			{
+			}
+		});
 	}
 
 	private async void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -123,6 +224,10 @@
 		AppState.OnChange -= StateHasChanged;
 		Network.OnChanged -= HandleNetworkChanged;
 		Nav.LocationChanged -= HandleLocationChanged;
+
+		_bulletinCts?.Cancel();
+		_bulletinTimer?.Dispose();
+		_bulletinCts?.Dispose();
 	}
 
 	private async void HandleNetworkChanged()
