@@ -282,45 +282,108 @@ namespace Api.Services.GraphQL
         public async Task<PagedKnownCharactersResponse> GetKnownCharactersPageAsync(
             int first,
             string? after,
+            string? walletAddress,
+            string? characterName,
             CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(_options.Packages.World))
-                return new();
+                return new PagedKnownCharactersResponse();
 
             var worldId = _options.Packages.World;
-
-            var characterType = $"{worldId}::character::Character";
+            var profileType = $"{worldId}::character::PlayerProfile";
 
             var result = await _graphql.SendAsync<KnownCharactersQueryResponse>(
                 SuiQueries.GetKnownCharactersPage,
                 new
                 {
-                    type = characterType,
+                    type = profileType,
                     first,
                     after
                 },
                 cancellationToken);
 
-            var items = result.Objects?.Nodes?
-                .Select(node =>
-                {
-                    var profile = Deserialize<PlayerProfileData>(
-                        node.AsMoveObject!.Contents!.Json!.Value);
+            var items = new List<KnownCharacterSummary>();
 
-                    return new KnownCharacterSummary
+            var nodes = result.Objects?.Nodes;
+            if (nodes is null || nodes.Count == 0)
+            {
+                return new PagedKnownCharactersResponse
+                {
+                    Items = items,
+                    HasNextPage = false,
+                    EndCursor = null
+                };
+            }
+
+            foreach (var node in nodes)
+            {
+                if (node?.AsMoveObject?.Contents?.Json is null)
+                    continue;
+
+                var profile = Deserialize<PlayerProfileData>(
+                    node.AsMoveObject.Contents.Json.Value);
+
+                if (profile is null || string.IsNullOrWhiteSpace(profile.CharacterId))
+                    continue;
+
+                try
+                {
+                    var character = await _gw.GetCharacterAsync(
+                        profile.CharacterId,
+                        "testnet",
+                        cancellationToken);
+
+                    if (character is null)
+                        continue;
+
+                    if (!string.IsNullOrWhiteSpace(walletAddress) &&
+                        !string.Equals(character.CharacterAddress, walletAddress, StringComparison.OrdinalIgnoreCase))
                     {
-                        CharacterId = profile?.PlayerProfileId ?? "",
-                        CharacterAddress = profile?.CharacterAddress ?? "",
-                        CharacterName = profile?.Metadata?.Name ?? "(Unnamed)"
-                    };
-                })
-                .ToList() ?? [];
+                        continue;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(characterName) &&
+                        (string.IsNullOrWhiteSpace(character.Name) ||
+                         character.Name.IndexOf(characterName, StringComparison.OrdinalIgnoreCase) < 0))
+                    {
+                        continue;
+                    }
+
+                    var name = string.IsNullOrWhiteSpace(character.Name)
+                        ? "(Unnamed)"
+                        : character.Name;
+
+                    items.Add(new KnownCharacterSummary
+                    {
+                        CharacterId = character.ObjectId,
+                        CharacterAddress = character.CharacterAddress,
+                        CharacterName = name
+                    });
+
+                    _characterNameIndex.Upsert(
+                        character.CharacterAddress,
+                        character.ObjectId,
+                        name);
+
+                    _characterNameCache[character.CharacterAddress] = name;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Failed to resolve character {CharacterId} from player profile.",
+                        profile.CharacterId);
+                }
+            }
 
             return new PagedKnownCharactersResponse
             {
                 Items = items,
-                HasNextPage = result.Objects?.PageInfo?.HasNextPage ?? false,
-                EndCursor = result.Objects?.PageInfo?.EndCursor
+                HasNextPage = string.IsNullOrWhiteSpace(walletAddress) &&
+                              (result.Objects?.PageInfo?.HasNextPage ?? false),
+                EndCursor = string.IsNullOrWhiteSpace(walletAddress)
+                    ? result.Objects?.PageInfo?.EndCursor
+                    : null
             };
         }
 
@@ -438,7 +501,7 @@ namespace Api.Services.GraphQL
                 !dynamicFields.TryGetProperty("nodes", out var nodes) ||
                 nodes.ValueKind != JsonValueKind.Array)
             {
-                return new List<MinistryLeaderboardEntry>();
+                return [];
             }
 
             var list = new List<MinistryLeaderboardEntry>();
@@ -477,15 +540,13 @@ namespace Api.Services.GraphQL
                     cancellationToken);
             }
 
-            return list
+            return [.. list
                 .OrderByDescending(x => x.MinistryPoints)
-                .Take(25)
-                .ToList();
+                .Take(25)];
         }
 
         public async Task<List<OwnerStoragePickupDto>> GetOwnerStorageWithOpenItemsAsync(
-            string characterId,
-            CancellationToken ct = default)
+            string characterId)
         {
             var result = new List<OwnerStoragePickupDto>();
 
@@ -520,10 +581,10 @@ namespace Api.Services.GraphQL
 
                 var json = JsonFormatter.Default.Format(storage.Object.Json);
 
-                _logger.LogInformation(
-                    "Checking storage unit {ObjectId} with JSON: {Json}",
-                    obj.ObjectId,
-                    json);
+                //_logger.LogInformation(
+                //    "Checking storage unit {ObjectId} with JSON: {Json}",
+                //    obj.ObjectId,
+                //    json);
 
                 using var doc = JsonDocument.Parse(json);
                 var fields = doc.RootElement;

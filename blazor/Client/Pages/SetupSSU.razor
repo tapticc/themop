@@ -103,9 +103,9 @@
 			return;
 		}
 
-		if (AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null || AppState.CharacterSummary.OwnerCapId == null)
+		if (AppState.CharacterSummary is null || AppState.CharacterSummary.CharacterId == null)
 		{
-			Error = "Unknown user";
+			Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString($"/setupssu/{storageUnitId}")}", false);
 			return;
 		}
 

@@ -55,20 +55,6 @@ namespace Api.Controllers
             return Ok(result);
         }
 
-        [HttpGet("known-characters")]
-        public async Task<ActionResult<PagedKnownCharactersResponse>> GetKnownCharacters(
-            [FromQuery] int first = 20,
-            [FromQuery] string? after = null,
-            CancellationToken cancellationToken = default)
-        {
-            var result = await _suiGraphQLService.GetKnownCharactersPageAsync(
-                first,
-                after,
-                cancellationToken);
-
-            return Ok(result);
-        }
-
         //INVENTORY
 
         [HttpGet("item-configs")]
@@ -80,13 +66,9 @@ namespace Api.Controllers
         }
 
         [HttpGet("owner-storage-pickup")]
-        public async Task<List<OwnerStoragePickupDto>> GetOwnerStoragePickup(
-            [FromQuery] string characterId,
-            CancellationToken ct)
+        public async Task<List<OwnerStoragePickupDto>> GetOwnerStoragePickup([FromQuery] string characterId)
         {
-            return await _suiGraphQLService.GetOwnerStorageWithOpenItemsAsync(
-                characterId,
-                ct);
+            return await _suiGraphQLService.GetOwnerStorageWithOpenItemsAsync(characterId);
         }
     }
 }

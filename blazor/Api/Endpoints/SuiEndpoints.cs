@@ -64,6 +64,19 @@ public static class SuiEndpoints
             return Results.Ok(result);
         });
 
+        app.MapGet("/api/sui/known-characters",
+        async (
+            int first,
+            string? after,
+            string? walletAddress,
+            string? characterName,
+            SuiGraphQLService sui,
+            CancellationToken ct) =>
+        {
+            var result = await sui.GetKnownCharactersPageAsync(first, after, walletAddress, characterName, ct);
+            return Results.Ok(result);
+        });
+
         //this was needed for localnet but moved to client grpc
         //app.MapPost("/api/sui/execute", async (ExecuteTxRequest body, SuiGrpcGateway gw) =>
         //{

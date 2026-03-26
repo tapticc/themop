@@ -13,6 +13,44 @@ namespace Client.Services
     {
         private readonly HttpClient _http = http;
         private readonly SuiContractOptions _options = options.Value;
+        private readonly Dictionary<string, string> _characterNameCache = [];
+        private readonly Dictionary<string, CachedCharacterLookup> _characterLookupCache = new(StringComparer.OrdinalIgnoreCase);
+
+        public void CacheCharacter(string walletAddress, string characterName, string characterId)
+        {
+            if (string.IsNullOrWhiteSpace(walletAddress))
+                return;
+
+            _characterLookupCache[walletAddress] = new CachedCharacterLookup
+            {
+                WalletAddress = walletAddress,
+                CharacterName = characterName ?? string.Empty,
+                CharacterId = characterId ?? string.Empty
+            };
+        }
+
+        public string? TryGetCachedCharacterName(string walletAddress)
+        {
+            return _characterLookupCache.TryGetValue(walletAddress, out var item)
+                ? item.CharacterName
+                : null;
+        }
+
+        public List<CachedCharacterLookup> GetCachedCharacters()
+        {
+            return _characterLookupCache.Values
+                .Where(x => !string.IsNullOrWhiteSpace(x.CharacterName))
+                .OrderBy(x => x.CharacterName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        public void CacheCharacterName(string walletAddress, string characterName)
+        {
+            if (string.IsNullOrWhiteSpace(walletAddress) || string.IsNullOrWhiteSpace(characterName))
+                return;
+
+            _characterNameCache[walletAddress] = characterName;
+        }
 
         public async Task<HttpResponseMessage> GetBalanceAsync(string owner, string network)
         {
@@ -97,18 +135,25 @@ namespace Client.Services
             return response ?? [];
         }
 
-        public async Task<PagedKnownCharactersResponse?> GetKnownCharactersPageAsync(
-            int first = 20,
-            string? after = null)
+        public async Task<PagedKnownCharactersResponse> GetKnownCharactersPageAsync(
+            int first,
+            string? after,
+            string? walletAddress = null,
+            string? characterName = null)
         {
             var url = $"api/sui/known-characters?first={first}";
 
             if (!string.IsNullOrWhiteSpace(after))
-            {
                 url += $"&after={Uri.EscapeDataString(after)}";
-            }
 
-            return await _http.GetFromJsonAsync<PagedKnownCharactersResponse>(url);
+            if (!string.IsNullOrWhiteSpace(walletAddress))
+                url += $"&walletAddress={Uri.EscapeDataString(walletAddress)}";
+
+            if (!string.IsNullOrWhiteSpace(characterName))
+                url += $"&characterName={Uri.EscapeDataString(characterName)}";
+
+            return await _http.GetFromJsonAsync<PagedKnownCharactersResponse>(url)
+                ?? new PagedKnownCharactersResponse();
         }
 
         //INVENTORY

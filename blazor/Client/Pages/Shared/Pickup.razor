@@ -80,6 +80,11 @@
                 return;
             }
 
+            if (AppState.CharacterSummary == null || AppState.CharacterSummary.CharacterId == null)
+            {
+                return;
+            }
+
             Items = await Api.GetStoragePickupQueueAsync(AppState.CharacterSummary.CharacterId);
         }
         catch (Exception ex)

@@ -100,7 +100,7 @@
 
 		if (AppState.CharacterSummary is null || AppState.CharacterSummary.CharacterId == null)
 		{
-			Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString($"/gate/{gateId}")}", false);
+			Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString($"/setupgate/{gateId}")}", false);
 			return;
 		}
 

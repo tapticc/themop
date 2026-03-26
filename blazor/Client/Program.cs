@@ -26,6 +26,7 @@ builder.Services.AddSingleton<SuiNetworkService>();
 builder.Services.Configure<SuiOptions>(builder.Configuration.GetSection("Sui"));
 builder.Services.Configure<SuiContractOptions>(builder.Configuration.GetSection("Sui:SuiContracts"));
 
+builder.Services.AddScoped<ClientModeService>();
 builder.Services.AddScoped<GateService>();
 builder.Services.AddScoped<GateTxService>();
 builder.Services.AddScoped<InventoryConfigTxService>();

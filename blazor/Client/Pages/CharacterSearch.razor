@@ -23,6 +23,43 @@
 
 @if (_page is not null)
 {
+    <div class="row g-2 align-items-end mt-3">
+        <div class="col-12 col-md-5">
+            <label class="form-label">Known Character</label>
+            <select class="form-select" @bind="_selectedCachedWalletAddress">
+                <option value="">-- Select cached character --</option>
+                @foreach (var item in _cachedCharacters)
+                {
+                    <option value="@item.WalletAddress">
+                        @item.CharacterName (@item.WalletAddress)
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <label class="form-label">Wallet Address</label>
+            <input class="form-control"
+                   placeholder="Optional wallet address"
+                   @bind="_walletFilter" />
+        </div>
+
+        <div class="col-auto">
+            <RadzenButton Text="Search"
+                          Click="@Search"
+                          Disabled="@_loading"
+                          class="mop-button-authority" />
+        </div>
+
+        <div class="col-auto">
+            <RadzenButton Text="Clear"
+                          Click="@ClearSearch"
+                          Disabled="@_loading"
+                          class="mop-button-authority"
+                          Visible="@(!string.IsNullOrWhiteSpace(_walletFilter) || !string.IsNullOrWhiteSpace(_characterNameFilter))" />
+        </div>
+    </div>
+
     <table class="mop-table">
         <thead>
             <tr>
@@ -72,8 +109,57 @@
     private string? _currentCursor;
     private int pageSize = 20;
 
+    private string? _walletFilter;
+    private string? _characterNameFilter;
+    private List<CachedCharacterLookup> _cachedCharacters = new();
+
+    private string? _selectedCachedWalletAddress
+    {
+        get => _walletFilter;
+        set
+        {
+            _walletFilter = value;
+
+            if (string.IsNullOrWhiteSpace(value))
+                return;
+
+            var selected = _cachedCharacters
+                .FirstOrDefault(x => string.Equals(
+                    x.WalletAddress,
+                    value,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (selected is not null)
+            {
+                _walletFilter = selected.WalletAddress;
+            }
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        RefreshCachedCharacters();
+        await LoadPage();
+    }
+
+    private void RefreshCachedCharacters()
+    {
+        _cachedCharacters = Api.GetCachedCharacters();
+    }
+
+    private async Task Search()
+    {
+        _currentCursor = null;
+        _previousCursors.Clear();
+        await LoadPage();
+    }
+
+    private async Task ClearSearch()
+    {
+        _walletFilter = null;
+        _characterNameFilter = null;
+        _currentCursor = null;
+        _previousCursors.Clear();
         await LoadPage();
     }
 
@@ -87,7 +173,14 @@
             _currentCursor = null;
             _previousCursors.Clear();
 
-            _page = await Api.GetKnownCharactersPageAsync(pageSize, null);
+            _page = await Api.GetKnownCharactersPageAsync(
+                pageSize,
+                null,
+                _walletFilter,
+                _characterNameFilter);
+
+            CachePage(_page);
+            RefreshCachedCharacters();
         }
         catch (Exception ex)
         {
@@ -112,7 +205,14 @@
             _previousCursors.Push(_currentCursor);
             _currentCursor = _page.EndCursor;
 
-            _page = await Api.GetKnownCharactersPageAsync(pageSize, _currentCursor);
+            _page = await Api.GetKnownCharactersPageAsync(
+                pageSize,
+                _currentCursor,
+                _walletFilter,
+                _characterNameFilter);
+
+            CachePage(_page);
+            RefreshCachedCharacters();
         }
         catch (Exception ex)
         {
@@ -136,7 +236,14 @@
 
             _currentCursor = _previousCursors.Pop();
 
-            _page = await Api.GetKnownCharactersPageAsync(pageSize, _currentCursor);
+            _page = await Api.GetKnownCharactersPageAsync(
+                pageSize,
+                _currentCursor,
+                _walletFilter,
+                _characterNameFilter);
+
+            CachePage(_page);
+            RefreshCachedCharacters();
         }
         catch (Exception ex)
         {
@@ -151,5 +258,19 @@
     private void ViewRoles(string walletAddress)
     {
         Nav.NavigateTo($"/admin-roles?walletAddress={Uri.EscapeDataString(walletAddress)}");
+    }
+
+    private void CachePage(PagedKnownCharactersResponse? page)
+    {
+        if (page?.Items is null || page.Items.Count == 0)
+            return;
+
+        foreach (var item in page.Items)
+        {
+            Api.CacheCharacter(
+                item.CharacterAddress,
+                item.CharacterName,
+                item.CharacterId);
+        }
     }
 }

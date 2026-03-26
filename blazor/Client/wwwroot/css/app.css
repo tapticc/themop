@@ -1856,3 +1856,47 @@ h1, h2, h3 {
     color: #9fd4ff;
     font-weight: 800;
 }
+
+.mop-ops-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.mop-ops-button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(212,175,55,.14);
+    background: linear-gradient(180deg, rgba(18,24,38,.96), rgba(10,15,23,.98));
+    color: var(--eve-text);
+    box-shadow: 0 6px 16px rgba(0,0,0,.28);
+    cursor: pointer;
+}
+
+    .mop-ops-button:hover {
+        border-color: rgba(212,175,55,.28);
+        background: linear-gradient(180deg, rgba(22,30,46,.98), rgba(12,18,28,.98));
+    }
+
+.mop-ops-button-admin {
+    border-color: rgba(159,212,255,.18);
+}
+
+.mop-ops-title {
+    color: var(--mop-gold);
+    font-size: .92rem;
+    font-weight: 800;
+    letter-spacing: .3px;
+}
+
+.mop-ops-desc {
+    color: var(--eve-text-muted);
+    font-size: .8rem;
+    line-height: 1.35;
+}
