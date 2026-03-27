@@ -14,7 +14,7 @@ namespace Client.Services
         private readonly HttpClient _http = http;
         private readonly SuiContractOptions _options = options.Value;
         private readonly Dictionary<string, string> _characterNameCache = [];
-        private readonly Dictionary<string, CachedCharacterLookup> _characterLookupCache = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, CachedCharacterLookup> _characterLookupCache = [];
 
         public void CacheCharacter(string walletAddress, string characterName, string characterId)
         {
@@ -38,10 +38,9 @@ namespace Client.Services
 
         public List<CachedCharacterLookup> GetCachedCharacters()
         {
-            return _characterLookupCache.Values
+            return [.. _characterLookupCache.Values
                 .Where(x => !string.IsNullOrWhiteSpace(x.CharacterName))
-                .OrderBy(x => x.CharacterName, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+                .OrderBy(x => x.CharacterName, StringComparer.OrdinalIgnoreCase)];
         }
 
         public void CacheCharacterName(string walletAddress, string characterName)

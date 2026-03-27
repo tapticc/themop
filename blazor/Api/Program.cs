@@ -1,4 +1,3 @@
-using Api.Endpoints;
 using Api.Services.GraphQL;
 using Api.Services.Sui;
 
@@ -41,6 +40,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapSuiEndpoints();
 
 app.Run();

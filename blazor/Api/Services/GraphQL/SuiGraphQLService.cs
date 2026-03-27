@@ -546,7 +546,8 @@ namespace Api.Services.GraphQL
         }
 
         public async Task<List<OwnerStoragePickupDto>> GetOwnerStorageWithOpenItemsAsync(
-            string characterId)
+            string characterId,
+            CancellationToken cancellationToken = default)
         {
             var result = new List<OwnerStoragePickupDto>();
 
@@ -556,87 +557,156 @@ namespace Api.Services.GraphQL
                 100,
                 null);
 
-            //_logger.LogInformation(
-            //    "Found {Count} owned objects for wallet {WalletAddress}",
-            //    ownedObjects.Objects.Count,
-            //    characterId);
-
             foreach (var obj in ownedObjects.Objects)
             {
                 if (string.IsNullOrWhiteSpace(obj.ObjectType))
                     continue;
 
-                //_logger.LogInformation(
-                //    "Checking object {ObjectId} of type {ObjectType}",
-                //    obj.ObjectId,
-                //    obj.ObjectType);
-
-                if (!obj.ObjectType.Contains("::storage_unit::StorageUnit"))
-                    continue;
-
-                var storage = await _gw.GetObjectAsync("testnet", obj.ObjectId);
-
-                if (storage?.Object?.Json is null)
-                    continue;
-
-                var json = JsonFormatter.Default.Format(storage.Object.Json);
-
-                //_logger.LogInformation(
-                //    "Checking storage unit {ObjectId} with JSON: {Json}",
-                //    obj.ObjectId,
-                //    json);
-
-                using var doc = JsonDocument.Parse(json);
-                var fields = doc.RootElement;
-
-                // Get metadata name
-                string name = "";
-
-                if (fields.TryGetProperty("metadata", out var md) &&
-                    md.TryGetProperty("name", out var nm))
+                // Character owns OwnerCap<StorageUnit>, not the shared StorageUnit directly
+                if (!obj.ObjectType.Contains("::access::OwnerCap<", StringComparison.Ordinal) ||
+                    !obj.ObjectType.Contains("::storage_unit::StorageUnit", StringComparison.Ordinal))
                 {
-                    name = nm.GetString() ?? "";
+                    continue;
                 }
 
-                // Get inventory keys
-                if (!fields.TryGetProperty("inventory_keys", out var invKeys) ||
-                    invKeys.ValueKind != JsonValueKind.Array)
+                // First read: OwnerCap
+                var ownerCapResp = await _gw.GetObjectAsync("testnet", obj.ObjectId);
+                if (ownerCapResp?.Object?.Json is null)
                     continue;
 
-                // Open inventory usually index 0
-                var openInventoryId = invKeys[0].GetString();
+                var ownerCapJson = JsonFormatter.Default.Format(ownerCapResp.Object.Json);
+                using var ownerCapDoc = JsonDocument.Parse(ownerCapJson);
+                var ownerCapRoot = ownerCapDoc.RootElement;
 
-                if (string.IsNullOrWhiteSpace(openInventoryId))
+                if (!ownerCapRoot.TryGetProperty("authorized_object_id", out var authObjIdNode))
                     continue;
 
-                var inventoryObj = await _gw.GetObjectAsync(
-                    "testnet",
-                    openInventoryId);
-
-                if (inventoryObj?.Object?.Json is null)
+                var storageUnitId = authObjIdNode.GetString();
+                if (string.IsNullOrWhiteSpace(storageUnitId))
                     continue;
 
-                var invJson = JsonFormatter.Default.Format(inventoryObj.Object.Json);
+                // Second read: actual StorageUnit + its dynamic fields
+                var storageRoot = await _graphql.SendAsync<JsonElement>(
+                    SuiQueries.GetStorageUnitWithDynamicFields,
+                    new { id = storageUnitId },
+                    cancellationToken);
 
-                using var invDoc = JsonDocument.Parse(invJson);
-
-                if (!invDoc.RootElement.TryGetProperty("items", out var items) ||
-                    !items.TryGetProperty("contents", out var contents))
+                if (!storageRoot.TryGetProperty("object", out var objectNode))
                     continue;
 
-                if (contents.GetArrayLength() == 0)
-                    continue;
-
-                result.Add(new OwnerStoragePickupDto
+                if (!objectNode.TryGetProperty("asMoveObject", out var asMoveObject) ||
+                    !asMoveObject.TryGetProperty("contents", out var contentsNode) ||
+                    !contentsNode.TryGetProperty("json", out var storageJson))
                 {
-                    StorageUnitId = obj.ObjectId,
-                    StorageName = string.IsNullOrWhiteSpace(name)
-                        ? obj.ObjectId[^6..]
-                        : name
-                });
+                    continue;
+                }
+
+                string storageName = "";
+                string ownerCapId = "";
+
+                var inventoryKeys = new List<string>();
+
+                if (storageJson.TryGetProperty("metadata", out var md) &&
+                    md.ValueKind == JsonValueKind.Object &&
+                    md.TryGetProperty("name", out var nm))
+                {
+                    storageName = nm.GetString() ?? "";
+                }
+
+                if (storageJson.TryGetProperty("owner_cap_id", out var ownerCapIdNode))
+                {
+                    ownerCapId = ownerCapIdNode.GetString() ?? "";
+                }
+
+                if (storageJson.TryGetProperty("inventory_keys", out var invKeysNode) &&
+                    invKeysNode.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var keyNode in invKeysNode.EnumerateArray())
+                    {
+                        var key = keyNode.GetString();
+                        if (!string.IsNullOrWhiteSpace(key))
+                            inventoryKeys.Add(key);
+                    }
+                }
+
+                if (inventoryKeys.Count == 0)
+                    continue;
+
+                string? openInventoryKey = null;
+
+                foreach (var key in inventoryKeys)
+                {
+                    if (string.Equals(key, ownerCapId, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var existsAsObject = await ObjectExistsAsync(key);
+                    if (!existsAsObject)
+                    {
+                        openInventoryKey = key;
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(openInventoryKey))
+                    continue;
+
+                if (!objectNode.TryGetProperty("dynamicFields", out var dynamicFields) ||
+                    !dynamicFields.TryGetProperty("nodes", out var nodes) ||
+                    nodes.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (var node in nodes.EnumerateArray())
+                {
+                    if (!node.TryGetProperty("name", out var nameNode) ||
+                        !nameNode.TryGetProperty("json", out var keyNode))
+                        continue;
+
+                    var dynamicFieldKey = keyNode.GetString() ?? "";
+                    if (!string.Equals(dynamicFieldKey, openInventoryKey, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (!node.TryGetProperty("value", out var valueNode) ||
+                        !valueNode.TryGetProperty("json", out var inventoryJson))
+                        continue;
+
+                    if (!inventoryJson.TryGetProperty("items", out var itemsNode) ||
+                        !itemsNode.TryGetProperty("contents", out var contentsArray) ||
+                        contentsArray.ValueKind != JsonValueKind.Array)
+                    {
+                        break;
+                    }
+
+                    if (contentsArray.GetArrayLength() == 0)
+                        break;
+
+                    result.Add(new OwnerStoragePickupDto
+                    {
+                        StorageUnitId = storageUnitId,
+                        StorageName = string.IsNullOrWhiteSpace(storageName)
+                            ? storageUnitId[^6..]
+                            : storageName
+                    });
+
+                    break;
+                }
             }
 
             return result;
+        }
+
+        private async Task<bool> ObjectExistsAsync(string objectId)
+        {
+            try
+            {
+                var resp = await _gw.GetObjectAsync("testnet", objectId);
+                return resp?.Object is not null;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         //HELPERS

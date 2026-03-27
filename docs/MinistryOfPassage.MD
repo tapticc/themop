@@ -2,7 +2,7 @@
 
 ## Concept
 
-The Ministry of Passage is a fictional infrastructure organization
+The Ministry of Passage is a fictional infrastructure organisation
 providing:
 
 Storage services\
@@ -11,7 +11,7 @@ Governance roles\
 Contribution tracking
 
 The goal is to demonstrate how players could build persistent
-organizations using Sui.
+organisations using Sui.
 
 ---
 
@@ -71,7 +71,7 @@ Demonstrates how Eve Frontier could support:
 Player governments\
 Infrastructure providers\
 Reputation systems\
-Service organizations
+Service organisations
 
 ---
 
@@ -87,5 +87,4 @@ Infrastructure \> speculation
 
 ## Key Takeaway
 
-The Ministry demonstrates how Sui enables **player societies**, not just
-ownership.
+The Ministry demonstrates how Sui enables **player societies**, and is tribe-agnostic.

@@ -62,6 +62,7 @@ Infrastructure configuration UX
 
 Why Blazor:
 
+Personal experience and strengths\
 Strong typing\
 Minimal JS complexity\
 Fast iteration\
@@ -98,7 +99,7 @@ Leaderboards
 
 Frontend:
 
-Blazor Server\
+Blazor WASM Client\
 Radzen Components\
 CSS Grid UX
 
@@ -120,10 +121,11 @@ Extension witnesses
 
 ## Why This Submission Is Interesting
 
-Most blockchain projects show contracts.
+Most blockchain projects show contracts, typically using React as the web tool of choice.
 
 This shows:
 
+Full Blazor + .NET integration
 Contracts\
 Backend integration\
 Web UX\

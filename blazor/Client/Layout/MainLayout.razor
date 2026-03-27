@@ -19,17 +19,16 @@
 
 			@if (_isGameClient)
 			{
-				<p>Game client mode detected.</p>
+				@* <p>Game client mode detected.</p> *@
 			}
 			else
 			{
-				<p>Standard browser mode detected.</p>
+				@* <p>Standard browser mode detected.</p> *@
+				<RadzenMenu class="mop-menu">
+					<RadzenMenuItem Text="Operations" Path="/operations" />
+					<RadzenMenuItem Text="Reload" Click="ForceFullReload" />
+				</RadzenMenu>
 			}
-
-			<RadzenMenu class="mop-menu">
-				<RadzenMenuItem Text="Operations" Path="/operations" />
-				<RadzenMenuItem Text="Reload" Click="ForceFullReload" />
-			</RadzenMenu>
 		</div>
 		
 	</RadzenHeader>
@@ -96,7 +95,7 @@
 		"Contribute first. Questions later.",
 		"Your toll has been accepted.",
 		"Your toll has been deemed insufficient.",
-		"Civilization advances one checkbox at a time.",
+		"Civilisation advances one checkbox at a time.",
 		"Order is faster than freedom.",
 		"You have been selected for passage.",
 		"You have been selected for waiting.",
@@ -109,7 +108,7 @@
 		"Unauthorized heroics are discouraged.",
 		"You will be redirected for your convenience.",
 		"Your request has been escalated to silence.",
-		"Thank you for building civilization correctly."
+		"Thank you for building civilisation correctly."
 	};
 
 	private int _bulletinIndex;

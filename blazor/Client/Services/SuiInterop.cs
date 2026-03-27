@@ -8,7 +8,7 @@ namespace Client.Services;
 
 public class SuiInterop(IJSRuntime js) : IAsyncDisposable
 {
-    private const string JsVersion = "20260326-6";
+    private const string JsVersion = "20260327-1";
 
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
         js.InvokeAsync<IJSObjectReference>("import", $"/js/suiInterop.js?v={JsVersion}").AsTask());

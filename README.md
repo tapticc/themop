@@ -2,13 +2,13 @@
 
 The Ministry of Passage is a full-stack Eve Frontier extension project built on **Sui Move**, **Blazor**, and a hybrid **GraphQL + gRPC** integration layer.
 
-At a high level, the project demonstrates how on-chain game infrastructure can be extended beyond simple ownership and asset transfer into something closer to a functioning player institution. In this case, that institution is the Ministry of Passage: a fictional organization responsible for regulated storage, controlled travel, contribution tracking, permit issuance, and role-based authority.
+At a high level, the project demonstrates how on-chain smart assemblies can be extended beyond simple ownership and asset transfer into something closer to a functioning player institution. In this case, that institution is the Ministry of Passage: a fictional authority responsible for regulated storage, controlled travel, contribution tracking, permit issuance, and role-based authority.
 
 ## Technical stack
 
 Frontend:
 
-- Blazor Server
+- Blazor WASM Client
 - Radzen components
 - Permission-aware navigation
 
@@ -41,4 +41,6 @@ See:
 
 ## Final takeaway
 
-The Ministry of Passage demonstrates how Sui Move can power **programmable gameplay infrastructure** and how Blazor can turn that infrastructure into a coherent player-facing experience.
+The Ministry of Passage demonstrates how Sui Move can power **programmable gameplay infrastructure** and how Blazor can turn that infrastructure into a fun player-facing experience.
+
+Youtube video demonstration: https://youtu.be/mtmGt7_0s1E

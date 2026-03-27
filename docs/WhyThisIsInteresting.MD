@@ -40,11 +40,11 @@ Storage networks\
 Trade services\
 Reputation systems
 
-Player driven civilization.
+Player driven civilisation in a tribe-agnostic manner.
 
 ---
 
-## What Judges Should Notice
+## Judges Take Note
 
 This submission demonstrates:
 

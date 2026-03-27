@@ -135,5 +135,53 @@
           }
         }
         """;
+
+        public const string GetStorageUnitOpenInventory = """
+        query GetStorageUnitOpenInventory($id: SuiAddress!) {
+          object(address: $id) {
+            asMoveObject {
+              contents {
+                json
+              }
+            }
+            dynamicFields(first: 50) {
+              nodes {
+                name {
+                  json
+                }
+                value {
+                  ... on MoveValue {
+                    json
+                  }
+                }
+              }
+            }
+          }
+        }
+        """;
+
+        public const string GetStorageUnitWithDynamicFields = """
+        query GetStorageUnitWithDynamicFields($id: SuiAddress!) {
+          object(address: $id) {
+            asMoveObject {
+              contents {
+                json
+              }
+            }
+            dynamicFields(first: 50) {
+              nodes {
+                name {
+                  json
+                }
+                value {
+                  ... on MoveValue {
+                    json
+                  }
+                }
+              }
+            }
+          }
+        }
+        """;
     }
 }
