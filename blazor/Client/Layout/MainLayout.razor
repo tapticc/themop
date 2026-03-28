@@ -7,7 +7,6 @@
 @inject SuiNetworkService Network
 @inject SuiWalletService WalletService
 @inject IConfiguration Config
-@inject Client.Services.ClientModeService ClientModeService
 @implements IDisposable
 
 <RadzenLayout class="eve-layout">
@@ -17,18 +16,10 @@
 				<img src="images/TheMOPLogo.png" class="mop-header-logo-img" />
 			</div>
 
-			@if (_isGameClient)
-			{
-				@* <p>Game client mode detected.</p> *@
-			}
-			else
-			{
-				@* <p>Standard browser mode detected.</p> *@
-				<RadzenMenu class="mop-menu">
-					<RadzenMenuItem Text="Operations" Path="/operations" />
-					<RadzenMenuItem Text="Reload" Click="ForceFullReload" />
-				</RadzenMenu>
-			}
+			<RadzenMenu class="mop-menu">
+				<RadzenMenuItem Text="Operations" Path="/operations" />
+				<RadzenMenuItem Text="Reload" Click="ForceFullReload" />
+			</RadzenMenu>			
 		</div>
 		
 	</RadzenHeader>
@@ -55,7 +46,6 @@
 
 @code {
 	private bool _checkingWallet;
-	private bool _isGameClient;
 
 	private readonly string[] _bulletins = new[]
 		{
@@ -123,8 +113,6 @@
 			return;
 		}
 
-		await ClientModeService.InitializeAsync();
-		_isGameClient = await ClientModeService.IsGameClientAsync();
 		StateHasChanged();
 	}
 

@@ -5,7 +5,7 @@
         public const string GetPlayerProfile = """
         query GetPlayerProfile($owner: SuiAddress!, $type: String!) {
           objects(
-            first: 1
+            first: 10
             filter: {
               ownerKind: ADDRESS
               owner: $owner

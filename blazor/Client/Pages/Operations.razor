@@ -2,6 +2,7 @@
 @using Client.Models
 @inject AppState AppState
 @inject NavigationManager Nav
+@inject Client.Services.ClientModeService ClientModeService
 
 <PageTitle>Operations</PageTitle>
 
@@ -33,80 +34,96 @@
         </div>
     </div>
 
-    <div class="mop-profile-card">
-        <div class="mop-profile-section-title">Assemblies</div>
-
-        <div class="mop-ops-grid">
-            <button class="mop-ops-button" @onclick='() => Go("/gate/0x488bc926b680b3f50b9014118c2dd20e781794e0fb0f59ea47b0f4aeea1870ee")'>
-                <span class="mop-ops-title">Gate View</span>
-                <span class="mop-ops-desc">Live gate interface</span>
-            </button>
-
-            <button class="mop-ops-button" @onclick='() => Go("/storage/0x2577d0c73b9afed234b4864ab1325d8342111dbde14e0934f820dcdbdebaacae")'>
-                <span class="mop-ops-title">Storage Unit</span>
-                <span class="mop-ops-desc">Live storage interface</span>
-            </button>
-
-            <button class="mop-ops-button" @onclick='() => Go("/storage-demo/0x2577d0c73b9afed234b4864ab1325d8342111dbde14e0934f820dcdbdebaacae")'>
-                <span class="mop-ops-title">Storage Demo</span>
-                <span class="mop-ops-desc">Detailed diagnostic view</span>
-            </button>
-
-            <button class="mop-ops-button" @onclick='() => Go("/storage-inventory-demo/0x2577d0c73b9afed234b4864ab1325d8342111dbde14e0934f820dcdbdebaacae")'>
-                <span class="mop-ops-title">Inventory Demo</span>
-                <span class="mop-ops-desc">Inventory diagnostics and inspection</span>
-            </button>
-        </div>
-    </div>
-
-    @if (AppState.RoleContext?.Permissions?.CanAssignRoles == true)
+    @if (!_isGameClient)
     {
         <div class="mop-profile-card">
-            <div class="mop-profile-section-title">Administration</div>
+            <div class="mop-profile-section-title">Assemblies</div>
 
             <div class="mop-ops-grid">
-                <button class="mop-ops-button mop-ops-button-admin" @onclick='() => Go("/admin-inventory")'>
-                    <span class="mop-ops-title">Inventory Admin</span>
-                    <span class="mop-ops-desc">Registry and item controls</span>
+                <button class="mop-ops-button" @onclick='() => Go("/gate/0x488bc926b680b3f50b9014118c2dd20e781794e0fb0f59ea47b0f4aeea1870ee")'>
+                    <span class="mop-ops-title">Gate View</span>
+                    <span class="mop-ops-desc">Live gate interface</span>
                 </button>
 
-                <button class="mop-ops-button mop-ops-button-admin" @onclick='() => Go("/admin-roles")'>
-                    <span class="mop-ops-title">Role Admin</span>
-                    <span class="mop-ops-desc">Grant and revoke authority</span>
+                <button class="mop-ops-button" @onclick='() => Go("/storage/0x2577d0c73b9afed234b4864ab1325d8342111dbde14e0934f820dcdbdebaacae")'>
+                    <span class="mop-ops-title">Storage Unit</span>
+                    <span class="mop-ops-desc">Live storage interface</span>
                 </button>
 
-                <button class="mop-ops-button mop-ops-button-admin" @onclick='() => Go("/character-search")'>
-                    <span class="mop-ops-title">Character Search</span>
-                    <span class="mop-ops-desc">Find citizens and inspect roles</span>
+                <button class="mop-ops-button" @onclick='() => Go("/storage-demo/0x2577d0c73b9afed234b4864ab1325d8342111dbde14e0934f820dcdbdebaacae")'>
+                    <span class="mop-ops-title">Storage Demo</span>
+                    <span class="mop-ops-desc">Detailed diagnostic view</span>
+                </button>
+
+                <button class="mop-ops-button" @onclick='() => Go("/storage-inventory-demo/0x2577d0c73b9afed234b4864ab1325d8342111dbde14e0934f820dcdbdebaacae")'>
+                    <span class="mop-ops-title">Inventory Demo</span>
+                    <span class="mop-ops-desc">Inventory diagnostics and inspection</span>
+                </button>
+            </div>
+        </div>
+
+        @if (AppState.RoleContext?.Permissions?.CanAssignRoles == true)
+        {
+            <div class="mop-profile-card">
+                <div class="mop-profile-section-title">Administration</div>
+
+                <div class="mop-ops-grid">
+                    <button class="mop-ops-button mop-ops-button-admin" @onclick='() => Go("/admin-inventory")'>
+                        <span class="mop-ops-title">Inventory Admin</span>
+                        <span class="mop-ops-desc">Registry and item controls</span>
+                    </button>
+
+                    <button class="mop-ops-button mop-ops-button-admin" @onclick='() => Go("/admin-roles")'>
+                        <span class="mop-ops-title">Role Admin</span>
+                        <span class="mop-ops-desc">Grant and revoke authority</span>
+                    </button>
+
+                    <button class="mop-ops-button mop-ops-button-admin" @onclick='() => Go("/character-search")'>
+                        <span class="mop-ops-title">Character Search</span>
+                        <span class="mop-ops-desc">Find citizens and inspect roles</span>
+                    </button>
+                </div>
+            </div>
+        }
+
+        <div class="mop-profile-card">
+            <div class="mop-profile-section-title">Reference</div>
+
+            <div class="mop-ops-grid">
+                <button class="mop-ops-button" @onclick='() => Go("/roles")'>
+                    <span class="mop-ops-title">Roles</span>
+                    <span class="mop-ops-desc">Role definitions and responsibilities</span>
+                </button>
+
+                <button class="mop-ops-button" @onclick='() => Go("/styles-demo")'>
+                    <span class="mop-ops-title">Styles Demo</span>
+                    <span class="mop-ops-desc">Visual system reference</span>
+                </button>
+
+                <button class="mop-ops-button" @onclick="ForceFullReload">
+                    <span class="mop-ops-title">Reload</span>
+                    <span class="mop-ops-desc">Force full application refresh</span>
                 </button>
             </div>
         </div>
     }
-
-    <div class="mop-profile-card">
-        <div class="mop-profile-section-title">Reference</div>
-
-        <div class="mop-ops-grid">
-            <button class="mop-ops-button" @onclick='() => Go("/roles")'>
-                <span class="mop-ops-title">Roles</span>
-                <span class="mop-ops-desc">Role definitions and responsibilities</span>
-            </button>
-
-            <button class="mop-ops-button" @onclick='() => Go("/styles-demo")'>
-                <span class="mop-ops-title">Styles Demo</span>
-                <span class="mop-ops-desc">Visual system reference</span>
-            </button>
-
-            <button class="mop-ops-button" @onclick="ForceFullReload">
-                <span class="mop-ops-title">Reload</span>
-                <span class="mop-ops-desc">Force full application refresh</span>
-            </button>
-        </div>
-    </div>
-
 </div>
 
 @code {
+    private bool _isGameClient;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await ClientModeService.InitializeAsync();
+        _isGameClient = await ClientModeService.IsGameClientAsync();
+        StateHasChanged();
+    }
+
     private void Go(string path)
     {
         Nav.NavigateTo(path);

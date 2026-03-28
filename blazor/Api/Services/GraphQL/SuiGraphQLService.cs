@@ -77,7 +77,7 @@ namespace Api.Services.GraphQL
                 },
                 cancellationToken);
 
-            var profileNode = profileResult.Objects?.Nodes?.FirstOrDefault();
+            var profileNode = profileResult.Objects?.Nodes?.LastOrDefault();
             if (profileNode?.AsMoveObject?.Contents?.Json is null)
                 return null;
 
@@ -736,6 +736,8 @@ namespace Api.Services.GraphQL
                     50,
                     null);
 
+                var lastCharacterName = "";
+
                 foreach (var obj in objects.Objects)
                 {
                     if (string.IsNullOrWhiteSpace(obj.ObjectType))
@@ -769,19 +771,23 @@ namespace Api.Services.GraphQL
                             obj.ObjectId,
                             ct);
 
-                        if (!string.IsNullOrWhiteSpace(profileName))
-                        {
-                            _characterNameCache[walletAddress] = profileName;
-
-                            _characterNameIndex.Upsert(
-                                walletAddress,
-                                "",
-                                profileName);
-
-                            return profileName;
-                        }
+                        lastCharacterName = profileName ?? lastCharacterName;
                     }
                 }
+
+                if (!string.IsNullOrWhiteSpace(lastCharacterName))
+                {
+                    _characterNameCache[walletAddress] = lastCharacterName;
+
+                    _characterNameIndex.Upsert(
+                        walletAddress,
+                        "",
+                        lastCharacterName);
+
+                    //return profileName;
+                }
+
+                return lastCharacterName;
             }
             catch (Exception ex)
             {

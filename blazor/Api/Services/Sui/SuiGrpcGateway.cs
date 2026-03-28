@@ -284,16 +284,16 @@ namespace Api.Services.Sui
                 ReadMask = new FieldMask
                 {
                     Paths =
-            {
-                "object_id",
-                "version",
-                "digest",
-                "owner",
-                "object_type",
-                "previous_transaction",
-                "storage_rebate",
-                "json"
-            }
+                    {
+                        "object_id",
+                        "version",
+                        "digest",
+                        "owner",
+                        "object_type",
+                        "previous_transaction",
+                        "storage_rebate",
+                        "json"
+                    }
                 }
             };
 
