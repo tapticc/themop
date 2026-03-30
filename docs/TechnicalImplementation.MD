@@ -135,6 +135,10 @@ Infrastructure design
 
 A complete developer reference example.
 
+Move tests verify on-chain scoring and spend rules\
+.NET tests verify permissions, event indexing, and caching/index services\
+Together they cover both contract safety and application correctness
+
 ---
 
 ## Key Takeaway

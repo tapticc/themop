@@ -160,3 +160,96 @@ public fun borrow_player_points(
         player_key(character_address)
     )
 }
+
+#[test_only]
+use sui::test_scenario::{Self as test_scenario};
+
+#[test_only]
+public fun init_for_testing(ctx: &mut TxContext): PointsRegistry {
+    PointsRegistry {
+        id: object::new(ctx)
+    }
+}
+
+#[test_only]
+public fun destroy_for_testing(registry: PointsRegistry) {
+    let PointsRegistry { id } = registry;
+    id.delete();
+}
+
+#[test]
+fun award_points_creates_player_record() {
+    let mut scenario = test_scenario::begin(@0xA11CE);
+
+    {
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut registry = init_for_testing(ctx);
+
+        award_points(&mut registry, @0xA11CE, 10, @0xBEEF);
+
+        assert!(has_player_points(&registry, @0xA11CE), 0);
+        assert!(compliance_points(&registry, @0xA11CE) == 10, 1);
+        assert!(ministry_points(&registry, @0xA11CE) == 10, 2);
+
+        destroy_for_testing(registry);
+    };
+
+    test_scenario::end(scenario);
+}
+
+#[test]
+fun award_points_accumulates_both_balances() {
+    let mut scenario = test_scenario::begin(@0xA11CE);
+
+    {
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut registry = init_for_testing(ctx);
+
+        award_points(&mut registry, @0xA11CE, 10, @0xBEEF);
+        award_points(&mut registry, @0xA11CE, 15, @0xBEEF);
+
+        assert!(compliance_points(&registry, @0xA11CE) == 25, 0);
+        assert!(ministry_points(&registry, @0xA11CE) == 25, 1);
+
+        destroy_for_testing(registry);
+    };
+
+    test_scenario::end(scenario);
+}
+
+#[test]
+fun spend_compliance_points_only_reduces_spendable_balance() {
+    let mut scenario = test_scenario::begin(@0xA11CE);
+
+    {
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut registry = init_for_testing(ctx);
+
+        award_points(&mut registry, @0xA11CE, 20, @0xBEEF);
+        spend_compliance_points(&mut registry, @0xA11CE, 7, @0xCAFE);
+
+        assert!(compliance_points(&registry, @0xA11CE) == 13, 0);
+        assert!(ministry_points(&registry, @0xA11CE) == 20, 1);
+
+        destroy_for_testing(registry);
+    };
+
+    test_scenario::end(scenario);
+}
+
+#[test, expected_failure(abort_code = EInsufficientCompliancePoints)]
+fun spend_compliance_points_aborts_when_insufficient() {
+    let mut scenario = test_scenario::begin(@0xA11CE);
+
+    {
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut registry = init_for_testing(ctx);
+
+        award_points(&mut registry, @0xA11CE, 5, @0xBEEF);
+        spend_compliance_points(&mut registry, @0xA11CE, 6, @0xCAFE);
+
+        destroy_for_testing(registry);
+    };
+
+    test_scenario::end(scenario);
+}
